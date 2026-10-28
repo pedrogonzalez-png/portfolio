@@ -1,8 +1,7 @@
 name: CI
 
 on:
-  push:
-    branches: [main]
+  push: {} # Run checks for feature branches before merging into main
   pull_request: {} # Validate stacked PRs as well as PRs targeting main
 
 jobs:
