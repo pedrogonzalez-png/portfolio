@@ -60,3 +60,4 @@
 - **[VETADO]** = fora do escopo e não deve ser implementado.
 
 © Textos deste pacote: briefing original. As marcas, personagens, referências e assets externos têm direitos próprios; não distribuir artes ou vídeos de franquias sem verificar direitos de uso.
+# portfolio
