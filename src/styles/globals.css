@@ -27,7 +27,21 @@ body::before {
   content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 0;
   background: radial-gradient(ellipse 55% 45% at 50% 30%, rgba(132,46,36,.17), transparent 80%), linear-gradient(180deg, transparent 55%, rgba(10,4,7,.5));
 }
-.scene-canvas { position: absolute; inset: 0; pointer-events: none; z-index: 2; opacity: 1; }
+/* The WebGL viewport intentionally exceeds the heading's box.
+   Without this overscan, the particles were clipped just as they dispersed. */
+.scene-canvas {
+  position: absolute;
+  left: -6%;
+  right: -6%;
+  top: -115px;
+  bottom: -115px;
+  pointer-events: none;
+  z-index: 2;
+  opacity: 1;
+}
+@media (max-width: 700px) {
+  .scene-canvas { left: -3%; right: -3%; top: -78px; bottom: -78px; }
+}
 .site-header, .site-main, .site-footer { position: relative; z-index: 1; }
 .site-header {
   position: fixed; top: 0; left: 0; right: 0; z-index: 100; height: 78px;
