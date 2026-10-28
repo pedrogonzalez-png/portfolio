@@ -3,6 +3,7 @@ import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { AdditiveBlending, CatmullRomCurve3, DynamicDrawUsage, MathUtils, Object3D, Vector2, Vector3 } from "three";
 import type { Group, InstancedMesh, ShaderMaterial } from "three";
 import { useAccessibility } from "./accessibilityContext";
+import { GlassScreens } from "./GlassScreens";
 
 const PARTICLES = 7200;
 const VERTEBRAE = 23;
@@ -200,6 +201,7 @@ function SpineCanvas() {
         <pointLight position={[4, 4, 5]} intensity={42} color="#f8b88a" />
         <pointLight position={[-4, -3, 4]} intensity={17} color="#b82946" />
         <VertebralStructure />
+        <GlassScreens />
       </Canvas>
     </div>
   );
@@ -231,6 +233,19 @@ export function SpineWorld() {
     observer.observe(element);
     return () => observer.disconnect();
   }, [ready]);
+
+  useEffect(() => {
+    const stage = document.getElementById("spine-stage");
+    if (!stage) return;
+    if (ready && active && !reducedMotion) {
+      stage.dataset.glass = "true";
+    } else {
+      delete stage.dataset.glass;
+    }
+    return () => {
+      delete stage.dataset.glass;
+    };
+  }, [ready, active, reducedMotion]);
 
   if (!ready || !active || reducedMotion) {
     return <div className="spine-fallback" aria-hidden="true" />;
