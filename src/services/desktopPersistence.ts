@@ -82,7 +82,7 @@ export function defaultDesktopLayoutNames(): DesktopLayoutNames {
 }
 export function validateDesktopLayoutName(value: string): string {
   const name = value.trim();
-  if (!name || name.length > 32 || /[\u0000-\u001F\u007F]/.test(name))
+  if (!name || name.length > 32 || Array.from(name).some((char) => char.charCodeAt(0) < 32 || char.charCodeAt(0) === 127))
     throw new Error("Nome do layout deve ter de 1 a 32 caracteres, sem controles.");
   return name;
 }
