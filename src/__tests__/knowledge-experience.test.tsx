@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen } from "@testing-library/react";
-import KnowledgeExperience, { arrangeOrbitSkills } from "../components/KnowledgeExperience";
+import KnowledgeExperience from "../components/KnowledgeExperience";
+import { arrangeOrbitSkills } from "../services/knowledgeOrbit";
 import { KNOWLEDGE_NODES, type KnowledgeProjectId } from "../data/knowledge";
 import type { KnowledgeSelection } from "../components/KnowledgeWorld";
 
