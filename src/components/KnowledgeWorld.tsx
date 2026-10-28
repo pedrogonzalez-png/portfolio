@@ -82,23 +82,26 @@ const lensFragment = [
   "varying vec3 vViewDirection;",
   "void main() {",
   "  vec2 p = vUv - 0.5;",
+  "  vec2 q = abs(p) - vec2(0.458);",
+  "  float roundedDistance = length(max(q, 0.0)) + min(max(q.x, q.y), 0.0) - 0.042;",
+  "  float alpha = 1.0 - smoothstep(-0.006, 0.006, roundedDistance);",
+  "  if (alpha <= 0.001) discard;",
   "  float side = min(min(vUv.x, 1.0-vUv.x), min(vUv.y, 1.0-vUv.y));",
-  "  float rim = 1.0 - smoothstep(0.008, 0.092, side);",
+  "  float rim = 1.0 - smoothstep(0.0, 0.075, side);",
   "  float fresnel = pow(1.0 - abs(dot(normalize(vViewNormal), normalize(vViewDirection))), 2.3);",
-  "  vec2 bend = -p*(0.009 + rim*0.028) + vViewNormal.xy*0.006;",
-  "  bend += vec2(sin(vUv.y*15.0 + uTime*0.22), cos(vUv.x*11.0 - uTime*0.19))*0.0015;",
+  "  vec2 bend = -p * (0.004 + rim * 0.010);",
+  "  bend += vec2(sin(vUv.y * 11.0 + uTime * 0.15), cos(vUv.x * 9.0 - uTime * 0.11)) * 0.0006;",
   "  vec2 uv = clamp(gl_FragCoord.xy/uResolution + bend, vec2(0.002), vec2(0.998));",
-  "  vec2 dispersion = normalize(p+vec2(0.001))*rim*(0.0028 + 0.0012*uFocus);",
-  "  float r = texture2D(uBackdrop, clamp(uv + dispersion, vec2(0.002), vec2(0.998))).r;",
+  "  vec2 dispersion = normalize(p + vec2(0.0001)) * rim * (0.00045 + 0.00045*uFocus);",
+  "  float r = texture2D(uBackdrop, clamp(uv+dispersion, vec2(0.002), vec2(0.998))).r;",
   "  float g = texture2D(uBackdrop, uv).g;",
-  "  float b = texture2D(uBackdrop, clamp(uv - dispersion, vec2(0.002), vec2(0.998))).b;",
+  "  float b = texture2D(uBackdrop, clamp(uv-dispersion, vec2(0.002), vec2(0.998))).b;",
   "  vec3 refracted = vec3(r,g,b);",
-  "  // A faint color cast is physically plausible; never replace the image by a brown slab.",
-  "  refracted = mix(refracted, refracted*uTint, 0.055);",
-  "  float glint = pow(max(0.0, 1.0-abs(vUv.x*0.8+vUv.y*0.6-0.54)), 52.0)*0.058;",
-  "  float edgeLight = rim*(0.07+uFocus*0.085) + fresnel*0.19;",
-  "  vec3 color = refracted + vec3(0.87,0.85,0.96)*glint + uTint*edgeLight;",
-  "  gl_FragColor = vec4(color, 0.98);",
+  "  refracted = mix(refracted, refracted * uTint, 0.028);",
+  "  float highlight = pow(max(0.0, 1.0-abs(vUv.x*0.8+vUv.y*0.6-0.54)), 58.0)*0.035;",
+  "  float edgeLight = rim*(0.035+uFocus*0.055) + fresnel*0.09;",
+  "  vec3 color = refracted + vec3(0.91,0.93,1.0)*highlight + uTint*edgeLight;",
+  "  gl_FragColor = vec4(color, alpha * 0.965);",
   "}",
 ].join("\n");
 
@@ -234,9 +237,21 @@ function Lens({
     ...uniforms,
     uFocus: { value: focus ? 1 : 0 },
   }), [focus, uniforms]);
+
   return (
-    <group position={p} rotation={[0.015, turn, 0]}>
-      <RoundedBox args={[width, height, 0.2]} radius={0.15} smoothness={5}>
+    <group position={p} rotation={[0, turn, 0]}>
+      {/* The thick beveled body gives depth. Its color must not obscure the lens. */}
+      <RoundedBox args={[width, height, 0.15]} radius={0.12} smoothness={4}>
+        <meshBasicMaterial
+          color={theme.palette.accentYellow}
+          opacity={focus ? 0.055 : 0.034}
+          transparent
+          depthWrite={false}
+        />
+      </RoundedBox>
+      {/* Refraction only on the front face. Sampling the box's sides caused RGB streaks. */}
+      <mesh position={[0, 0, 0.081]} renderOrder={2}>
+        <planeGeometry args={[width, height]} />
         <shaderMaterial
           vertexShader={lensVertex}
           fragmentShader={lensFragment}
@@ -244,14 +259,10 @@ function Lens({
           transparent
           depthWrite={false}
         />
-      </RoundedBox>
-      <mesh position={[0, height * 0.468, 0.118]}>
-        <planeGeometry args={[width * 0.73, 0.008]} />
-        <meshBasicMaterial color="#fff5e2" opacity={focus ? 0.56 : 0.22} transparent depthWrite={false} />
       </mesh>
-      <mesh position={[0, -height * 0.465, 0.118]}>
-        <planeGeometry args={[width * 0.51, 0.006]} />
-        <meshBasicMaterial color={theme.palette.accentRed} opacity={0.28} transparent depthWrite={false} />
+      <mesh position={[0, height * 0.474, 0.084]} renderOrder={3}>
+        <planeGeometry args={[width * 0.58, 0.007]} />
+        <meshBasicMaterial color="#f7f1e9" opacity={focus ? 0.29 : 0.15} transparent depthWrite={false} />
       </mesh>
     </group>
   );
@@ -333,33 +344,6 @@ function SharedGlass({ skillPositions, activeSkill }: Pick<KnowledgeWorldProps, 
   );
 }
 
-function CameraDrift() {
-  const pointer = useRef(new Vector2());
-  const target = useRef(new Vector2());
-  useEffect(() => {
-    const move = (event: PointerEvent) => {
-      const stage = document.getElementById("knowledge-spatial-stage");
-      if (!stage) return;
-      const rect = stage.getBoundingClientRect();
-      if (!rect.width || !rect.height) return;
-      target.current.set(
-        (event.clientX - rect.left) / rect.width * 2 - 1,
-        1 - (event.clientY - rect.top) / rect.height * 2,
-      ).clampScalar(-1, 1);
-    };
-    window.addEventListener("pointermove", move, { passive: true });
-    return () => window.removeEventListener("pointermove", move);
-  }, []);
-  useFrame(({ camera }, delta) => {
-    const ease = 1 - Math.exp(-1.4 * Math.min(delta, 0.06));
-    pointer.current.lerp(target.current, ease);
-    camera.position.x += (pointer.current.x * 0.055 - camera.position.x) * ease;
-    camera.position.y += (pointer.current.y * 0.035 - camera.position.y) * ease;
-    camera.lookAt(0, 0, 0);
-  });
-  return null;
-}
-
 export default function KnowledgeWorld(props: KnowledgeWorldProps) {
   return (
     <Canvas
@@ -375,7 +359,6 @@ export default function KnowledgeWorld(props: KnowledgeWorldProps) {
       <FlowingLight />
       <OpticalDust />
       <SharedGlass skillPositions={props.skillPositions} activeSkill={props.activeSkill} />
-      <CameraDrift />
     </Canvas>
   );
 }
