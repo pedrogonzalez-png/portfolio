@@ -1,0 +1,59 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@300;500;700&display=swap');
+
+:root {
+  /* Semânticos derivados de changli.json (escuro) */
+  --color-bg: #110A0B;
+  --color-surface: #1A0F10;
+  --color-surface-container: #302020;
+  --color-surface-high: #3A2020;
+  --color-text: #F7E7D8;
+  --color-text-variant: #D7B7A5;
+  --color-outline: #BC8D77;
+  --color-accent-primary: #C96A42;
+  --color-accent-red: #E17F72;
+  --color-accent-yellow: #E3B37A;
+
+  /* Tipografia */
+  --font-body: 'Inter', system-ui, sans-serif;
+  --font-display: 'Space Grotesk', system-ui, sans-serif;
+
+  /* Espaçamento base */
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 2rem;
+  --space-xl: 3.5rem;
+
+  /* Radial de referência (não copiado de site externo) */
+  --radius-sm: 0.45rem;
+  --radius-md: 0.75rem;
+  --radius-xl: 1.5rem;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  line-height: 1.55;
+  min-height: 100vh;
+}
+
+/* Fallback de acessibilidade: conteúdo sempre visível mesmo sem WebGL */
+.visually-hidden-visible {
+  position: static !important;
+  width: auto !important;
+  height: auto !important;
+  overflow: visible !important;
+}

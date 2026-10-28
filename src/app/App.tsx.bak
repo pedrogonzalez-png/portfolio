@@ -1,0 +1,14 @@
+import "./globals.css";
+import { ThemeProvider } from "../stores/ThemeProvider";
+import { AccessibilityProvider } from "../components/AccessibilityProvider";
+import { HomePage } from "./pages";
+
+export default function App() {
+  return (
+    <ThemeProvider>
+      <AccessibilityProvider>
+        <HomePage />
+      </AccessibilityProvider>
+    </ThemeProvider>
+  );
+}
