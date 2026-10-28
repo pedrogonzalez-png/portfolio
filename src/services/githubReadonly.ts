@@ -56,7 +56,7 @@ export function resolveRepo(input: string) {
 }
 
 export function normalizeRepoPath(current: string, requested: string): string {
-  if (requested.includes("\\") || /[\u0000-\u001f\u007f]/.test(requested) || requested.includes("://")) {
+  if (requested.includes("\\") || Array.from(requested).some((character) => character.charCodeAt(0) < 32 || character.charCodeAt(0) === 127) || requested.includes("://")) {
     throw new Error("Caminho inválido.");
   }
   const clean = requested.trim();
