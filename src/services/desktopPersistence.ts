@@ -3,8 +3,8 @@ import type { DesktopPosition } from "./desktopElements";
 
 /**
  * Desktop image bytes are stored entirely inside the visitor's browser.
- * This is one intentionally simple global preview layout, not wallpaper-
- * or monitor-specific layout versioning (planned in a later milestone).
+ * Four independent browser-only layout slots. The original "default" record
+ * remains readable without migrating or deleting any existing image Blobs.
  */
 export type DesktopScreenMode = "ultrawide" | "standard";
 export interface StoredDesktopCard {
@@ -24,7 +24,19 @@ export interface StoredDesktopLayout {
 
 const DATABASE = "portfolio-theme-studio-desktop-v1";
 const STORE = "layouts";
-const KEY = "default";
+export const DESKTOP_LAYOUT_SLOTS = [
+  { id: "default", label: "Principal" },
+  { id: "layout-2", label: "Layout 2" },
+  { id: "layout-3", label: "Layout 3" },
+  { id: "layout-4", label: "Layout 4" },
+] as const;
+export type DesktopLayoutSlot = (typeof DESKTOP_LAYOUT_SLOTS)[number]["id"];
+function ensureSlot(slot: string): DesktopLayoutSlot {
+  if (!DESKTOP_LAYOUT_SLOTS.some((entry) => entry.id === slot)) {
+    throw new Error("Slot de layout não autorizado.");
+  }
+  return slot as DesktopLayoutSlot;
+}
 const VERSION = 1;
 const VALID_MIME = new Set(["image/png", "image/jpeg", "image/webp"]);
 
@@ -83,7 +95,8 @@ function openDatabase(): Promise<IDBDatabase> {
   });
 }
 
-export async function readDesktopLayout(): Promise<StoredDesktopLayout | null> {
+export async function readDesktopLayout(slot: DesktopLayoutSlot = "default"): Promise<StoredDesktopLayout | null> {
+  const key = ensureSlot(slot);
   const db = await openDatabase();
   return new Promise((resolve, reject) => {
     let settled = false;
@@ -92,7 +105,7 @@ export async function readDesktopLayout(): Promise<StoredDesktopLayout | null> {
     };
     try {
       const transaction = db.transaction(STORE, "readonly");
-      const request = transaction.objectStore(STORE).get(KEY);
+      const request = transaction.objectStore(STORE).get(key);
       request.onsuccess = () => {
         if (settled) return;
         const result: unknown = request.result;
@@ -111,7 +124,8 @@ export async function readDesktopLayout(): Promise<StoredDesktopLayout | null> {
   });
 }
 
-export async function writeDesktopLayout(layout: StoredDesktopLayout): Promise<void> {
+export async function writeDesktopLayout(layout: StoredDesktopLayout, slot: DesktopLayoutSlot = "default"): Promise<void> {
+  const key = ensureSlot(slot);
   if (!isStoredDesktopLayout(layout)) throw new Error("Organização inválida. Nada foi salvo.");
   const db = await openDatabase();
   return new Promise((resolve, reject) => {
@@ -124,7 +138,7 @@ export async function writeDesktopLayout(layout: StoredDesktopLayout): Promise<v
     };
     try {
       const transaction = db.transaction(STORE, "readwrite");
-      transaction.objectStore(STORE).put(layout, KEY);
+      transaction.objectStore(STORE).put(layout, key);
       transaction.oncomplete = () => { db.close(); if (!settled) { settled = true; resolve(); } };
       transaction.onerror = () => { db.close(); fail(); };
       transaction.onabort = () => { db.close(); fail(); };

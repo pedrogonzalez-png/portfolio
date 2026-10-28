@@ -3,9 +3,10 @@ import type { KeyboardEvent, PointerEvent, ReactNode } from "react";
 import { moveDesktopPosition, positionWithinDesktop } from "../../services/desktopElements";
 import type { DesktopPosition } from "../../services/desktopElements";
 
-export function DesktopMovable({ position, onMove, label, onRemove, children, areaRef }: {
+export function DesktopMovable({ position, onMove, onMoveStart, label, onRemove, children, areaRef }: {
   position: DesktopPosition;
   onMove: (position: DesktopPosition) => void;
+  onMoveStart?: () => void;
   label: string;
   onRemove: () => void;
   children: ReactNode;
@@ -21,6 +22,7 @@ export function DesktopMovable({ position, onMove, label, onRemove, children, ar
     const rect = areaRef.current.getBoundingClientRect();
     if (!rect.width || !rect.height) return;
     event.preventDefault();
+    onMoveStart?.();
     dragRef.current = {
       pointer: event.pointerId, clientX: event.clientX, clientY: event.clientY,
       origin: position, width: rect.width, height: rect.height,
@@ -43,9 +45,11 @@ export function DesktopMovable({ position, onMove, label, onRemove, children, ar
     }
   };
   const onKeyDown = (event: KeyboardEvent<HTMLButtonElement>) => {
-    if (!event.key.startsWith("Arrow")) return;
+    const next = moveDesktopPosition(position, event.key, event.shiftKey ? 5 : 2);
+    if (next === position || (next.x === position.x && next.y === position.y)) return;
     event.preventDefault();
-    onMove(moveDesktopPosition(position, event.key, event.shiftKey ? 5 : 2));
+    onMoveStart?.();
+    onMove(next);
   };
 
   return (

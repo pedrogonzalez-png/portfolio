@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import type { ChangeEvent } from "react";
+import type { ChangeEvent, KeyboardEvent } from "react";
 import { DesktopClockWidget } from "./desktop/DesktopClockWidget";
 import { DesktopCharacterCard } from "./desktop/DesktopCharacterCard";
 import { DesktopMovable } from "./desktop/DesktopMovable";
@@ -8,9 +8,13 @@ import {
 } from "../services/desktopElements";
 import type { ThemePalette } from "../stores/themes";
 import {
-  readDesktopLayout, writeDesktopLayout,
+  DESKTOP_LAYOUT_SLOTS, readDesktopLayout, writeDesktopLayout,
 } from "../services/desktopPersistence";
-import type { StoredDesktopLayout, DesktopScreenMode } from "../services/desktopPersistence";
+import type { StoredDesktopLayout, DesktopScreenMode, DesktopLayoutSlot } from "../services/desktopPersistence";
+import {
+  checkpointPositions, emptyPositionHistory, redoPositions, snapshotPositions, undoPositions,
+} from "../services/desktopHistory";
+import type { PositionSnapshot } from "../services/desktopHistory";
 
 type DesktopPanel = "inicio" | "paleta" | "sobre";
 
@@ -32,6 +36,8 @@ export function SimulatedDesktop({ palette, themeName }: {
   const editedRef = useRef(false);
   const revisionRef = useRef(0);
   const [storageBusy, setStorageBusy] = useState(false);
+  const [activeSlot, setActiveSlot] = useState<DesktopLayoutSlot>("default");
+  const [history, setHistory] = useState(emptyPositionHistory);
   const [storageLoading, setStorageLoading] = useState(true);
   const [storageStatus, setStorageStatus] = useState("Buscando organização salva no navegador...");
 
@@ -39,6 +45,50 @@ export function SimulatedDesktop({ palette, themeName }: {
     editedRef.current = true;
     revisionRef.current += 1;
     setStorageStatus("Alterações não salvas. Use Salvar organização para manter os elementos.");
+  };
+
+  const checkpoint = () => {
+    const before = snapshotPositions(clockPosition, cards);
+    setHistory((current) => checkpointPositions(current, before));
+  };
+
+  const restorePositions = (snapshot: PositionSnapshot) => {
+    setClockPosition({ ...snapshot.clock });
+    const positions = new Map(snapshot.cards.map((item) => [item.id, item.position]));
+    setCards((current) => current.map((item) => {
+      const position = positions.get(item.id);
+      return position ? { ...item, position: { ...position } } : item;
+    }));
+    markEdited();
+  };
+
+  const undo = () => {
+    const result = undoPositions(history, snapshotPositions(clockPosition, cards));
+    if (!result.snapshot) return;
+    setHistory(result.history);
+    restorePositions(result.snapshot);
+  };
+  const redo = () => {
+    const result = redoPositions(history, snapshotPositions(clockPosition, cards));
+    if (!result.snapshot) return;
+    setHistory(result.history);
+    restorePositions(result.snapshot);
+  };
+
+  const clearPositionHistory = () => setHistory(emptyPositionHistory());
+
+  const resetEmptySlot = () => {
+    for (const url of urlsRef.current) URL.revokeObjectURL(url);
+    urlsRef.current.clear();
+    mediaRef.current.clear();
+    setCards([]);
+    setClockVisible(false);
+    setClockPosition({ x: 62, y: 7 });
+    setScreenMode("ultrawide");
+    clearPositionHistory();
+    editedRef.current = false;
+    revisionRef.current += 1;
+    setImageError("");
   };
 
   const applySnapshot = (layout: StoredDesktopLayout) => {
@@ -61,6 +111,7 @@ export function SimulatedDesktop({ palette, themeName }: {
     setClockVisible(layout.clockVisible);
     setClockPosition({ ...layout.clockPosition });
     setScreenMode(layout.screenMode);
+    clearPositionHistory();
     editedRef.current = false;
     revisionRef.current += 1;
     setImageError("");
@@ -109,7 +160,7 @@ export function SimulatedDesktop({ palette, themeName }: {
         screenMode, clockVisible, clockPosition: { ...clockPosition },
         cards: storedCards, savedAt: Date.now(),
       };
-      await writeDesktopLayout(layout);
+      await writeDesktopLayout(layout, activeSlot);
       if (!aliveRef.current) return;
       if (revision !== revisionRef.current) {
         setStorageStatus("Organização anterior salva; houve novas alterações. Salve novamente.");
@@ -131,16 +182,63 @@ export function SimulatedDesktop({ palette, themeName }: {
     setStorageBusy(true);
     setStorageStatus("Recuperando última organização salva...");
     try {
-      const layout = await readDesktopLayout();
+      const layout = await readDesktopLayout(activeSlot);
       if (!aliveRef.current) return;
       if (layout) applySnapshot(layout);
-      else setStorageStatus("Nenhuma organização salva neste navegador.");
+      else {
+        resetEmptySlot();
+        setStorageStatus("Layout vazio restaurado. Nenhuma organização salva neste slot.");
+      }
     } catch (cause) {
       if (aliveRef.current) setStorageStatus(
         cause instanceof Error ? cause.message : "Falha ao recuperar a organização.",
       );
     } finally {
       if (aliveRef.current) setStorageBusy(false);
+    }
+  };
+
+  const switchSlot = async (slot: DesktopLayoutSlot) => {
+    if (slot === activeSlot || storageBusy || storageLoading) return;
+    if (editedRef.current) {
+      setStorageStatus("Salve ou restaure as alterações atuais antes de trocar de layout.");
+      return;
+    }
+    setStorageBusy(true);
+    setStorageStatus("Carregando " + DESKTOP_LAYOUT_SLOTS.find((item) => item.id === slot)?.label + "...");
+    const originalRevision = revisionRef.current;
+    try {
+      const layout = await readDesktopLayout(slot);
+      if (!aliveRef.current) return;
+      if (editedRef.current || originalRevision !== revisionRef.current) {
+        setStorageStatus("Houve alterações enquanto o layout carregava. Troca cancelada.");
+        return;
+      }
+      if (layout) applySnapshot(layout);
+      else {
+        resetEmptySlot();
+        setStorageStatus("Layout vazio. Monte sua organização e clique em Salvar.");
+      }
+      setActiveSlot(slot);
+    } catch (cause) {
+      if (aliveRef.current) setStorageStatus(
+        cause instanceof Error ? cause.message : "Falha ao carregar outro layout.",
+      );
+    } finally {
+      if (aliveRef.current) setStorageBusy(false);
+    }
+  };
+
+  const handleKeyboard = (event: KeyboardEvent<HTMLElement>) => {
+    if (!(event.ctrlKey || event.metaKey) || event.altKey) return;
+    const target = event.target;
+    if (target instanceof HTMLElement &&
+        target.closest("input,textarea,select,[contenteditable='true']")) return;
+    const key = event.key.toLowerCase();
+    if (key === "z" || key === "y") {
+      event.preventDefault();
+      if (key === "y" || event.shiftKey) redo();
+      else undo();
     }
   };
 
@@ -168,6 +266,7 @@ export function SimulatedDesktop({ palette, themeName }: {
       }
       if (created.length) {
         setCards((current) => [...current, ...created]);
+        clearPositionHistory();
         markEdited();
       }
     } catch {
@@ -187,6 +286,7 @@ export function SimulatedDesktop({ palette, themeName }: {
     mediaRef.current.delete(id);
     URL.revokeObjectURL(card.url);
     setCards((current) => current.filter((item) => item.id !== id));
+    clearPositionHistory();
     markEdited();
   };
 
@@ -197,7 +297,7 @@ export function SimulatedDesktop({ palette, themeName }: {
   ] as const;
 
   return (
-    <section className="theme-desktop-section" aria-label="Desktop simulado">
+    <section className="theme-desktop-section" aria-label="Desktop simulado" onKeyDown={handleKeyboard}>
       <header className="theme-desktop-controls">
         <div>
           <h3>Desktop simulado</h3>
@@ -211,7 +311,7 @@ export function SimulatedDesktop({ palette, themeName }: {
         </div>
       </header>
       <div className="theme-desktop-element-tools" aria-label="Inserir elementos no desktop">
-        <button type="button" onClick={() => { setClockVisible((current) => !current); markEdited(); }}>
+        <button type="button" onClick={() => { setClockVisible((current) => !current); clearPositionHistory(); markEdited(); }}>
           {clockVisible ? "Remover relógio" : "Adicionar relógio digital"}
         </button>
         <label className="theme-desktop-import">
@@ -222,6 +322,21 @@ export function SimulatedDesktop({ palette, themeName }: {
         <small>Widgets e cards são elementos diferentes. Mova arrastando a alça ou com as setas.</small>
       </div>
       {imageError && <p role="alert" className="theme-desktop-import-error">{imageError}</p>}
+      <div className="theme-desktop-layout-picker">
+        <label htmlFor="desktop-layout-select">Organização do desktop</label>
+        <select id="desktop-layout-select" aria-label="Organização do desktop"
+          value={activeSlot} disabled={storageLoading || storageBusy}
+          onChange={(event) => void switchSlot(event.target.value as DesktopLayoutSlot)}>
+          {DESKTOP_LAYOUT_SLOTS.map((slot) =>
+            <option key={slot.id} value={slot.id}>{slot.label}</option>)}
+        </select>
+        <span>Quatro organizações locais independentes. A Principal mantém seu salvamento anterior.</span>
+      </div>
+      <div className="theme-desktop-undo-tools" aria-label="Desfazer e refazer posições">
+        <button type="button" onClick={undo} disabled={!history.past.length}>↶ Desfazer movimento</button>
+        <button type="button" onClick={redo} disabled={!history.future.length}>↷ Refazer movimento</button>
+        <span>Ctrl+Z / Ctrl+Shift+Z. Até 30 movimentos por sessão.</span>
+      </div>
       <div className="theme-desktop-save-tools" aria-label="Salvar e recuperar organização">
         <button type="button" onClick={() => void saveOrganization()}
           disabled={storageLoading || storageBusy}>
@@ -234,8 +349,9 @@ export function SimulatedDesktop({ palette, themeName }: {
         <p role="status" aria-live="polite">{storageStatus}</p>
       </div>
       <p className="theme-desktop-session-note">
-        Imagens, relógio e posições só persistem após Salvar organização (IndexedDB local).
-        Restaurar substitui alterações não salvas. Dados ficam neste navegador, sem envio ao servidor;
+        Cada organização é salva separadamente no IndexedDB local. Para trocar de layout, salve
+        ou restaure as alterações atuais. Desfazer/refazer cobre apenas posições e é temporário.
+        Restaurar substitui alterações não salvas. Nada é enviado ao servidor;
         limpar os dados do site pode apagá-los.
       </p>
       {!portraitConfirmed && (
@@ -315,7 +431,7 @@ export function SimulatedDesktop({ palette, themeName }: {
               {panel === "sobre" && (
                 <div className="theme-desktop-about">
                   <strong>Uma base para o futuro editor</strong>
-                  <p>Nesta prévia, o relógio local e os cards importados podem ser salvos no IndexedDB do navegador com suas posições. Wallpapers pessoais, múltiplos layouts por resolução, mais widgets e agrupamentos ainda não estão implementados.</p>
+                  <p>Nesta prévia há quatro organizações locais independentes, com imagens e posições no IndexedDB. Desfazer e refazer movimentos funciona durante a sessão. Wallpapers pessoais, layouts vinculados a wallpaper, mais widgets e agrupamentos ainda não estão implementados.</p>
                   <p>Trocar as abas da prévia não modifica nem salva o seu tema.</p>
                 </div>
               )}
@@ -324,17 +440,17 @@ export function SimulatedDesktop({ palette, themeName }: {
           <div className="theme-desktop-elements-layer" ref={areaRef}
             aria-label="Elementos posicionáveis do desktop simulado">
             {clockVisible && (
-              <DesktopMovable position={clockPosition} onMove={(next) => {
+              <DesktopMovable position={clockPosition} onMoveStart={checkpoint} onMove={(next) => {
                   setClockPosition(next);
                   markEdited();
                 }}
-                label="relógio digital" onRemove={() => { setClockVisible(false); markEdited(); }}
+                label="relógio digital" onRemove={() => { setClockVisible(false); clearPositionHistory(); markEdited(); }}
                 areaRef={areaRef}>
                 <DesktopClockWidget palette={palette} />
               </DesktopMovable>
             )}
             {cards.map((card) => (
-              <DesktopMovable key={card.id} position={card.position}
+              <DesktopMovable key={card.id} position={card.position} onMoveStart={checkpoint}
                 onMove={(position) => {
                   setCards((current) => current.map((item) =>
                     item.id === card.id ? { ...item, position } : item));
@@ -356,7 +472,7 @@ export function SimulatedDesktop({ palette, themeName }: {
         </div>
       </div>
       <p className="theme-desktop-footnote">
-        Relógio com horário local real; imagens e posições podem ser salvas localmente via IndexedDB. Não há upload, dados fictícios de hardware ou execução de QML.
+        Relógio com horário local real; até quatro layouts locais com imagens e posições no IndexedDB. Sem upload, dados fictícios de hardware ou execução de QML.
       </p>
     </section>
   );
