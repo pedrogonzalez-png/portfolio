@@ -1,12 +1,30 @@
+import { lazy, Suspense, useCallback, useEffect, useState } from "react";
 import { Route, Routes } from "react-router-dom";
 import { TopMenu } from "../components/TopMenu";
 import { ProjectPanel } from "../components/ProjectPanel";
 import SceneIntegration from "../components/SceneIntegration";
 
+const Terminal = lazy(() => import("../components/Terminal").then((module) => ({ default: module.Terminal })));
+
 function HomePage() {
+  const [terminalOpen, setTerminalOpen] = useState(false);
+  const openTerminal = useCallback(() => setTerminalOpen(true), []);
+  const closeTerminal = useCallback(() => setTerminalOpen(false), []);
+
+  useEffect(() => {
+    const shortcut = (event: KeyboardEvent) => {
+      if ((event.ctrlKey || event.metaKey) && event.code === "Backquote") {
+        event.preventDefault();
+        setTerminalOpen((current) => !current);
+      }
+    };
+    window.addEventListener("keydown", shortcut);
+    return () => window.removeEventListener("keydown", shortcut);
+  }, []);
+
   return (
     <>
-      <TopMenu />
+      <TopMenu onOpenTerminal={openTerminal} />
       <main className="site-main">
         <section id="inicio" className="hero" aria-label="Apresentação">
           <div className="hero-content">
@@ -47,6 +65,11 @@ function HomePage() {
           <div className="about-orbit" aria-hidden="true"><span>DESIGN</span><span>CODE</span><span>LINUX</span></div>
         </section>
       </main>
+      {terminalOpen && (
+        <Suspense fallback={<div role="status">Carregando terminal...</div>}>
+          <Terminal onClose={closeTerminal} />
+        </Suspense>
+      )}
       <footer className="site-footer">
         <span>PORTFÓLIO / CHANGLI</span>
         <span>Protótipo em desenvolvimento — sem demos publicadas</span>
