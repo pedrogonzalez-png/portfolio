@@ -337,3 +337,108 @@
   .cinematic-panel-reflection { display: none; }
   .cinematic-panel:is(:hover,:focus-visible) .cinematic-panel-hero { transform: translateY(-50%); }
 }
+
+
+/* Real glass presentation layer.
+   The THREE.MeshPhysicalMaterial plates refract the WebGL spine behind these
+   transparent interactive HTML surfaces. CSS is an accessible fallback only. */
+.spine-stage .immersive-panels .cinematic-panel {
+  background:
+    linear-gradient(148deg, rgba(244, 207, 223, .105), transparent 35%, rgba(91, 40, 67, .08) 82%),
+    rgba(39, 26, 49, .13);
+  border: 1px solid rgba(255, 226, 234, .59);
+  box-shadow:
+    inset 0 2px 1px rgba(255, 249, 251, .38),
+    inset 3px 0 13px rgba(255, 216, 239, .16),
+    inset -4px -4px 19px rgba(129, 56, 97, .2),
+    0 20px 72px rgba(8, 3, 17, .20);
+  backdrop-filter: blur(3px) saturate(1.15);
+  -webkit-backdrop-filter: blur(3px) saturate(1.15);
+}
+
+.spine-stage .immersive-panels .cinematic-panel::before {
+  background:
+    radial-gradient(ellipse 95% 110% at var(--light-x) var(--light-y), rgba(255, 245, 250, .23), rgba(249, 204, 231, .06) 34%, transparent 75%),
+    linear-gradient(132deg, rgba(255, 250, 255, .22), transparent 21%, transparent 82%, rgba(239, 193, 236, .17));
+  mix-blend-mode: screen;
+  opacity: .92;
+}
+
+.spine-stage .immersive-panels .cinematic-panel::after {
+  inset: 2px;
+  border: 1px solid rgba(255, 235, 249, .24);
+  box-shadow:
+    inset 0 0 15px rgba(250, 230, 246, .055),
+    inset 0 -8px 24px rgba(163, 83, 124, .13);
+}
+
+.spine-stage .immersive-panels .cinematic-panel-visual {
+  opacity: .53;
+  mix-blend-mode: screen;
+}
+.spine-stage .immersive-panels .cinematic-panel-visual .card-artwork svg {
+  filter: blur(2.4px) saturate(.76) contrast(.88);
+  opacity: .77;
+}
+.spine-stage .immersive-panels .cinematic-panel:hover .cinematic-panel-visual {
+  opacity: .70;
+}
+.spine-stage .immersive-panels .cinematic-panel:hover .card-artwork svg {
+  filter: blur(1.25px) saturate(.95);
+}
+.spine-stage .immersive-panels .cinematic-panel-visual::after {
+  background:
+    radial-gradient(ellipse at 50% 40%, rgba(180, 122, 160, .08), transparent 65%),
+    linear-gradient(180deg, rgba(16, 10, 29, .16), transparent 31%, transparent 67%, rgba(19, 11, 25, .43));
+}
+.spine-stage .immersive-panels .cinematic-panel-reflection {
+  background: linear-gradient(
+    110deg,
+    transparent 30%,
+    rgba(255, 244, 254, .035) 37%,
+    rgba(255, 242, 254, .22) 47%,
+    rgba(255, 252, 255, .42) 49%,
+    rgba(253, 233, 250, .14) 52%,
+    transparent 67%
+  );
+}
+.spine-stage .immersive-panels .cinematic-panel:is(:hover, :focus-visible) {
+  border-color: rgba(255, 243, 252, .92);
+  box-shadow:
+    inset 0 2px 2px rgba(255, 248, 255, .57),
+    inset 0 0 36px rgba(255, 212, 242, .15),
+    0 28px 90px rgba(8, 3, 17, .32),
+    0 0 44px rgba(239, 168, 221, .13);
+}
+
+/* With working 3D refraction, avoid blurring away the actual refracted image.
+   The SVG remains a quiet illustration behind the title, not an opaque poster. */
+.spine-stage[data-glass="true"] .immersive-panels .cinematic-panel {
+  background: rgba(64, 33, 62, .045);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+.spine-stage[data-glass="true"] .immersive-panels .cinematic-panel-visual {
+  opacity: .37;
+}
+.spine-stage[data-glass="true"] .immersive-panels .cinematic-panel:hover .cinematic-panel-visual {
+  opacity: .53;
+}
+
+@media (max-width: 760px) {
+  .spine-stage .immersive-panels .cinematic-panel-visual { opacity: .67; }
+  .spine-stage .immersive-panels .cinematic-panel {
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    background: rgba(58, 29, 65, .19);
+  }
+  .spine-stage .immersive-panels .cinematic-panel:is(:hover, :focus-visible) {
+    transform: translateY(-5px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .spine-stage .immersive-panels .cinematic-panel-visual,
+  .spine-stage .immersive-panels .cinematic-panel:hover .cinematic-panel-visual {
+    opacity: .71;
+  }
+}
