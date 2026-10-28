@@ -1,10 +1,12 @@
 import { createContext, useContext } from "react";
-import type { Theme } from "./themes";
+import type { Theme, ThemePalette } from "./themes";
 
 export interface ThemeContextValue {
   theme: Theme;
   setTheme: (id: string) => void;
   availableThemes: readonly Theme[];
+  createCustomTheme: (baseId: string) => Theme;
+  saveCustomTheme: (id: string, name: string, palette: ThemePalette) => Theme;
 }
 
 export const ThemeContext = createContext<ThemeContextValue | null>(null);

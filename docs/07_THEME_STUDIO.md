@@ -151,3 +151,10 @@ Catálogo inicial, sujeito a comparação exata com o desktop/versão base:
 - Partículas do nome, iluminação, poeira e vidros agora usam cores da paleta, atualizadas sem desmontar o carrossel ou reiniciar as câmeras. Destaques CSS globais seguem os tokens.
 - Acesso à galeria pelo botão Temas e pelo detalhe Hyprland-Themes. Prévia é local; Aplicar confirma a troca. Os cinco oficiais permanecem imutáveis.
 - M4 continua IN_PROGRESS: duplicação e edição personalizada, auditoria visual de todos os tons/contrastes e teste manual no navegador. M5 (widgets/wallpapers) ainda não foi implementado.
+
+## M4 — segundo bloco: cópias pessoais + editor (28/10/2026)
+
+- Duplicar qualquer tema oficial ou cópia, sem alterar os originais. A nova cópia mantém SHA e identidade do JSON oficial de origem.
+- Editor simples: nome, três acentos, fundo, superfície e texto, com prévia isolada. **Salvar** persiste; **Aplicar** altera a aparência global. Editar o tema atualmente aplicado não o modifica até o usuário reaplicar, inclusive após recarregar.
+- Storage provisório de M4: localStorage para paletas pequenas, até 12 cópias, validando ID, origem, hex e integridade. Falha de armazenamento comunica erro sem marcar como salvo. IndexedDB para widgets, imagens e layouts segue reservado a M5/M6.
+- Os cinco oficiais permanecem imutáveis. Sem widgets, wallpaper e exportação nesta etapa. M4 ainda IN_PROGRESS até teste visual e auditoria de contraste.

@@ -6,3 +6,27 @@
 .theme-studio-footer{display:flex;justify-content:space-between;gap:1.5rem;align-items:end;margin-top:1.5rem}.theme-studio-disclaimer{display:flex;flex-direction:column;gap:.4rem;max-width:47ch}.theme-studio-disclaimer strong{font-size:.85rem}.theme-studio-disclaimer span{color:var(--color-text-variant);font-size:.7rem;line-height:1.5}.theme-studio-actions{display:flex;flex-wrap:wrap;gap:.55rem;justify-content:end}.theme-studio-actions button,.site-theme-button{border:1px solid var(--color-outline);color:var(--color-text);background:var(--color-surface-container);border-radius:999px;cursor:pointer;padding:.7rem 1rem;font-size:.78rem}.theme-studio-actions .theme-studio-apply,.site-theme-button{background:var(--color-accent-primary);color:var(--color-bg);font-weight:700;border-color:var(--color-accent-primary)}.theme-studio-actions button:disabled{opacity:.5;cursor:default}.site-theme-button:hover,.theme-studio-actions button:not(:disabled):hover{filter:brightness(1.12)}
 @media(max-width:820px){.theme-studio-gallery{grid-template-columns:repeat(3,minmax(0,1fr))}.theme-studio-option{min-height:176px}.theme-studio-preview{grid-template-columns:1fr 1fr}.theme-studio-footer{align-items:start;flex-direction:column}.theme-studio-actions{justify-content:start}}@media(max-width:520px){.theme-studio-dialog{border-radius:0;max-height:100dvh;height:100dvh}.theme-studio-backdrop{padding:0}.theme-studio-gallery{grid-template-columns:repeat(2,minmax(0,1fr))}.theme-studio-option{min-height:154px}.theme-studio-preview{grid-template-columns:1fr}.theme-preview-desktop{height:145px}.theme-studio-actions button{width:100%}.theme-studio-actions{width:100%}}
 @media(prefers-reduced-motion:reduce){.theme-studio-option,.theme-studio-preview{transition:none}.theme-studio-option:hover{transform:none}}
+
+
+/* M4 custom theme copies: a simple, friendly color editor. */
+.theme-studio-section-title{display:flex;align-items:baseline;gap:1rem;margin:1.3rem 0 .45rem;font:600 1.03rem var(--font-display);color:var(--color-text)}
+.theme-studio-section-title span{font:400 .7rem var(--font-body);color:var(--color-text-variant)}
+.theme-studio-gallery-custom{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));margin:.65rem 0 1.5rem}
+.theme-studio-editor{border:1px solid color-mix(in srgb,var(--color-outline) 55%,transparent);background:var(--color-surface);border-radius:15px;margin-top:1rem;padding:clamp(.9rem,2vw,1.35rem)}
+.theme-editor-heading{display:flex;align-items:baseline;justify-content:space-between;gap:.6rem;flex-wrap:wrap;margin-bottom:.85rem}
+.theme-editor-heading h3{font:600 1.08rem var(--font-display);margin:0;color:var(--color-text)}
+.theme-editor-heading>span{font-size:.62rem;letter-spacing:.08em;color:var(--color-accent-yellow)}
+.theme-editor-name{display:grid;gap:.35rem;max-width:440px;font-size:.76rem;color:var(--color-text-variant)}
+.theme-editor-name input{background:var(--color-bg);color:var(--color-text);border:1px solid var(--color-outline);border-radius:8px;min-height:44px;padding:.55rem .8rem;font:inherit}
+.theme-color-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.7rem;margin:1rem 0}
+.theme-color-control{display:flex;flex-direction:column;gap:.45rem;border:1px solid color-mix(in srgb,var(--color-outline) 28%,transparent);border-radius:10px;padding:.7rem;font-size:.72rem;color:var(--color-text)}
+.theme-color-input{display:flex;align-items:center;gap:.6rem;min-width:0}
+.theme-color-input input{border:0;background:transparent;cursor:pointer;width:45px;height:40px;padding:0;flex:none}
+.theme-color-input code{font:.75rem ui-monospace,monospace;color:var(--color-text-variant);white-space:nowrap}
+.theme-studio-save{padding:.65rem 1rem;border:1px solid var(--color-accent-primary);border-radius:999px;background:var(--color-accent-primary);color:var(--color-bg);font-size:.78rem;font-weight:700;cursor:pointer}
+.theme-studio-save:disabled{opacity:.45;cursor:not-allowed}
+.theme-studio-error,.theme-studio-notice{font-size:.71rem;line-height:1.5;margin:.4rem 0}
+.theme-studio-error{color:var(--color-accent-red)}.theme-studio-notice{color:var(--color-accent-yellow)}
+.theme-studio-editor button:focus-visible,.theme-studio-editor input:focus-visible{outline:2px solid var(--color-accent-yellow);outline-offset:3px}
+@media(max-width:700px){.theme-color-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:440px){.theme-studio-section-title{flex-direction:column;gap:.15rem}.theme-color-grid{grid-template-columns:1fr}.theme-studio-gallery-custom{grid-template-columns:repeat(2,minmax(0,1fr))}}
