@@ -199,15 +199,6 @@ function Lens({
           depthWrite={false}
         />
       </RoundedBox>
-      <RoundedBox args={[width + 0.045, height + 0.045, 0.205]} radius={0.15} smoothness={4}>
-        <meshBasicMaterial
-          color={theme.palette.accentYellow}
-          wireframe
-          opacity={focus ? 0.15 : 0.08}
-          transparent
-          depthWrite={false}
-        />
-      </RoundedBox>
       <mesh position={[0, height * 0.468, 0.118]}>
         <planeGeometry args={[width * 0.73, 0.008]} />
         <meshBasicMaterial color="#fff5e2" opacity={focus ? 0.56 : 0.22} transparent depthWrite={false} />
@@ -244,7 +235,7 @@ function AmbientRings() {
 /** One shared framebuffer for every lens; no render pass per card. */
 function SharedGlass({ skillPositions, activeSkill }: Pick<KnowledgeWorldProps, "skillPositions" | "activeSkill">) {
   const { theme } = useTheme();
-  const { gl, size, viewport } = useThree();
+  const { gl, size } = useThree();
   const dpr = gl.getPixelRatio();
   const bufferWidth = Math.max(1, Math.min(1400, Math.round(size.width * dpr)));
   const bufferHeight = Math.max(1, Math.min(900, Math.round(size.height * dpr)));
@@ -252,11 +243,11 @@ function SharedGlass({ skillPositions, activeSkill }: Pick<KnowledgeWorldProps, 
   const glassGroup = useRef<Group>(null);
   const uniforms = useMemo(() => ({
     uBackdrop: { value: target.texture },
-    uResolution: { value: new Vector2(bufferWidth, bufferHeight) },
+    uResolution: { value: new Vector2(Math.max(1,Math.round(size.width*dpr)), Math.max(1,Math.round(size.height*dpr))) },
     uTime: { value: 0 },
     uTint: { value: new Color(theme.palette.accentYellow) },
     uFocus: { value: 1 },
-  }), [target.texture, bufferWidth, bufferHeight, theme.palette.accentYellow]);
+  }), [target.texture, size.width, size.height, dpr, theme.palette.accentYellow]);
 
   useFrame(({ scene, camera, clock }) => {
     if (!glassGroup.current) return;
@@ -288,10 +279,6 @@ function SharedGlass({ skillPositions, activeSkill }: Pick<KnowledgeWorldProps, 
       {panes.map((pane, index) =>
         <Lens key={index} pane={pane} uniforms={uniforms} />,
       )}
-      <mesh position={[0, 0, -2.25]}>
-        <planeGeometry args={[viewport.width * 1.7, viewport.height * 1.5]} />
-        <meshBasicMaterial visible={false} />
-      </mesh>
     </group>
   );
 }
