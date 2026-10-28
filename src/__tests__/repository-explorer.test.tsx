@@ -78,6 +78,19 @@ describe("readonly GitHub explorer UI", () => {
     expect(onCloseTab).toHaveBeenCalledWith(opened.path);
   });
 
+  it("shows only provisional selected milestones separately from Git history", async () => {
+    const spy = vi.spyOn(github, "realGitLog").mockResolvedValue({ branch: "main", commits: [] });
+    try {
+      renderExplorer();
+      fireEvent.click(screen.getByRole("button", { name: "Histórico" }));
+      fireEvent.click(screen.getByRole("button", { name: "Marcos selecionados" }));
+      expect(screen.getByText(/ainda não foi aprovada pelo proprietário/)).toBeInTheDocument();
+      expect(screen.getByText("Contraste dos tiles ASCII")).toBeInTheDocument();
+      fireEvent.click(screen.getByRole("button", { name: "Histórico completo" }));
+      await waitFor(() => expect(screen.getByText(/Arestas só conectam SHAs/)).toBeInTheDocument());
+    } finally { spy.mockRestore(); }
+  });
+
   it("shows a real commit timeline without fabricated entries", async () => {
     const spy = vi.spyOn(github, "realGitLog").mockResolvedValue({
       branch: "main",

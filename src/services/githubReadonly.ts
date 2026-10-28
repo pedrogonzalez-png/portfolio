@@ -27,6 +27,7 @@ export interface CommitSummary {
   subject: string;
   author: string;
   date: string;
+  parents?: string[];
 }
 
 const API = "https://api.github.com";
@@ -235,6 +236,7 @@ export async function realGitLog(repoId: string, page = 1): Promise<{ commits: C
   const result = await cached("log:" + repo.id + ":" + snapshot.branch + ":" + page, () => getJson<Array<{
     sha: string;
     commit: { message: string; author: { name: string; date: string } | null };
+    parents?: { sha: string }[];
   }>>("/repos/" + repo.repoFullName + "/commits?sha=" + encodeURIComponent(snapshot.branch) + "&per_page=12&page=" + page));
   return {
     branch: snapshot.branch,
@@ -243,6 +245,7 @@ export async function realGitLog(repoId: string, page = 1): Promise<{ commits: C
       subject: item.commit.message.split("\n")[0],
       author: item.commit.author?.name ?? "Não informado",
       date: item.commit.author?.date ?? "Data não disponível",
+      parents: (item.parents ?? []).map((parent) => parent.sha).filter((sha) => /^[a-f0-9]{40}$/.test(sha)),
     })),
   };
 }

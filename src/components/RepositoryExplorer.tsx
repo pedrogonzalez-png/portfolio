@@ -4,6 +4,8 @@ import { SafeMarkdownPreview } from "./SafeMarkdownPreview";
 import type { RepoEntry, RepoSnapshot } from "../services/githubReadonly";
 import { directoryEntries, realGitLog, realGitShow } from "../services/githubReadonly";
 import type { CommitSummary } from "../services/githubReadonly";
+import { CommitGraph } from "./CommitGraph";
+import { technicalMilestonesForRepo } from "../services/gitMilestones";
 
 export type EditorTab = {
   path: string;
@@ -26,16 +28,19 @@ type Props = {
 
 const MAX_TREE_RENDER = 180;
 
-function GitTimeline({ repoId, branch }: { repoId: string; branch: string }) {
+function GitTimeline({ repoId, branch, repoFullName }: { repoId: string; branch: string; repoFullName: string }) {
   const [page, setPage] = useState(1);
   const [commits, setCommits] = useState<CommitSummary[]>([]);
+  const [mode, setMode] = useState<"full" | "milestones">("full");
   const [detail, setDetail] = useState<{ sha: string; output: string } | null>(null);
   const [busy, setBusy] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const milestones = technicalMilestonesForRepo(repoId);
 
-  useEffect(() => { setPage(1); setDetail(null); }, [repoId, branch]);
+  useEffect(() => { setPage(1); setMode("full"); setDetail(null); }, [repoId, branch]);
   useEffect(() => {
+    if (mode !== "full") return;
     let cancelled = false;
     setLoading(true);
     setError("");
@@ -44,11 +49,11 @@ function GitTimeline({ repoId, branch }: { repoId: string; branch: string }) {
     }).catch((cause: unknown) => {
       if (!cancelled) {
         setCommits([]);
-        setError(cause instanceof Error ? cause.message : "Erro ao buscar commits.");
+        setError(cause instanceof Error ? cause.message : "Erro ao consultar o GitHub.");
       }
     }).finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
-  }, [repoId, page]);
+  }, [repoId, page, mode]);
 
   const viewCommit = async (sha: string) => {
     if (busy) return;
@@ -58,35 +63,64 @@ function GitTimeline({ repoId, branch }: { repoId: string; branch: string }) {
       const output = await realGitShow(repoId, sha);
       setDetail({ sha, output });
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "Não foi possível carregar esse commit.");
-    } finally {
-      setBusy(false);
-    }
+      setError(cause instanceof Error ? cause.message : "Não foi possível carregar o commit.");
+    } finally { setBusy(false); }
   };
 
   return (
     <section className="explorer-timeline" aria-label="Histórico de commits">
-      <div className="explorer-panel-title">HISTÓRICO REAL <span>{branch} · página {page}</span></div>
-      <p className="explorer-help">Últimos commits do repositório selecionado, diretamente da API pública do GitHub. A lista é paginada, não curada.</p>
+      <div className="explorer-panel-title">
+        HISTÓRICO REAL <span>{branch} · {mode === "full" ? "página " + page : "seleção provisória"}</span>
+      </div>
+      <div className="git-mode-switch" role="group" aria-label="Tipo de histórico">
+        <button type="button" aria-pressed={mode === "full"} onClick={() => { setMode("full"); setDetail(null); }}>Histórico completo</button>
+        <button type="button" aria-pressed={mode === "milestones"} onClick={() => { setMode("milestones"); setDetail(null); }}>Marcos selecionados</button>
+      </div>
       {error && <p role="alert" className="terminal-error">{error}</p>}
-      {loading ? <p role="status">Consultando histórico...</p> : (
+      {mode === "milestones" ? (
         <>
-          <ul className="explorer-commits">
-            {commits.map((commit) => (
-              <li key={commit.sha}>
-                <button type="button" disabled={busy} onClick={() => void viewCommit(commit.sha)}>
-                  <code>{commit.sha.slice(0, 9)}</code>
-                  <span>{commit.subject}</span>
-                  <small>{commit.author} · {commit.date.slice(0, 10)}</small>
-                </button>
+          <p className="explorer-help">Candidatos técnicos selecionados por SHA e diff real. A seleção <strong>ainda não foi aprovada pelo proprietário</strong>.</p>
+          <ol className="git-milestones">
+            {milestones.map((item) => (
+              <li key={item.sha}>
+                <span className="git-milestone-type">{item.category}</span>
+                <strong>{item.title}</strong>
+                <p>{item.description}</p>
+                <div className="git-milestone-actions">
+                  <button type="button" disabled={busy} onClick={() => void viewCommit(item.sha)}>Ver diff · {item.sha.slice(0, 9)}</button>
+                  <a href={"https://github.com/" + repoFullName + "/commit/" + item.sha}
+                    target="_blank" rel="noopener noreferrer">Verificar no GitHub ↗</a>
+                </div>
               </li>
             ))}
-          </ul>
+          </ol>
+          {!milestones.length && <p>Nenhum marco selecionado para este repositório.</p>}
+        </>
+      ) : loading ? <p role="status">Consultando histórico...</p> : (
+        <>
+          <p className="explorer-help">Arestas só conectam SHAs pai/filho devolvidos pelo GitHub e presentes nesta página. Merges usam uma segunda trilha. Não são criadas ligações entre páginas incompletas.</p>
+          <div className="git-history-visual">
+            <CommitGraph commits={commits}/>
+            <ol className="explorer-commits">
+              {commits.map((commit) => (
+                <li key={commit.sha}>
+                  <button type="button" disabled={busy} onClick={() => void viewCommit(commit.sha)}>
+                    <code>{commit.sha.slice(0, 9)}</code>
+                    <span>{commit.subject}</span>
+                    <small>{commit.author} · {commit.date.slice(0, 10)}</small>
+                    {(commit.parents?.length ?? 0) > 1 && <small>Merge com {commit.parents?.length} pais</small>}
+                    {(commit.parents ?? []).some((sha) => !commits.some((candidate) => candidate.sha === sha)) &&
+                      <small>Pai fora desta página</small>}
+                  </button>
+                </li>
+              ))}
+            </ol>
+          </div>
           {!commits.length && <p>Nenhum commit disponível nesta página.</p>}
           <div className="explorer-pagination">
-            <button type="button" disabled={page === 1 || loading} onClick={() => { setPage((current) => current - 1); setDetail(null); }}>← Anterior</button>
+            <button type="button" disabled={page === 1 || loading} onClick={() => { setPage((value) => value - 1); setDetail(null); }}>← Anterior</button>
             <span>{page}</span>
-            <button type="button" disabled={commits.length < 12 || loading || page >= 10} onClick={() => { setPage((current) => current + 1); setDetail(null); }}>Próxima →</button>
+            <button type="button" disabled={commits.length < 12 || loading || page >= 10} onClick={() => { setPage((value) => value + 1); setDetail(null); }}>Próxima →</button>
           </div>
         </>
       )}
@@ -94,6 +128,8 @@ function GitTimeline({ repoId, branch }: { repoId: string; branch: string }) {
         <section className="explorer-commit-detail" aria-label="Detalhes do commit">
           <div className="terminal-filebar">
             <strong>Commit {detail.sha.slice(0, 10)}</strong>
+            <a href={"https://github.com/" + repoFullName + "/commit/" + detail.sha}
+              target="_blank" rel="noopener noreferrer">Fonte GitHub ↗</a>
             <button type="button" onClick={() => setDetail(null)} aria-label="Fechar detalhes do commit">✕</button>
           </div>
           <pre>{detail.output}</pre>
@@ -178,7 +214,7 @@ export function RepositoryExplorer({
           <button type="button" aria-pressed={view === "history"} onClick={() => setView("history")}>Histórico</button>
         </div>
       </div>
-      {view === "history" ? <GitTimeline repoId={snapshot.repoId} branch={snapshot.branch} /> : (
+      {view === "history" ? <GitTimeline repoId={snapshot.repoId} branch={snapshot.branch} repoFullName={snapshot.repoFullName} /> : (
         <div className="explorer-layout">
           <aside className="explorer-sidebar" aria-label="Árvore de arquivos">
             <label htmlFor="explorer-search">LOCALIZAR ARQUIVO</label>

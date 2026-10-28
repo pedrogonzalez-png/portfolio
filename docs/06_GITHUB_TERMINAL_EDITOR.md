@@ -86,3 +86,7 @@ visitor@portfolio:jogo-site/$ git log
 - `git log` e grafos representam dados reais; histórico grande tem paginação e avisos de cobertura.
 - Teclas/scroll no editor não movimentam cena 3D por trás; Escape e foco restaurados.
 - Estilos e acentos seguem mudança de tema; código permanece legível.
+
+## Estado da visualização Git (28/10/2026)
+
+O histórico paginado agora mostra grafo 2D com SHAs de parentesco reais retornados pela API. Arestas só existem quando pai e filho estão na página carregada, sem inventar relações. A seleção de sete marcos técnicos foi verificada por SHA e arquivos alterados, mas segue **provisória e não aprovada pelo proprietário**. O grafo 3D e curadoria final são futuros.

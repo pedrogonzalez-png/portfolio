@@ -1,0 +1,62 @@
+{
+  "schemaVersion": 1,
+  "notice": "Seleção técnica provisória, conferida nos SHAs/diffs públicos; aprovação editorial ainda pendente.",
+  "milestones": [
+    {
+      "repoId": "abismo",
+      "sha": "9fcbeda466861d6d4baaab8f4a08776703a8bce0",
+      "title": "Contraste dos tiles ASCII",
+      "description": "Mudança confirmada no TextureBootManager.js para elevar o contraste.",
+      "category": "visual",
+      "status": "provisional"
+    },
+    {
+      "repoId": "abismo",
+      "sha": "1a3bf089d28b1c67e69d66ea2ef69f18810a4e5a",
+      "title": "Testes de jogo no Chromium",
+      "description": "Extensão do browser-smoke.mjs com cenários de morte, respawn e IndexedDB.",
+      "category": "tests",
+      "status": "provisional"
+    },
+    {
+      "repoId": "site-3d",
+      "sha": "99eaf1f6ea45640f41009d6103c02081aae8119d",
+      "title": "Dados unificados da roleta",
+      "description": "Alterações em App.jsx, App.css e charactersData.js para consolidar dados e aprimorar cards.",
+      "category": "feature",
+      "status": "provisional"
+    },
+    {
+      "repoId": "site-3d",
+      "sha": "5490a4b7e26fec513cae2a949844a49fb5b58e17",
+      "title": "Melhorias de HUD",
+      "description": "Commit denominado melhora no hud, com novos arquivos App.jsx e App.css na raiz.",
+      "category": "visual",
+      "status": "provisional"
+    },
+    {
+      "repoId": "hyprland-themes",
+      "sha": "cbe4048f327ce7fde52d448fee9557fda9385079",
+      "title": "Cinco temas originais",
+      "description": "Primeiro commit com esquemas JSON de Changli, Hiyuki, Emilia, Furina e Hotline Miami.",
+      "category": "feature",
+      "status": "provisional"
+    },
+    {
+      "repoId": "hyprland-themes",
+      "sha": "cd17e085fdc1f21d437c55836e04b3c4de9247be",
+      "title": "Desktop e instalador",
+      "description": "Commit com novas configurações em dots/, Fastfetch, Hyprland e instruções de instalação.",
+      "category": "feature",
+      "status": "provisional"
+    },
+    {
+      "repoId": "hyprland-themes",
+      "sha": "3b9248aa0bd12908974bbecb0e604cd7b590dd7c",
+      "title": "Rollback do instalador",
+      "description": "Mudanças em install-desktop.sh com pin do setup e recuperação de alterações.",
+      "category": "reliability",
+      "status": "provisional"
+    }
+  ]
+}

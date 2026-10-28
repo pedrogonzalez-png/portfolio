@@ -38,6 +38,13 @@ O relatório anterior chamava o M3 de concluído, apesar de `cat`, `git log` e `
 
 GitHub Actions é a fonte de evidência para TypeScript, testes, build e lint. Não considerar `DONE` até CI verde **e** validação manual do fluxo no navegador.
 
+## Bloco M3 — duas melhorias de histórico
+
+- Grafo 2D de commits usando parentesco real da API GitHub. Arestas apenas quando ambos SHAs aparecem na página; merges têm conexões adicionais quando verificáveis. Nenhuma aresta inventada; grafo 3D permanece pendente.
+- Sete marcos técnicos candidatos de commits efetivos, com diffs e arquivos confirmados no GitHub (2 de Abismo, 2 de site-3D, 3 de Hyprland-Themes). Seleção editorial **provisória**, não aprovada pelo proprietário; link para fonte e diff real sob demanda.
+- Testes de vínculos de parentesco e allowlist de marcos, mais teste de interface para alternar marcos/histórico.
+- M3 segue IN_PROGRESS até revisão manual; não há mudanças em projetos originais.
+
 ## Próxima tarefa M3
 
 Conferir visualmente árvore, abas, Markdown, syntax highlighting e histórico no Arch. Em seguida, verificar que o índice gerado está presente no build implantado e revisar acessibilidade, históricos e curadoria. Não marcar M3 `DONE` antes da validação manual.
