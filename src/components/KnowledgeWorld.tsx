@@ -222,7 +222,6 @@ function AmbientSpace() {
 }
 
 function CinematicRig({ selection }: { selection: KnowledgeSelection }) {
-  const root = useRef<Group>(null);
   const pointer = useRef(new Vector2());
   const desired = useRef(new Vector3());
   useFrame(({ camera, pointer: canvasPointer }, delta) => {
@@ -240,17 +239,21 @@ function CinematicRig({ selection }: { selection: KnowledgeSelection }) {
     );
     camera.position.lerp(desired.current, ease);
     camera.lookAt(0, 0, 0);
-    if (root.current) {
-      root.current.rotation.y = MathUtils.lerp(root.current.rotation.y, pointer.current.x * 0.032, ease);
-      root.current.rotation.x = MathUtils.lerp(root.current.rotation.x, -pointer.current.y * 0.025, ease);
-    }
   });
-  return <group ref={root} />;
+  return null;
 }
 
 function WorldContents({
   nodes, selection, onSelect,
 }: Pick<WorldProps, "nodes" | "selection" | "onSelect">) {
+  const worldRef = useRef<Group>(null);
+  useFrame(({ pointer, clock }, delta) => {
+    if (!worldRef.current) return;
+    const ease = 1 - Math.exp(-1.7 * Math.min(delta, 0.06));
+    worldRef.current.rotation.y = MathUtils.lerp(worldRef.current.rotation.y, pointer.x * 0.038, ease);
+    worldRef.current.rotation.x = MathUtils.lerp(worldRef.current.rotation.x, -pointer.y * 0.027, ease);
+    worldRef.current.position.y = Math.sin(clock.elapsedTime * 0.33) * 0.07;
+  });
   return (
     <>
       <color attach="background" args={["#0e080c"]} />
@@ -259,6 +262,7 @@ function WorldContents({
       <pointLight position={[-6, -3, 3]} intensity={37} color="#ac4d44" />
       <CinematicRig selection={selection} />
       <AmbientSpace />
+      <group ref={worldRef}>
       {nodes.flatMap((node) =>
         node.projects.map((id) => {
           const start = SKILL_POSITIONS[node.id];
@@ -274,6 +278,7 @@ function WorldContents({
       {nodes.map((node) =>
         <KnowledgeCard key={node.id} node={node} active={isNodeLinked(node, selection)} onSelect={onSelect} />,
       )}
+      </group>
     </>
   );
 }
