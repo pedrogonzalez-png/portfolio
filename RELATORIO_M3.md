@@ -62,3 +62,9 @@ Conferir visualmente árvore, abas, Markdown, syntax highlighting e histórico n
 - Árvore tem navegação por setas ↑↓, Home/End e expansão/recolhimento por →/← com foco visível e tabulação reduzida. As teclas Enter e Espaço continuam ativando os botões nativos, sem capturar atalhos dentro do CodeMirror.
 - Testes de modo mobile e navegação por teclado. Validação manual em tela touch e leitor de tela ainda não substituída pelos testes.
 - M3 segue IN_PROGRESS, carrossel 3D e partículas não alterados.
+
+## Bloco M3 — foco e recuperação de erros
+
+- Modal tem contenção de foco de Tab/Shift+Tab, proteção contra foco externo, Escape, restauração de foco e descrição para leitor de tela. Estado conciso em região `role=status`, sem anúncio verboso dos patches.
+- Erros transitórios do GitHub oferecem `Tentar comando novamente`; consulta de arquivos bloqueia resultados/erros antigos usando ID de requisição e identidade da allowlist, com retry somente para falhas temporárias.
+- Testes para foco, reconsulta após offline e descarte de erro obsoleto. Validação manual mobile e leitor de tela continua pendente; M3 `IN_PROGRESS`.

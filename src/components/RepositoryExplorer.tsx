@@ -31,6 +31,7 @@ type Props = {
   onOpenFile: (path: string) => void;
   busy: boolean;
   error: string;
+  onRetryFile?: () => void;
   gitNavigation?: GitNavigation | null;
 };
 
@@ -149,7 +150,7 @@ function GitTimeline({ repoId, branch, repoFullName, navigation }: { repoId: str
 }
 
 export function RepositoryExplorer({
-  snapshot, tabs, activePath, onSelectTab, onCloseTab, onOpenFile, busy, error, gitNavigation,
+  snapshot, tabs, activePath, onSelectTab, onCloseTab, onOpenFile, busy, error, onRetryFile, gitNavigation,
 }: Props) {
   const [expanded, setExpanded] = useState<Set<string>>(() => new Set(["src"]));
   const [search, setSearch] = useState("");
@@ -315,7 +316,14 @@ export function RepositoryExplorer({
                 </div>
               ))}
             </div>
-            {error && <p role="alert" className="terminal-error explorer-message">{error}</p>}
+            {error && (
+              <div className="explorer-load-error" role="alert">
+                <p>{error}</p>
+                {onRetryFile && <button type="button" disabled={busy} onClick={onRetryFile}>
+                  Tentar carregar arquivo novamente
+                </button>}
+              </div>
+            )}
             {busy && <p role="status" className="explorer-message">Carregando arquivo do GitHub...</p>}
             {current ? (
               <>

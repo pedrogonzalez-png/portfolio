@@ -310,3 +310,28 @@
 @media (prefers-reduced-motion:reduce) {
   .terminal-dialog,.terminal-mobile-tabs button { transition:none; }
 }
+
+/* M3: compact assistive announcements and retry controls. */
+.terminal-assistive-status{
+  position:absolute; width:1px; height:1px; margin:-1px; padding:0;
+  overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0;
+}
+.terminal-retry{
+  display:flex;align-items:center;justify-content:space-between;gap:.5rem;
+  flex-wrap:wrap;padding:.5rem 1rem;color:#ffb6af;
+  border-top:1px solid rgba(227,179,122,.14);font-size:.72rem;
+}
+.terminal-retry button,.explorer-load-error button{
+  border:1px solid rgba(227,179,122,.55);border-radius:7px;
+  background:rgba(201,106,66,.15);color:var(--color-accent-yellow);
+  padding:.45rem .7rem;cursor:pointer;font-size:.72rem;
+}
+.terminal-retry button:focus-visible,.explorer-load-error button:focus-visible{
+  outline:2px solid var(--color-accent-yellow);outline-offset:3px;
+}
+.explorer-load-error{
+  display:flex;align-items:center;flex-wrap:wrap;justify-content:space-between;
+  gap:.45rem;padding:.45rem .75rem;color:#ffb6af;
+  border-bottom:1px solid rgba(227,179,122,.22);font-size:.72rem;
+}
+.explorer-load-error p{margin:0;}

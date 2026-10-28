@@ -14,6 +14,7 @@ import {
   resolveRepo,
 } from "../services/githubReadonly";
 import type { RepoSnapshot } from "../services/githubReadonly";
+import { isRetryableGitHubError } from "../services/githubRetry";
 import "../styles/terminal.css";
 
 type TerminalLine = { command: string; output: string; error?: boolean };
@@ -58,6 +59,9 @@ export function Terminal({ onClose }: { onClose: () => void }) {
   const [activePath, setActivePath] = useState<string | null>(null);
   const [explorerBusy, setExplorerBusy] = useState(false);
   const [explorerError, setExplorerError] = useState("");
+  const [failedFilePath, setFailedFilePath] = useState<string | null>(null);
+  const [retryCommand, setRetryCommand] = useState<string | null>(null);
+  const [assistiveStatus, setAssistiveStatus] = useState("Terminal virtual somente leitura. Digite help para conhecer os comandos.");
   const [busy, setBusy] = useState(false);
   const [previous, setPrevious] = useState<string[]>([]);
   const [previousIndex, setPreviousIndex] = useState(-1);
@@ -66,6 +70,9 @@ export function Terminal({ onClose }: { onClose: () => void }) {
   const dialogRef = useRef<HTMLDivElement>(null);
   const transcriptRef = useRef<HTMLDivElement>(null);
   const busyRef = useRef(false);
+  const fileBusyRef = useRef(false);
+  const fileRequestId = useRef(0);
+  const aliveRef = useRef(true);
   const currentRepoRef = useRef<string | null>(null);
   const narrowRef = useRef(false);
   const explorerPanelRef = useRef<HTMLDivElement>(null);
@@ -88,32 +95,59 @@ export function Terminal({ onClose }: { onClose: () => void }) {
   }, [mobileView, isNarrow]);
 
   useEffect(() => {
+    aliveRef.current = true;
     const priorFocus = document.activeElement as HTMLElement | null;
     const oldOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     inputRef.current?.focus();
+
+    const focusables = (): HTMLElement[] => {
+      if (!dialogRef.current) return [];
+      return Array.from(dialogRef.current.querySelectorAll<HTMLElement>(
+        'button:not([disabled]), input:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])',
+      )).filter((element) =>
+        element.getClientRects().length > 0 &&
+        element.getAttribute("aria-hidden") !== "true" &&
+        !element.closest("[hidden], [inert], [aria-hidden='true']"),
+      );
+    };
     const onKeys = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         event.preventDefault();
         onClose();
+        return;
       }
       if (event.key !== "Tab" || !dialogRef.current) return;
-      const focusable = Array.from(dialogRef.current.querySelectorAll<HTMLElement>(
-        'button:not([disabled]), input:not([disabled]), a[href], [tabindex="0"]',
-      )).filter((element) => element.getClientRects().length > 0);
-      if (!focusable.length) return;
-      const first = focusable[0];
-      const last = focusable[focusable.length - 1];
-      if (event.shiftKey && document.activeElement === first) {
-        event.preventDefault(); last.focus();
-      } else if (!event.shiftKey && document.activeElement === last) {
-        event.preventDefault(); first.focus();
+      const candidates = focusables();
+      if (!candidates.length) {
+        event.preventDefault();
+        dialogRef.current.focus();
+        return;
+      }
+      const first = candidates[0];
+      const last = candidates[candidates.length - 1];
+      const current = document.activeElement;
+      if (event.shiftKey && (current === first || !dialogRef.current.contains(current))) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && (current === last || !dialogRef.current.contains(current))) {
+        event.preventDefault();
+        first.focus();
       }
     };
+    const keepFocusInDialog = (event: FocusEvent) => {
+      if (!dialogRef.current || dialogRef.current.contains(event.target as Node)) return;
+      const next = focusables()[0] ?? dialogRef.current;
+      next.focus();
+    };
     window.addEventListener("keydown", onKeys);
+    document.addEventListener("focusin", keepFocusInDialog);
     return () => {
-      document.body.style.overflow = oldOverflow;
+      aliveRef.current = false;
+      fileRequestId.current += 1;
+      document.removeEventListener("focusin", keepFocusInDialog);
       window.removeEventListener("keydown", onKeys);
+      document.body.style.overflow = oldOverflow;
       priorFocus?.focus();
     };
   }, [onClose]);
@@ -128,6 +162,8 @@ export function Terminal({ onClose }: { onClose: () => void }) {
     busyRef.current = true;
     setBusy(true);
     setInput("");
+    setRetryCommand(null);
+    setAssistiveStatus("Executando comando: " + command);
     let revealExplorer = false;
     setPrevious((items) => [...items.slice(-49), command]);
     setPreviousIndex(-1);
@@ -156,6 +192,10 @@ export function Terminal({ onClose }: { onClose: () => void }) {
         currentRepoRef.current = approved.id;
         setRepoId(approved.id);
         setSnapshot(tree);
+        fileRequestId.current += 1;
+        fileBusyRef.current = false;
+        setExplorerBusy(false);
+        setFailedFilePath(null);
         setGitNavigation(null);
         revealExplorer = true;
         setCwd("");
@@ -253,43 +293,64 @@ export function Terminal({ onClose }: { onClose: () => void }) {
       } else {
         throw new Error("Comando não reconhecido. Digite help. Shell real não disponível.");
       }
-      setHistory((lines) => [...lines.slice(-75), { command, output: limitOutput(output) }]);
+      if (aliveRef.current) {
+        setHistory((lines) => [...lines.slice(-75), { command, output: limitOutput(output) }]);
+        setAssistiveStatus("Comando concluído: " + command + (revealExplorer ? ". Resultado disponível no explorador." : "."));
+      }
     } catch (error) {
-      setHistory((lines) => [...lines.slice(-75), {
-        command, output: error instanceof Error ? error.message : "Erro ao consultar o GitHub.", error: true,
-      }]);
+      if (aliveRef.current) {
+        const message = error instanceof Error ? error.message : "Erro ao consultar o GitHub.";
+        setHistory((lines) => [...lines.slice(-75), { command, output: message, error: true }]);
+        setRetryCommand(isRetryableGitHubError(error) ? command : null);
+        setAssistiveStatus("Falha no comando " + command + ". " + message);
+      }
     } finally {
       busyRef.current = false;
-      setBusy(false);
-      if (revealExplorer && narrowRef.current) {
-        setMobileView("explorer");
-        explorerPanelRef.current?.focus();
-      } else if (!narrowRef.current || mobileView === "console") {
-        inputRef.current?.focus();
+      if (aliveRef.current) {
+        setBusy(false);
+        if (revealExplorer && narrowRef.current) {
+          setMobileView("explorer");
+          explorerPanelRef.current?.focus();
+        } else if (!narrowRef.current || mobileView === "console") {
+          inputRef.current?.focus();
+        }
       }
     }
   };
 
   const openExplorerFile = async (path: string) => {
-    if (!repoId || !snapshot || explorerBusy) return;
+    if (!repoId || !snapshot || fileBusyRef.current) return;
     if (tabs.some((tab) => tab.path === path)) {
       setActivePath(path);
       return;
     }
     const requestedRepo = repoId;
+    const requestId = ++fileRequestId.current;
+    fileBusyRef.current = true;
     setExplorerBusy(true);
     setExplorerError("");
+    setFailedFilePath(null);
     try {
       const file = await readRepoFile(requestedRepo, path);
-      if (requestedRepo !== currentRepoRef.current) return;
+      if (!aliveRef.current || requestId !== fileRequestId.current ||
+          requestedRepo !== currentRepoRef.current) return;
       setTabs((current) => [...current.filter((tab) => tab.path !== path), {
         path, content: file.content, url: file.url, repo: snapshot.repoFullName, blobSha: file.blobSha,
       }].slice(-7));
       setActivePath(path);
+      setAssistiveStatus("Arquivo carregado: " + path);
     } catch (cause) {
-      setExplorerError(cause instanceof Error ? cause.message : "Falha ao carregar arquivo do GitHub.");
+      if (!aliveRef.current || requestId !== fileRequestId.current ||
+          requestedRepo !== currentRepoRef.current) return;
+      const message = cause instanceof Error ? cause.message : "Falha ao carregar arquivo do GitHub.";
+      setExplorerError(message);
+      setFailedFilePath(isRetryableGitHubError(cause) ? path : null);
+      setAssistiveStatus("Falha ao carregar " + path + ". " + message);
     } finally {
-      setExplorerBusy(false);
+      if (aliveRef.current && requestId === fileRequestId.current) {
+        fileBusyRef.current = false;
+        setExplorerBusy(false);
+      }
     }
   };
   const closeTab = (path: string) => {
@@ -321,7 +382,8 @@ export function Terminal({ onClose }: { onClose: () => void }) {
     <div className="terminal-backdrop" onMouseDown={(event) => {
       if (event.target === event.currentTarget) onClose();
     }}>
-      <div ref={dialogRef} className="terminal-dialog" role="dialog" aria-modal="true" aria-labelledby="terminal-title">
+      <div ref={dialogRef} className="terminal-dialog" role="dialog" aria-modal="true"
+        aria-labelledby="terminal-title" aria-describedby="terminal-a11y-help" tabIndex={-1}>
         <header className="terminal-header">
           <div>
             <span className="terminal-dot" aria-hidden="true" />
@@ -330,6 +392,10 @@ export function Terminal({ onClose }: { onClose: () => void }) {
           </div>
           <button type="button" onClick={onClose} aria-label="Fechar terminal">✕</button>
         </header>
+        <p id="terminal-a11y-help" className="terminal-assistive-status">
+          Explorador GitHub somente leitura. Escape fecha o terminal; Tab percorre os controles.
+        </p>
+        <p className="terminal-assistive-status" role="status" aria-atomic="true">{assistiveStatus}</p>
         {snapshot && (
           <div className="terminal-mobile-tabs" role="tablist" aria-label="Painéis do terminal"
             onKeyDown={(event) => {
@@ -355,7 +421,7 @@ export function Terminal({ onClose }: { onClose: () => void }) {
             role={isNarrow && snapshot ? "tabpanel" : undefined}
             aria-labelledby={isNarrow && snapshot ? "terminal-tab-console" : undefined}
             aria-label={!isNarrow || !snapshot ? "Console de comandos" : undefined}>
-            <div className="terminal-transcript" ref={transcriptRef} role="log" aria-live="polite">
+            <div className="terminal-transcript" ref={transcriptRef} role="log" aria-live="off" aria-busy={busy}>
               {history.map((line, index) => (
                 <div className="terminal-line" key={index}>
                   {line.command && <div className="terminal-command">visitor@portfolio:{repoId ?? "~"}$ {line.command}</div>}
@@ -372,6 +438,14 @@ export function Terminal({ onClose }: { onClose: () => void }) {
                 disabled={busy} aria-label="Comando do terminal virtual"/>
               <button type="submit" disabled={busy || !input.trim()}>{busy ? "..." : "Executar"}</button>
             </form>
+            {retryCommand && (
+              <div className="terminal-retry">
+                <span>Erro temporário de conexão com o GitHub.</span>
+                <button type="button" disabled={busy} onClick={() => void runCommand(retryCommand)}>
+                  Tentar comando novamente
+                </button>
+              </div>
+            )}
             <div className="terminal-quick">
               {["help", "repos", "open jogo-site", "ls", "git log"].map((command) => (
                 <button type="button" key={command} disabled={busy} onClick={() => void runCommand(command)}>{command}</button>
@@ -393,6 +467,7 @@ export function Terminal({ onClose }: { onClose: () => void }) {
               busy={explorerBusy}
               error={explorerError}
               gitNavigation={gitNavigation}
+              onRetryFile={failedFilePath ? () => { void openExplorerFile(failedFilePath); } : undefined}
             />
             </div>
           )}

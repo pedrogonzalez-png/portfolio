@@ -100,3 +100,7 @@ Comandos `git log [página]`, `git show <SHA>` e `git diff <SHA-A> <SHA-B>` agor
 Em viewport de até 760px o terminal tem abas **Console** e **Arquivos e Git** (cada uma ocupa a área útil da janela). Não rolar duas regiões verticais juntas. Comandos que abrem conteúdo ativam a aba correspondente. No desktop as duas regiões permanecem lado a lado.
 
 Na árvore de arquivos, usar ↑ e ↓ para percorrer itens visíveis; Home e End vão ao primeiro e último; → expande pasta ou entra no primeiro filho; ← recolhe pasta ou volta ao pai. Enter e Espaço ativam o botão focado. Mostrar o foco com contorno de contraste. Essas melhorias são estruturais; aceite final de acessibilidade requer teste com leitor de tela e mobile real.
+
+## Acessibilidade e robustez (28/10/2026)
+
+O modal contém foco de teclado enquanto está aberto, fecha com Escape e devolve o foco ao elemento que iniciou a abertura; mantém descrição acessível e anuncia status curto por `role=status`, sem reler os diffs inteiros do log. Falhas transitórias (offline, timeout, limite temporário e indisponibilidade GitHub) oferecem repetição explícita do comando; erros definitivos (path/allowlist/404) não induzem retry infinito. A leitura de arquivos usa token de requisição e identidade do repositório para ignorar respostas e erros obsoletos depois de abrir outro projeto. Isso não substitui auditoria real de leitor de tela ou teste de rede intermitente no navegador.
