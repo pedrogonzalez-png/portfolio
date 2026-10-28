@@ -6,14 +6,13 @@ import SceneIntegration from "../components/SceneIntegration";
 function HomePage() {
   return (
     <>
-      <SceneIntegration />
       <TopMenu />
       <main className="site-main">
         <section id="inicio" className="hero" aria-label="Apresentação">
           <div className="hero-content">
             <div className="eyebrow"><span className="eyebrow-line" /> PORTFÓLIO / EXPERIÊNCIA INTERATIVA</div>
             <p className="hero-overline">Uma jornada por projetos, código e criatividade</p>
-            <h1 id="hero-name" className="hero-title">NOME DO AUTOR</h1>
+            <h1 id="hero-name" className="hero-title"><span className="hero-title-fallback">NOME DO AUTOR</span><SceneIntegration /></h1>
             <p className="hero-placeholder">NOME DE APRESENTAÇÃO PENDENTE</p>
             <p className="hero-description">
               Desenvolvimento web, jogos e personalização Linux. Explore três projetos reais em construção.
