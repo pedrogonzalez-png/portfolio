@@ -10,7 +10,7 @@ import {
 } from "../data/knowledge";
 import "../styles/knowledge-tree.css";
 
-const KnowledgeWorld = lazy(() => import("./KnowledgeWorld"));
+const KnowledgeExperience = lazy(() => import("./KnowledgeExperience"));
 
 type Selection = { kind: "skill"; id: string } | { kind: "project"; id: KnowledgeProjectId } | null;
 type DomainFilter = KnowledgeDomain | "all";
@@ -95,6 +95,7 @@ function NodeDetails({
 export function KnowledgeTree() {
   const [filter, setFilter] = useState<DomainFilter>("all");
   const [selection, setSelection] = useState<Selection>(null);
+  const [activeProject, setActiveProject] = useState<KnowledgeProjectId>("abismo");
   const [immersive, setImmersive] = useState(false);
   const [webglFailed, setWebglFailed] = useState(false);
   const stageRef = useRef<HTMLDivElement>(null);
@@ -180,16 +181,17 @@ export function KnowledgeTree() {
       >
         {immersive ? (
           <Suspense fallback={<div className="knowledge-loading" role="status">Carregando espaço 3D...</div>}>
-            <KnowledgeWorld
-              nodes={visibleNodes}
+            <KnowledgeExperience
+              activeProject={activeProject}
+              visibleNodes={visibleNodes}
               selection={selection}
-              onSelect={setSelection}
+              onSelect={(next) => {
+                setSelection(next);
+                if (next?.kind === "project") setActiveProject(next.id);
+              }}
+              onProjectChange={setActiveProject}
               onContextLost={() => setWebglFailed(true)}
             />
-            <div className="knowledge-stage-hud" aria-hidden="true">
-              <span>KNOWLEDGE / SPATIAL NETWORK</span>
-              <span>INTERAJA COM O CURSOR · SELECIONE OS VIDROS</span>
-            </div>
           </Suspense>
         ) : (
           <>
