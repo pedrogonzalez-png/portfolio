@@ -185,14 +185,10 @@ body::before {
 }
 .spine-fallback {
   position: absolute;
-  top: 12%;
-  bottom: 11%;
-  left: calc(50% - 13px);
-  width: 26px;
-  border-radius: 50%;
-  background: linear-gradient(180deg, transparent, rgba(227, 179, 122, .55), rgba(201, 106, 66, .8), transparent);
-  filter: blur(10px);
-  opacity: .45;
+  inset: 0;
+  background:
+    radial-gradient(circle at 28% 39%, rgba(227, 179, 122, .12), transparent 25%),
+    radial-gradient(circle at 74% 65%, rgba(201, 106, 66, .10), transparent 28%);
   pointer-events: none;
 }
 .spine-guide {
