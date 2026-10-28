@@ -88,3 +88,12 @@ Criar um **único controlador de transições** com cancelamento/interrupt: não
 4. Painéis e UI têm contraste, foco e loading/fallback.
 5. Troca Changli → Hiyuki afeta cena e UI sem perder progressão.
 6. Reduced motion e fallback sem WebGL dão acesso ao conteúdo essencial.
+
+## Entrega incremental — árvore de conhecimentos (28/10/2026)
+
+- Seção "Habilidades" adicionada entre os projetos e Sobre/Contato, com acesso pelo menu.
+- Grafo interativo DOM/SVG: clicar em uma tecnologia revela projetos relacionados e um arquivo de evidência; clicar no projeto ilumina as tecnologias; filtros por Web, Jogos, Linux e Automação.
+- Dados explícitos em `src/data/knowledge.ts`, restritos a Abismo, site-3D e Hyprland-Themes. Nenhum score de proficiência, certificado, repositório excluído ou informação pessoal inventada.
+- Tema acompanha tokens CSS globais do Theme Studio; no mobile, os mesmos nós aparecem como botões em lista; o SVG é somente decorativo e não depende de WebGL.
+- Testes automatizados de allowlist, filtros, conexões e interação por botões em `src/__tests__/knowledge-tree.test.tsx`.
+- **Status: IN_PROGRESS** até CI e revisão visual/manual no navegador real. O grafo 3D integrado à câmera cinematográfica não é reivindicado como implementado; esta é a primeira versão navegável e acessível.
