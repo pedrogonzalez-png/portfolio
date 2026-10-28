@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import { ThemeProvider } from "../stores/ThemeProvider";
 import { useTheme } from "../stores/themeContext";
 import { OFFICIAL_THEMES, THEME_STORAGE_KEY } from "../stores/themes";
@@ -45,7 +45,8 @@ describe("M4 official palettes", () => {
   });
   it("keeps preview isolated until visitor clicks Apply", () => {
     render(<ThemeProvider><Probe /><ThemeStudio onClose={() => {}} /></ThemeProvider>);
-    fireEvent.click(screen.getByRole("button", { name: /Hiyuki/ }));
+    fireEvent.click(within(screen.getByRole("group", { name: "Cinco temas oficiais" }))
+      .getByRole("button", { name: /Hiyuki/ }));
     expect(screen.getByTestId("active-theme")).toHaveTextContent("Changli");
     expect(localStorage.getItem(THEME_STORAGE_KEY)).toBe("changli");
     fireEvent.click(screen.getByRole("button", { name: "Aplicar Hiyuki" }));

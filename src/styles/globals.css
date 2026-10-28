@@ -346,3 +346,8 @@ body::before{background:radial-gradient(ellipse 55% 45% at 50% 30%,color-mix(in 
 .modal-backdrop{background:color-mix(in srgb,var(--color-bg) 89%,transparent)}
 ::selection{color:var(--color-bg);background:var(--color-accent-yellow)}
 @media(prefers-reduced-motion:reduce){body,.site-header,.site-footer,.projects-area,.about-area,.project-dialog,.cinematic-panel{transition:none}}
+
+/* Header button must be styled before the lazy ThemeStudio CSS loads. */
+.site-theme-button{border:1px solid var(--color-accent-primary);border-radius:999px;color:var(--color-bg);background:var(--color-accent-primary);padding:.7rem 1rem;font-size:.78rem;font-weight:700;white-space:nowrap;cursor:pointer}
+.site-theme-button:hover{filter:brightness(1.12)}
+@media(max-width:610px){.site-theme-button{font-size:.71rem;padding:.52rem .69rem}}
