@@ -245,7 +245,7 @@ function Lens({
   return (
     <group position={p} rotation={[0, turn, 0]}>
       {/* The thick beveled body gives depth. Its color must not obscure the lens. */}
-      <RoundedBox args={[width, height, 0.15]} radius={0.21} smoothness={4}>
+      <RoundedBox args={[width, height, 0.15]} radius={0.055} smoothness={4}>
         <meshBasicMaterial
           color={theme.palette.accentYellow}
           opacity={focus ? 0.055 : 0.034}
