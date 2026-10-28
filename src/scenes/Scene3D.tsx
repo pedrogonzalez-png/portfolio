@@ -102,6 +102,8 @@ type PointerState = {
   nearLetter: boolean;
   idleFired: boolean;
   burstStarted: number;
+  burstX: number;
+  burstY: number;
   lastBurstAt: number;
 };
 
@@ -113,7 +115,7 @@ function ParticleName() {
   const pointer = useRef<PointerState>({
     x: 100000, y: 100000, vx: 0, vy: 0,
     movedAt: 0, lastTime: 0, inside: false, nearLetter: false,
-    idleFired: false, burstStarted: -100000, lastBurstAt: -100000,
+    idleFired: false, burstStarted: -100000, burstX: 100000, burstY: 100000, lastBurstAt: -100000,
   });
   const time = useRef(0);
 
@@ -157,9 +159,14 @@ function ParticleName() {
         p.vy = 0;
       }
 
-      if (insideBox && !p.inside && now - p.lastBurstAt > 450) {
-        // Entering the title triggers the large, visible disintegration.
+      // Start a localized pulse only when entering a glyph or moving
+      // far enough along the text to reach the next letter neighborhood.
+      const traveled = Math.hypot(x - p.burstX, y - p.burstY);
+      if (nearLetter && now - p.lastBurstAt > 320
+        && (!p.nearLetter || traveled > 78)) {
         p.burstStarted = now;
+        p.burstX = x;
+        p.burstY = y;
         p.lastBurstAt = now;
         p.idleFired = false;
       }
@@ -178,6 +185,9 @@ function ParticleName() {
       if (event.clientX < box.left || event.clientX > box.right
         || event.clientY < box.top || event.clientY > box.bottom) return;
       const p = pointer.current;
+      const bounds = gl.domElement.getBoundingClientRect();
+      p.burstX = event.clientX - bounds.left - bounds.width / 2;
+      p.burstY = bounds.height / 2 - (event.clientY - bounds.top);
       p.burstStarted = performance.now();
       p.lastBurstAt = p.burstStarted;
       p.idleFired = true;
@@ -212,6 +222,8 @@ function ParticleName() {
     if (p.inside && p.nearLetter && !p.idleFired
       && now - p.movedAt > 950 && now - p.lastBurstAt > 900) {
       p.burstStarted = now;
+      p.burstX = p.x;
+      p.burstY = p.y;
       p.lastBurstAt = now;
       p.idleFired = true;
     }
@@ -229,12 +241,14 @@ function ParticleName() {
       dt,
       time: time.current,
       burstAge: (now - p.burstStarted) / 1000,
+      burstX: p.burstX,
+      burstY: p.burstY,
       width: size.width,
       pointerX: p.x,
       pointerY: p.y,
       pointerVX: p.vx,
       pointerVY: p.vy,
-      pointerActive: p.inside && timeSinceMove < 180,
+      pointerActive: p.nearLetter && timeSinceMove < 180,
     });
     positionAttribute.current.needsUpdate = true;
     energyAttribute.current.needsUpdate = true;
