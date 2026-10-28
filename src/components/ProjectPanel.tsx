@@ -45,6 +45,9 @@ function useStageScroll(stageRef: React.RefObject<HTMLDivElement | null>) {
         const length = window.innerHeight + rect.height;
         const progress = Math.min(1, Math.max(0, (window.innerHeight - rect.top) / Math.max(1, length)));
         stage.style.setProperty("--journey", progress.toFixed(4));
+        stage.style.setProperty("--float-a", ((0.5 - progress) * 95).toFixed(1) + "px");
+        stage.style.setProperty("--float-b", ((progress - 0.5) * 110).toFixed(1) + "px");
+        stage.style.setProperty("--float-c", ((0.5 - progress) * 80).toFixed(1) + "px");
       });
     };
     update();
