@@ -48,3 +48,10 @@ GitHub Actions é a fonte de evidência para TypeScript, testes, build e lint. N
 ## Próxima tarefa M3
 
 Conferir visualmente árvore, abas, Markdown, syntax highlighting e histórico no Arch. Em seguida, verificar que o índice gerado está presente no build implantado e revisar acessibilidade, históricos e curadoria. Não marcar M3 `DONE` antes da validação manual.
+
+## Bloco seguinte — sincronização e diff
+
+- Terminal Git agora compartilha estado de navegação com histórico visual: `git log 2` abre a página 2; `git show SHA` e `git diff A B` abrem um diff estruturado no painel Histórico.
+- Novo visualizador de diff readonly organiza arquivos, status, contagem de linhas adicionadas/removidas, trechos de código coloridos, links para a fonte e avisos de truncamento. Não executa conteúdo do repositório.
+- Reaproveita respostas reais da API; commits de marcos continuam explicitamente provisórios.
+- Revisão visual/manual no Arch ainda pendente; M3 continua IN_PROGRESS.

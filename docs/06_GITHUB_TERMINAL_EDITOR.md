@@ -90,3 +90,7 @@ visitor@portfolio:jogo-site/$ git log
 ## Estado da visualização Git (28/10/2026)
 
 O histórico paginado agora mostra grafo 2D com SHAs de parentesco reais retornados pela API. Arestas só existem quando pai e filho estão na página carregada, sem inventar relações. A seleção de sete marcos técnicos foi verificada por SHA e arquivos alterados, mas segue **provisória e não aprovada pelo proprietário**. O grafo 3D e curadoria final são futuros.
+
+## Integração terminal e diff visual (28/10/2026)
+
+Comandos `git log [página]`, `git show <SHA>` e `git diff <SHA-A> <SHA-B>` agora ativam a aba Histórico visual da mesma seleção de repositório, incluindo página ou resultado consultado. A mesma resposta tipada alimenta o resumo do console e o diff do painel, sem fabricar alterações. O visualizador separa arquivos, status, números de linhas da visualização, adições, remoções e contexto. Exibição limitada a 16 arquivos e 6.000 caracteres de patch por arquivo, com aviso de conteúdo parcial e link oficial. Testes de integração e XSS ainda não substituem revisão visual manual.

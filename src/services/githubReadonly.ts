@@ -250,6 +250,106 @@ export async function realGitLog(repoId: string, page = 1): Promise<{ commits: C
   };
 }
 
+
+export interface GitChangedFile {
+  filename: string;
+  status: string;
+  additions: number;
+  deletions: number;
+  patch: string | null;
+  patchTruncated: boolean;
+}
+export interface GitChangeDetail {
+  kind: "commit" | "comparison";
+  title: string;
+  refLabel: string;
+  url: string;
+  additions: number;
+  deletions: number;
+  fileCount: number;
+  files: GitChangedFile[];
+  truncated: boolean;
+}
+type GitHubFile = { filename: string; status: string; additions?: number; deletions?: number; patch?: string };
+
+function extractGitFiles(files: GitHubFile[] | undefined): {
+  files: GitChangedFile[]; count: number; truncated: boolean;
+} {
+  const all = files ?? [];
+  const filesShown = all.slice(0, 16).map((file) => {
+    const patch = file.patch ?? null;
+    return {
+      filename: file.filename,
+      status: file.status,
+      additions: file.additions ?? 0,
+      deletions: file.deletions ?? 0,
+      patch: patch === null ? null : patch.slice(0, 6000),
+      patchTruncated: patch !== null && patch.length > 6000,
+    };
+  });
+  return {
+    files: filesShown,
+    count: all.length,
+    truncated: all.length > filesShown.length || filesShown.some((file) => file.patchTruncated),
+  };
+}
+
+export async function getGitCommitDetail(repoId: string, sha: string): Promise<GitChangeDetail> {
+  const repo = ensureAllowed(repoId);
+  if (!/^[a-f0-9]{7,40}$/i.test(sha)) throw new Error("SHA inválido.");
+  const commit = await cached("commitdetail:" + repo.id + ":" + sha, () => getJson<{
+    sha: string;
+    html_url?: string;
+    commit: { message: string };
+    stats?: { additions: number; deletions: number };
+    files?: GitHubFile[];
+  }>("/repos/" + repo.repoFullName + "/commits/" + sha));
+  const result = extractGitFiles(commit.files);
+  return {
+    kind: "commit",
+    title: commit.commit.message.split("\n")[0],
+    refLabel: commit.sha,
+    url: "https://github.com/" + repo.repoFullName + "/commit/" + commit.sha,
+    additions: commit.stats?.additions ?? 0,
+    deletions: commit.stats?.deletions ?? 0,
+    fileCount: result.count,
+    files: result.files,
+    truncated: result.truncated,
+  };
+}
+
+export async function getGitCompareDetail(repoId: string, a: string, b: string): Promise<GitChangeDetail> {
+  const repo = ensureAllowed(repoId);
+  if (![a,b].every((sha) => /^[a-f0-9]{7,40}$/i.test(sha))) throw new Error("SHAs inválidos.");
+  const compare = await cached("comparedetail:" + repo.id + ":" + a + ":" + b, () =>
+    getJson<{ status: string; files?: GitHubFile[] }>(
+      "/repos/" + repo.repoFullName + "/compare/" + a + "..." + b,
+    ));
+  const result = extractGitFiles(compare.files);
+  return {
+    kind: "comparison",
+    title: "Comparação Git (" + compare.status + ")",
+    refLabel: a + "..." + b,
+    url: "https://github.com/" + repo.repoFullName + "/compare/" + a + "..." + b,
+    additions: result.files.reduce((sum, file) => sum + file.additions, 0),
+    deletions: result.files.reduce((sum, file) => sum + file.deletions, 0),
+    fileCount: result.count,
+    files: result.files,
+    truncated: result.truncated,
+  };
+}
+
+export function summarizeGitChange(detail: GitChangeDetail): string {
+  return [
+    detail.kind === "commit" ? "Commit real: " + detail.refLabel : "Comparação real: " + detail.refLabel,
+    detail.title,
+    detail.fileCount + " arquivo(s) retornado(s), +" + detail.additions + " / -" + detail.deletions,
+    detail.truncated ? "Trecho limitado; consulte a fonte para o diff completo." : "",
+    "Visualização sincronizada na aba Histórico, à direita.",
+    "GitHub: " + detail.url,
+  ].filter(Boolean).join("\n");
+}
+
 export async function realGitShow(repoId: string, sha: string): Promise<string> {
   const repo = ensureAllowed(repoId);
   if (!/^[a-f0-9]{7,40}$/i.test(sha)) throw new Error("SHA inválido.");

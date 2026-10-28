@@ -2,10 +2,16 @@ import { useEffect, useMemo, useState } from "react";
 import { CodeMirror } from "./CodeMirror";
 import { SafeMarkdownPreview } from "./SafeMarkdownPreview";
 import type { RepoEntry, RepoSnapshot } from "../services/githubReadonly";
-import { directoryEntries, realGitLog, realGitShow } from "../services/githubReadonly";
+import { directoryEntries, realGitLog, getGitCommitDetail } from "../services/githubReadonly";
+import type { GitChangeDetail } from "../services/githubReadonly";
+import { GitDiffViewer } from "./GitDiffViewer";
 import type { CommitSummary } from "../services/githubReadonly";
 import { CommitGraph } from "./CommitGraph";
 import { technicalMilestonesForRepo } from "../services/gitMilestones";
+
+export type GitNavigation =
+  | { id: number; kind: "log"; page: number }
+  | { id: number; kind: "detail"; detail: GitChangeDetail };
 
 export type EditorTab = {
   path: string;
@@ -24,21 +30,33 @@ type Props = {
   onOpenFile: (path: string) => void;
   busy: boolean;
   error: string;
+  gitNavigation?: GitNavigation | null;
 };
 
 const MAX_TREE_RENDER = 180;
 
-function GitTimeline({ repoId, branch, repoFullName }: { repoId: string; branch: string; repoFullName: string }) {
+function GitTimeline({ repoId, branch, navigation }: { repoId: string; branch: string; navigation?: GitNavigation | null }) {
   const [page, setPage] = useState(1);
   const [commits, setCommits] = useState<CommitSummary[]>([]);
   const [mode, setMode] = useState<"full" | "milestones">("full");
-  const [detail, setDetail] = useState<{ sha: string; output: string } | null>(null);
+  const [detail, setDetail] = useState<GitChangeDetail | null>(null);
   const [busy, setBusy] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const milestones = technicalMilestonesForRepo(repoId);
 
   useEffect(() => { setPage(1); setMode("full"); setDetail(null); }, [repoId, branch]);
+  useEffect(() => {
+    if (!navigation) return;
+    setMode("full");
+    if (navigation.kind === "log") {
+      setPage(navigation.page);
+      setDetail(null);
+    } else {
+      setDetail(navigation.detail);
+    }
+  }, [navigation]);
+
   useEffect(() => {
     if (mode !== "full") return;
     let cancelled = false;
@@ -60,8 +78,8 @@ function GitTimeline({ repoId, branch, repoFullName }: { repoId: string; branch:
     setBusy(true);
     setError("");
     try {
-      const output = await realGitShow(repoId, sha);
-      setDetail({ sha, output });
+      const result = await getGitCommitDetail(repoId, sha);
+      setDetail(result);
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Não foi possível carregar o commit.");
     } finally { setBusy(false); }
@@ -124,23 +142,13 @@ function GitTimeline({ repoId, branch, repoFullName }: { repoId: string; branch:
           </div>
         </>
       )}
-      {detail && (
-        <section className="explorer-commit-detail" aria-label="Detalhes do commit">
-          <div className="terminal-filebar">
-            <strong>Commit {detail.sha.slice(0, 10)}</strong>
-            <a href={"https://github.com/" + repoFullName + "/commit/" + detail.sha}
-              target="_blank" rel="noopener noreferrer">Fonte GitHub ↗</a>
-            <button type="button" onClick={() => setDetail(null)} aria-label="Fechar detalhes do commit">✕</button>
-          </div>
-          <pre>{detail.output}</pre>
-        </section>
-      )}
+      {detail && <GitDiffViewer detail={detail} onClose={() => setDetail(null)} />}
     </section>
   );
 }
 
 export function RepositoryExplorer({
-  snapshot, tabs, activePath, onSelectTab, onCloseTab, onOpenFile, busy, error,
+  snapshot, tabs, activePath, onSelectTab, onCloseTab, onOpenFile, busy, error, gitNavigation,
 }: Props) {
   const [expanded, setExpanded] = useState<Set<string>>(() => new Set(["src"]));
   const [search, setSearch] = useState("");
@@ -149,6 +157,7 @@ export function RepositoryExplorer({
   const current = tabs.find((tab) => tab.path === activePath) ?? null;
 
   useEffect(() => { setExpanded(new Set(["src"])); setSearch(""); setView("files"); }, [snapshot.repoId]);
+  useEffect(() => { if (gitNavigation) setView("history"); }, [gitNavigation]);
   useEffect(() => { setMarkdownPreview(false); }, [activePath]);
 
   const matches = useMemo(() => {
@@ -214,7 +223,7 @@ export function RepositoryExplorer({
           <button type="button" aria-pressed={view === "history"} onClick={() => setView("history")}>Histórico</button>
         </div>
       </div>
-      {view === "history" ? <GitTimeline repoId={snapshot.repoId} branch={snapshot.branch} repoFullName={snapshot.repoFullName} /> : (
+      {view === "history" ? <GitTimeline repoId={snapshot.repoId} branch={snapshot.branch} navigation={gitNavigation} /> : (
         <div className="explorer-layout">
           <aside className="explorer-sidebar" aria-label="Árvore de arquivos">
             <label htmlFor="explorer-search">LOCALIZAR ARQUIVO</label>

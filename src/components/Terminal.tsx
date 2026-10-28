@@ -1,15 +1,16 @@
 import { useEffect, useRef, useState } from "react";
 import type { FormEvent, KeyboardEvent as ReactKeyboardEvent } from "react";
-import { RepositoryExplorer, type EditorTab } from "./RepositoryExplorer";
+import { RepositoryExplorer, type EditorTab, type GitNavigation } from "./RepositoryExplorer";
 import {
   approvedRepos,
   directoryEntries,
   getRepoTree,
   normalizeRepoPath,
   readRepoFile,
-  realGitDiff,
+  getGitCommitDetail,
+  getGitCompareDetail,
   realGitLog,
-  realGitShow,
+  summarizeGitChange,
   resolveRepo,
 } from "../services/githubReadonly";
 import type { RepoSnapshot } from "../services/githubReadonly";
@@ -48,6 +49,8 @@ export function Terminal({ onClose }: { onClose: () => void }) {
   const [input, setInput] = useState("");
   const [repoId, setRepoId] = useState<string | null>(null);
   const [snapshot, setSnapshot] = useState<RepoSnapshot | null>(null);
+  const [gitNavigation, setGitNavigation] = useState<GitNavigation | null>(null);
+  const navigationId = useRef(0);
   const [cwd, setCwd] = useState("");
   const [tabs, setTabs] = useState<EditorTab[]>([]);
   const [activePath, setActivePath] = useState<string | null>(null);
@@ -131,6 +134,7 @@ export function Terminal({ onClose }: { onClose: () => void }) {
         currentRepoRef.current = approved.id;
         setRepoId(approved.id);
         setSnapshot(tree);
+        setGitNavigation(null);
         setCwd("");
         setTabs([]);
         setActivePath(null);
@@ -201,16 +205,21 @@ export function Terminal({ onClose }: { onClose: () => void }) {
             throw new Error("Página inválida. Use git log 1 até git log 10.");
           }
           const data = await realGitLog(repoId, page);
+          setGitNavigation({ id: ++navigationId.current, kind: "log", page });
           output = "Commits reais de " + data.branch + " · página " + page +
             " (até 12 resultados; índice limitado a 10 páginas):\n" +
             data.commits.map((c) => c.sha.slice(0, 10) + "  " + c.date.slice(0, 10) +
               "  " + c.author + " — " + c.subject).join("\n");
         } else if (sub === "show") {
           if (!rest[1]) throw new Error("Uso: git show <SHA>");
-          output = await realGitShow(repoId, rest[1]);
+          const detail = await getGitCommitDetail(repoId, rest[1]);
+          setGitNavigation({ id: ++navigationId.current, kind: "detail", detail });
+          output = summarizeGitChange(detail);
         } else if (sub === "diff") {
           if (!rest[1] || !rest[2]) throw new Error("Uso: git diff <SHA-A> <SHA-B>");
-          output = await realGitDiff(repoId, rest[1], rest[2]);
+          const detail = await getGitCompareDetail(repoId, rest[1], rest[2]);
+          setGitNavigation({ id: ++navigationId.current, kind: "detail", detail });
+          output = summarizeGitChange(detail);
         } else {
           throw new Error("Uso: git log | git show <SHA> | git diff <A> <B>");
         }
@@ -324,6 +333,7 @@ export function Terminal({ onClose }: { onClose: () => void }) {
               onOpenFile={(path) => { void openExplorerFile(path); }}
               busy={explorerBusy}
               error={explorerError}
+              gitNavigation={gitNavigation}
             />
           )}
         </div>
