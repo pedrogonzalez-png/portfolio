@@ -78,7 +78,6 @@ export function duplicateTheme(base: Theme, existing: readonly Theme[]): Theme {
   const sourceId = base.kind === "official" ? base.id : base.basedOnThemeId;
   const official = sourceId ? officialTheme(sourceId) : null;
   if (!official) throw new Error("Tema de origem inválido.");
-  const now = new Date().toISOString();
   return {
     id: newCustomId(existing), name: (base.name + " · Minha versão").slice(0, 48),
     kind: "custom", basedOnThemeId: official.id,
