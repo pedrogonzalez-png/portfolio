@@ -35,7 +35,7 @@ type Props = {
 
 const MAX_TREE_RENDER = 180;
 
-function GitTimeline({ repoId, branch, navigation }: { repoId: string; branch: string; navigation?: GitNavigation | null }) {
+function GitTimeline({ repoId, branch, repoFullName, navigation }: { repoId: string; branch: string; repoFullName: string; navigation?: GitNavigation | null }) {
   const [page, setPage] = useState(1);
   const [commits, setCommits] = useState<CommitSummary[]>([]);
   const [mode, setMode] = useState<"full" | "milestones">("full");
@@ -223,7 +223,7 @@ export function RepositoryExplorer({
           <button type="button" aria-pressed={view === "history"} onClick={() => setView("history")}>Histórico</button>
         </div>
       </div>
-      {view === "history" ? <GitTimeline repoId={snapshot.repoId} branch={snapshot.branch} navigation={gitNavigation} /> : (
+      {view === "history" ? <GitTimeline repoId={snapshot.repoId} branch={snapshot.branch} repoFullName={snapshot.repoFullName} navigation={gitNavigation} /> : (
         <div className="explorer-layout">
           <aside className="explorer-sidebar" aria-label="Árvore de arquivos">
             <label htmlFor="explorer-search">LOCALIZAR ARQUIVO</label>
