@@ -69,11 +69,11 @@ export function advanceParticles(data: ParticleState, input: ParticleInput): voi
     // Local particles fly apart and swirl, while distant letters remain intact.
     const burstOffsetX = influence * burst * (
       dxBurst / radialLength * 91 +
-      Math.cos(angle + input.time * 0.8) * (34 + seed * 35)
+      Math.cos(angle + input.time * 0.8) * (50 + seed * 50)
     );
     const burstOffsetY = influence * burst * (
       dyBurst / radialLength * 71 +
-      Math.sin(angle + input.time * 0.8) * (27 + seed * 29)
+      Math.sin(angle + input.time * 0.8) * (42 + seed * 42)
     );
 
     const tx = origX + burstOffsetX + Math.sin(input.time * 0.8 + seed * 19) * 0.30;
