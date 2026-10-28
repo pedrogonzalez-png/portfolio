@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import type { KeyboardEvent as ReactKeyboardEvent } from "react";
 import { KNOWLEDGE_NODES, KNOWLEDGE_PROJECTS, type KnowledgeNode, type KnowledgeProjectId } from "../data/knowledge";
 import { PLACEHOLDER_PROJECTS } from "./PlaceholderCatalog";
 import KnowledgeWorld, { type KnowledgeSelection, type SpatialCoordinate } from "./KnowledgeWorld";
@@ -68,7 +69,7 @@ export default function KnowledgeExperience({
     onSelect({ kind: "project", id });
   };
 
-  const onCarouselKeys = (event: React.KeyboardEvent<HTMLDivElement>) => {
+  const onCarouselKeys = (event: ReactKeyboardEvent<HTMLDivElement>) => {
     if (event.target !== event.currentTarget) return;
     if (event.key === "ArrowLeft") {
       event.preventDefault();
@@ -95,7 +96,6 @@ export default function KnowledgeExperience({
           activeProject={activeProject}
           skillPositions={skillPositions}
           activeSkill={activeSkill}
-          nodes={related}
           onContextLost={onContextLost}
         />
       </div>
