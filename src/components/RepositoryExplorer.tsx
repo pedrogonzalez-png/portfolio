@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { CodeMirror } from "./CodeMirror";
+import { SafeMarkdownPreview } from "./SafeMarkdownPreview";
 import type { RepoEntry, RepoSnapshot } from "../services/githubReadonly";
 import { directoryEntries, realGitLog, realGitShow } from "../services/githubReadonly";
 import type { CommitSummary } from "../services/githubReadonly";
@@ -108,9 +109,11 @@ export function RepositoryExplorer({
   const [expanded, setExpanded] = useState<Set<string>>(() => new Set(["src"]));
   const [search, setSearch] = useState("");
   const [view, setView] = useState<"files" | "history">("files");
+  const [markdownPreview, setMarkdownPreview] = useState(false);
   const current = tabs.find((tab) => tab.path === activePath) ?? null;
 
   useEffect(() => { setExpanded(new Set(["src"])); setSearch(""); setView("files"); }, [snapshot.repoId]);
+  useEffect(() => { setMarkdownPreview(false); }, [activePath]);
 
   const matches = useMemo(() => {
     const query = search.trim().toLowerCase();
@@ -215,6 +218,11 @@ export function RepositoryExplorer({
                     {current.path.split("/").map((segment, i) => <span key={i}>{i > 0 && <b aria-hidden="true"> / </b>}{segment}</span>)}
                   </div>
                   <div className="explorer-file-actions">
+                    {/\.md(?:own)?$/i.test(current.path) && (
+                      <button type="button" onClick={() => setMarkdownPreview((previous) => !previous)}>
+                        {markdownPreview ? "Código" : "Prévia Markdown"}
+                      </button>
+                    )}
                     <button type="button" onClick={() => void navigator.clipboard?.writeText(current.path)}>Copiar caminho</button>
                     <button type="button" onClick={() => void navigator.clipboard?.writeText(current.content)}>Copiar código</button>
                     <a href={current.url} target="_blank" rel="noopener noreferrer">GitHub ↗</a>
@@ -222,7 +230,9 @@ export function RepositoryExplorer({
                 </div>
                 <p className="explorer-source">{current.repo} · {snapshot.branch} · blob {current.blobSha.slice(0, 10)} · readonly</p>
                 <div className="terminal-codewrap">
-                  <CodeMirror content={current.content} fileName={current.path} />
+                  {markdownPreview && /\.md(?:own)?$/i.test(current.path)
+                    ? <SafeMarkdownPreview content={current.content} />
+                    : <CodeMirror content={current.content} fileName={current.path} />}
                 </div>
               </>
             ) : (
