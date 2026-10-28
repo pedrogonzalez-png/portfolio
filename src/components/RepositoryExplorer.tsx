@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import type { KeyboardEvent as ReactKeyboardEvent } from "react";
 import { CodeMirror } from "./CodeMirror";
 import { SafeMarkdownPreview } from "./SafeMarkdownPreview";
 import type { RepoEntry, RepoSnapshot } from "../services/githubReadonly";
@@ -152,11 +153,12 @@ export function RepositoryExplorer({
 }: Props) {
   const [expanded, setExpanded] = useState<Set<string>>(() => new Set(["src"]));
   const [search, setSearch] = useState("");
+  const [focusedPath, setFocusedPath] = useState("");
   const [view, setView] = useState<"files" | "history">("files");
   const [markdownPreview, setMarkdownPreview] = useState(false);
   const current = tabs.find((tab) => tab.path === activePath) ?? null;
 
-  useEffect(() => { setExpanded(new Set(["src"])); setSearch(""); setView("files"); }, [snapshot.repoId]);
+  useEffect(() => { setExpanded(new Set(["src"])); setSearch(""); setFocusedPath(""); setView("files"); }, [snapshot.repoId]);
   useEffect(() => { if (gitNavigation) setView("history"); }, [gitNavigation]);
   useEffect(() => { setMarkdownPreview(false); }, [activePath]);
 
@@ -168,12 +170,58 @@ export function RepositoryExplorer({
   }, [search, snapshot]);
 
   const toggleFolder = (path: string) => {
+    if (focusedPath.startsWith(path + "/")) setFocusedPath(path);
     setExpanded((before) => {
       const next = new Set(before);
       if (next.has(path)) next.delete(path);
       else next.add(path);
       return next;
     });
+  };
+
+  const firstRootEntry = useMemo(() => directoryEntries(snapshot, "")[0]?.path ?? "", [snapshot]);
+  const rovingPath = search.trim()
+    ? (matches.some((item) => item.path === focusedPath) ? focusedPath : (matches[0]?.path ?? ""))
+    : (focusedPath && snapshot.entries.some((item) => item.path === focusedPath)
+      ? focusedPath : firstRootEntry);
+
+  // Arrow navigation operates on the currently rendered, expanded buttons,
+  // so it never focuses a collapsed descendant or offscreen search result.
+  const onTreeKeyDown = (event: ReactKeyboardEvent<HTMLDivElement>) => {
+    const active = event.target;
+    if (!(active instanceof HTMLButtonElement) || !active.dataset.explorerPath) return;
+    const current = active.dataset.explorerPath;
+    const buttons = Array.from(event.currentTarget.querySelectorAll<HTMLButtonElement>(
+      "button[data-explorer-path]",
+    ));
+    const index = buttons.indexOf(active);
+    const focusButton = (button: HTMLButtonElement | undefined) => {
+      if (!button) return;
+      event.preventDefault();
+      setFocusedPath(button.dataset.explorerPath ?? "");
+      button.focus();
+    };
+    if (event.key === "ArrowDown") focusButton(buttons[index + 1]);
+    else if (event.key === "ArrowUp") focusButton(buttons[index - 1]);
+    else if (event.key === "Home") focusButton(buttons[0]);
+    else if (event.key === "End") focusButton(buttons.at(-1));
+    else if (event.key === "ArrowRight") {
+      if (active.getAttribute("aria-expanded") === "false") {
+        event.preventDefault();
+        toggleFolder(current);
+      } else if (active.getAttribute("aria-expanded") === "true") {
+        const child = buttons[index + 1];
+        if (child?.dataset.explorerPath?.startsWith(current + "/")) focusButton(child);
+      }
+    } else if (event.key === "ArrowLeft") {
+      if (active.getAttribute("aria-expanded") === "true") {
+        event.preventDefault();
+        toggleFolder(current);
+      } else if (current.includes("/")) {
+        const parent = current.slice(0, current.lastIndexOf("/"));
+        focusButton(buttons.find((button) => button.dataset.explorerPath === parent));
+      }
+    }
   };
 
   let count = 0;
@@ -195,8 +243,12 @@ export function RepositoryExplorer({
               <button
                 type="button"
                 className={"explorer-tree-item" + (activePath === entry.path ? " is-active" : "")}
+                data-explorer-path={entry.path}
+                tabIndex={rovingPath === entry.path ? 0 : -1}
+                onFocus={() => setFocusedPath(entry.path)}
                 onClick={() => isFolder ? toggleFolder(entry.path) : onOpenFile(entry.path)}
                 aria-expanded={isFolder ? isExpanded : undefined}
+                aria-current={!isFolder && activePath === entry.path ? "page" : undefined}
                 title={entry.path}
               >
                 <span aria-hidden="true">{isFolder ? (isExpanded ? "▾" : "▸") : "·"}</span>
@@ -227,14 +279,23 @@ export function RepositoryExplorer({
         <div className="explorer-layout">
           <aside className="explorer-sidebar" aria-label="Árvore de arquivos">
             <label htmlFor="explorer-search">LOCALIZAR ARQUIVO</label>
-            <input id="explorer-search" value={search} onChange={(event) => setSearch(event.target.value)}
+            <input id="explorer-search" value={search} onChange={(event) => { setSearch(event.target.value); setFocusedPath(""); }}
               placeholder="Nome ou caminho..." aria-label="Buscar nome de arquivo" />
-            <div className="explorer-tree" role="group" aria-label="Arquivos do GitHub">
+            <p className="explorer-keyboard-hint" id="explorer-keyboard-hint">
+              Navegue com ↑ ↓, abra pastas com → e feche com ←. Enter abre arquivos.
+            </p>
+            <div className="explorer-tree" ref={treeRef}
+              role="group" aria-label="Arquivos do GitHub"
+              aria-describedby="explorer-keyboard-hint" onKeyDown={onTreeKeyDown}>
               {search.trim() ? (
                 <ul className="explorer-search-results">
                   {matches.map((entry) => (
                     <li key={entry.path}>
-                      <button type="button" onClick={() => onOpenFile(entry.path)} title={entry.path}>{entry.path}</button>
+                      <button type="button" onClick={() => onOpenFile(entry.path)}
+                        data-explorer-path={entry.path}
+                        tabIndex={rovingPath === entry.path ? 0 : -1}
+                        onFocus={() => setFocusedPath(entry.path)}
+                        title={entry.path}>{entry.path}</button>
                     </li>
                   ))}
                   {!matches.length && <li>Nenhum arquivo encontrado no índice.</li>}

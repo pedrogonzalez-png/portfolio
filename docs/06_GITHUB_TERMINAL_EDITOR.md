@@ -94,3 +94,9 @@ O histórico paginado agora mostra grafo 2D com SHAs de parentesco reais retorna
 ## Integração terminal e diff visual (28/10/2026)
 
 Comandos `git log [página]`, `git show <SHA>` e `git diff <SHA-A> <SHA-B>` agora ativam a aba Histórico visual da mesma seleção de repositório, incluindo página ou resultado consultado. A mesma resposta tipada alimenta o resumo do console e o diff do painel, sem fabricar alterações. O visualizador separa arquivos, status, números de linhas da visualização, adições, remoções e contexto. Exibição limitada a 16 arquivos e 6.000 caracteres de patch por arquivo, com aviso de conteúdo parcial e link oficial. Testes de integração e XSS ainda não substituem revisão visual manual.
+
+## Mobile e acesso por teclado (28/10/2026)
+
+Em viewport de até 760px o terminal tem abas **Console** e **Arquivos e Git** (cada uma ocupa a área útil da janela). Não rolar duas regiões verticais juntas. Comandos que abrem conteúdo ativam a aba correspondente. No desktop as duas regiões permanecem lado a lado.
+
+Na árvore de arquivos, usar ↑ e ↓ para percorrer itens visíveis; Home e End vão ao primeiro e último; → expande pasta ou entra no primeiro filho; ← recolhe pasta ou volta ao pai. Enter e Espaço ativam o botão focado. Mostrar o foco com contorno de contraste. Essas melhorias são estruturais; aceite final de acessibilidade requer teste com leitor de tela e mobile real.

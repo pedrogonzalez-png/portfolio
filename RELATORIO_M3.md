@@ -55,3 +55,10 @@ Conferir visualmente árvore, abas, Markdown, syntax highlighting e histórico n
 - Novo visualizador de diff readonly organiza arquivos, status, contagem de linhas adicionadas/removidas, trechos de código coloridos, links para a fonte e avisos de truncamento. Não executa conteúdo do repositório.
 - Reaproveita respostas reais da API; commits de marcos continuam explicitamente provisórios.
 - Revisão visual/manual no Arch ainda pendente; M3 continua IN_PROGRESS.
+
+## Bloco de duas melhorias — mobile e teclado (28/10/2026)
+
+- Modal Kitty usa **duas abas no celular (Console / Arquivos e Git)** em vez de duas áreas verticais comprimidas. Comandos `open`, `code` e `git log/show/diff` levam ao explorador após carregar; na aba Console o campo de comando recupera foco. Desktop mantém split-view.
+- Árvore tem navegação por setas ↑↓, Home/End e expansão/recolhimento por →/← com foco visível e tabulação reduzida. As teclas Enter e Espaço continuam ativando os botões nativos, sem capturar atalhos dentro do CodeMirror.
+- Testes de modo mobile e navegação por teclado. Validação manual em tela touch e leitor de tela ainda não substituída pelos testes.
+- M3 segue IN_PROGRESS, carrossel 3D e partículas não alterados.

@@ -49,6 +49,8 @@ export function Terminal({ onClose }: { onClose: () => void }) {
   const [input, setInput] = useState("");
   const [repoId, setRepoId] = useState<string | null>(null);
   const [snapshot, setSnapshot] = useState<RepoSnapshot | null>(null);
+  const [mobileView, setMobileView] = useState<"console" | "explorer">("console");
+  const [isNarrow, setIsNarrow] = useState(false);
   const [gitNavigation, setGitNavigation] = useState<GitNavigation | null>(null);
   const navigationId = useRef(0);
   const [cwd, setCwd] = useState("");
@@ -65,6 +67,25 @@ export function Terminal({ onClose }: { onClose: () => void }) {
   const transcriptRef = useRef<HTMLDivElement>(null);
   const busyRef = useRef(false);
   const currentRepoRef = useRef<string | null>(null);
+  const narrowRef = useRef(false);
+  const explorerPanelRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const media = window.matchMedia("(max-width: 760px)");
+    const sync = () => {
+      narrowRef.current = media.matches;
+      setIsNarrow(media.matches);
+    };
+    sync();
+    media.addEventListener("change", sync);
+    return () => media.removeEventListener("change", sync);
+  }, []);
+
+  useEffect(() => {
+    if (!isNarrow) return;
+    if (mobileView === "explorer") explorerPanelRef.current?.focus();
+    else inputRef.current?.focus();
+  }, [mobileView, isNarrow]);
 
   useEffect(() => {
     const priorFocus = document.activeElement as HTMLElement | null;
@@ -107,6 +128,7 @@ export function Terminal({ onClose }: { onClose: () => void }) {
     busyRef.current = true;
     setBusy(true);
     setInput("");
+    let revealExplorer = false;
     setPrevious((items) => [...items.slice(-49), command]);
     setPreviousIndex(-1);
     try {
@@ -135,6 +157,7 @@ export function Terminal({ onClose }: { onClose: () => void }) {
         setRepoId(approved.id);
         setSnapshot(tree);
         setGitNavigation(null);
+        revealExplorer = true;
         setCwd("");
         setTabs([]);
         setActivePath(null);
@@ -188,6 +211,7 @@ export function Terminal({ onClose }: { onClose: () => void }) {
               }].slice(-7));
               setActivePath(path);
               setExplorerError("");
+              revealExplorer = true;
               output = "Arquivo real aberto: " + path + " (" + file.size + " bytes)\nGitHub: " + file.url;
             } else {
               output = "GitHub / " + tree.repoFullName + " / " + tree.branch + " / " + path +
@@ -206,6 +230,7 @@ export function Terminal({ onClose }: { onClose: () => void }) {
           }
           const data = await realGitLog(repoId, page);
           setGitNavigation({ id: ++navigationId.current, kind: "log", page });
+          revealExplorer = true;
           output = "Commits reais de " + data.branch + " · página " + page +
             " (até 12 resultados; índice limitado a 10 páginas):\n" +
             data.commits.map((c) => c.sha.slice(0, 10) + "  " + c.date.slice(0, 10) +
@@ -214,11 +239,13 @@ export function Terminal({ onClose }: { onClose: () => void }) {
           if (!rest[1]) throw new Error("Uso: git show <SHA>");
           const detail = await getGitCommitDetail(repoId, rest[1]);
           setGitNavigation({ id: ++navigationId.current, kind: "detail", detail });
+          revealExplorer = true;
           output = summarizeGitChange(detail);
         } else if (sub === "diff") {
           if (!rest[1] || !rest[2]) throw new Error("Uso: git diff <SHA-A> <SHA-B>");
           const detail = await getGitCompareDetail(repoId, rest[1], rest[2]);
           setGitNavigation({ id: ++navigationId.current, kind: "detail", detail });
+          revealExplorer = true;
           output = summarizeGitChange(detail);
         } else {
           throw new Error("Uso: git log | git show <SHA> | git diff <A> <B>");
@@ -234,7 +261,12 @@ export function Terminal({ onClose }: { onClose: () => void }) {
     } finally {
       busyRef.current = false;
       setBusy(false);
-      inputRef.current?.focus();
+      if (revealExplorer && narrowRef.current) {
+        setMobileView("explorer");
+        explorerPanelRef.current?.focus();
+      } else if (!narrowRef.current || mobileView === "console") {
+        inputRef.current?.focus();
+      }
     }
   };
 
@@ -298,8 +330,31 @@ export function Terminal({ onClose }: { onClose: () => void }) {
           </div>
           <button type="button" onClick={onClose} aria-label="Fechar terminal">✕</button>
         </header>
-        <div className={"terminal-workspace" + (snapshot ? " terminal-workspace--split" : "")}>
-          <section className="terminal-shell" aria-label="Console de comandos">
+        {snapshot && (
+          <div className="terminal-mobile-tabs" role="tablist" aria-label="Painéis do terminal"
+            onKeyDown={(event) => {
+              if (event.key !== "ArrowLeft" && event.key !== "ArrowRight" &&
+                  event.key !== "Home" && event.key !== "End") return;
+              event.preventDefault();
+              const next = event.key === "Home" || event.key === "ArrowLeft" ? "console" : "explorer";
+              setMobileView(next);
+              const id = next === "console" ? "terminal-tab-console" : "terminal-tab-explorer";
+              document.getElementById(id)?.focus();
+            }}>
+            <button ref={mobileConsoleTabRef} id="terminal-tab-console" type="button"
+              role="tab" aria-selected={mobileView === "console"} aria-controls="terminal-panel-console"
+              onClick={() => setMobileView("console")}>Console</button>
+            <button id="terminal-tab-explorer" type="button"
+              role="tab" aria-selected={mobileView === "explorer"} aria-controls="terminal-panel-explorer"
+              onClick={() => setMobileView("explorer")}>Arquivos e Git</button>
+          </div>
+        )}
+        <div className={"terminal-workspace" + (snapshot ? " terminal-workspace--split" : "")}
+          data-mobile-view={mobileView}>
+          <section className="terminal-shell" id="terminal-panel-console"
+            role={isNarrow && snapshot ? "tabpanel" : undefined}
+            aria-labelledby={isNarrow && snapshot ? "terminal-tab-console" : undefined}
+            aria-label={!isNarrow || !snapshot ? "Console de comandos" : undefined}>
             <div className="terminal-transcript" ref={transcriptRef} role="log" aria-live="polite">
               {history.map((line, index) => (
                 <div className="terminal-line" key={index}>
@@ -324,6 +379,10 @@ export function Terminal({ onClose }: { onClose: () => void }) {
             </div>
           </section>
           {snapshot && (
+            <div className="terminal-explorer-viewport" id="terminal-panel-explorer"
+              ref={explorerPanelRef} tabIndex={-1}
+              role={isNarrow ? "tabpanel" : undefined}
+              aria-labelledby={isNarrow ? "terminal-tab-explorer" : undefined}>
             <RepositoryExplorer
               snapshot={snapshot}
               tabs={tabs}
@@ -335,6 +394,7 @@ export function Terminal({ onClose }: { onClose: () => void }) {
               error={explorerError}
               gitNavigation={gitNavigation}
             />
+            </div>
           )}
         </div>
       </div>

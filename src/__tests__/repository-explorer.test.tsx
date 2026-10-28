@@ -59,6 +59,27 @@ describe("readonly GitHub explorer UI", () => {
     expect(screen.getByRole("button", { name: /GameScene\.js/ })).toBeInTheDocument();
   });
 
+  it("uses arrow keys to move focus through visible files and expand/collapse folders", () => {
+    renderExplorer();
+    const folder = screen.getByRole("button", { name: /src/ });
+    folder.focus();
+    expect(folder).toHaveFocus();
+    fireEvent.keyDown(folder, { key: "ArrowDown" });
+    const next = document.activeElement as HTMLButtonElement;
+    expect(next).toHaveAttribute("data-explorer-path", "src/main.js");
+    fireEvent.keyDown(next, { key: "ArrowLeft" });
+    expect(folder).toHaveFocus();
+    fireEvent.keyDown(folder, { key: "ArrowLeft" });
+    expect(folder).toHaveAttribute("aria-expanded", "false");
+    expect(screen.queryByRole("button", { name: /main\.js/ })).not.toBeInTheDocument();
+    fireEvent.keyDown(folder, { key: "ArrowRight" });
+    expect(folder).toHaveAttribute("aria-expanded", "true");
+    fireEvent.keyDown(folder, { key: "End" });
+    expect(document.activeElement).toHaveAttribute("data-explorer-path", "README.md");
+    fireEvent.keyDown(document.activeElement as HTMLElement, { key: "Home" });
+    expect(folder).toHaveFocus();
+  });
+
   it("searches by file name and never invents results", () => {
     renderExplorer();
     const input = screen.getByRole("textbox", { name: /Buscar nome de arquivo/ });
