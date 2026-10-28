@@ -185,12 +185,19 @@ export function SpineWorld() {
   useEffect(() => {
     const stage = document.getElementById("spine-stage");
     if (!stage) return;
-    if (ready && active && !reducedMotion) {
-      stage.dataset.glass = "true";
-    } else {
-      delete stage.dataset.glass;
-    }
+    const syncGlassFallback = () => {
+      // Small screens intentionally hide the expensive transmissive panes.
+      // Keep the frosted CSS material enabled on those devices.
+      if (ready && active && !reducedMotion && window.innerWidth > 760) {
+        stage.dataset.glass = "true";
+      } else {
+        delete stage.dataset.glass;
+      }
+    };
+    syncGlassFallback();
+    window.addEventListener("resize", syncGlassFallback);
     return () => {
+      window.removeEventListener("resize", syncGlassFallback);
       delete stage.dataset.glass;
     };
   }, [ready, active, reducedMotion]);
