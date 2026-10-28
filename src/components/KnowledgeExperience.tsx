@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import type { KeyboardEvent as ReactKeyboardEvent } from "react";
-import { KNOWLEDGE_NODES, KNOWLEDGE_PROJECTS, type KnowledgeNode, type KnowledgeProjectId } from "../data/knowledge";
+import { KNOWLEDGE_PROJECTS, type KnowledgeNode, type KnowledgeProjectId } from "../data/knowledge";
 import { PLACEHOLDER_PROJECTS } from "./PlaceholderCatalog";
 import KnowledgeWorld, { type KnowledgeSelection, type SpatialCoordinate } from "./KnowledgeWorld";
 import "../styles/knowledge-experience.css";
