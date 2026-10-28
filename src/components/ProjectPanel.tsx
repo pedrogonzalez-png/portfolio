@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { PLACEHOLDER_PROJECTS, type Project } from "./PlaceholderCatalog";
 import { EmbeddedDemo } from "./EmbeddedDemo";
+import { SpineWorld } from "./SpineWorld";
 
 export function ProjectPanel() {
   const [selected, setSelected] = useState<Project | null>(null);
@@ -34,11 +35,17 @@ export function ProjectPanel() {
 
   return (
     <>
-      <div className="project-grid">
+      <div id="spine-stage" className="spine-stage">
+        <SpineWorld />
+        <div className="spine-guide" aria-hidden="true">
+          <span>02 / NÚCLEO CRIATIVO</span>
+          <span>TRÊS PROJETOS · UMA JORNADA</span>
+        </div>
+        <div className="project-grid orbit-grid">
         {PLACEHOLDER_PROJECTS.filter((p) => p.featured && p.status !== "hidden").map((project, index) => (
           <button
             key={project.id}
-            className="project-card"
+            className={"project-card orbit-card orbit-card-" + index}
             type="button"
             onClick={(event) => {
               trigger.current = event.currentTarget;
@@ -56,6 +63,7 @@ export function ProjectPanel() {
             </span>
           </button>
         ))}
+        </div>
       </div>
       <p className="projects-disclaimer">Apenas os três projetos autorizados. Nenhum projeto é apresentado como finalizado ou com demo disponível sem confirmação.</p>
       {selected && (
