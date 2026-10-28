@@ -1,4 +1,11 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import type { ChangeEvent } from "react";
+import { DesktopClockWidget } from "./desktop/DesktopClockWidget";
+import { DesktopCharacterCard } from "./desktop/DesktopCharacterCard";
+import { DesktopMovable } from "./desktop/DesktopMovable";
+import {
+  isSupportedCardImage, MAX_SESSION_CARDS, type DesktopImageCard, type DesktopPosition,
+} from "../services/desktopElements";
 import type { ThemePalette } from "../stores/themes";
 
 type DesktopPanel = "inicio" | "paleta" | "sobre";
@@ -10,6 +17,58 @@ export function SimulatedDesktop({ palette, themeName }: {
   const [screenMode, setScreenMode] = useState<ScreenMode>("ultrawide");
   const [panel, setPanel] = useState<DesktopPanel>("inicio");
   const [portraitConfirmed, setPortraitConfirmed] = useState(false);
+  const [clockVisible, setClockVisible] = useState(false);
+  const [clockPosition, setClockPosition] = useState<DesktopPosition>({ x: 62, y: 7 });
+  const [cards, setCards] = useState<DesktopImageCard[]>([]);
+  const [imageError, setImageError] = useState("");
+  const areaRef = useRef<HTMLDivElement>(null);
+  const urlsRef = useRef<Set<string>>(new Set());
+
+  useEffect(() => {
+    // Each imported image is local to this preview session.
+    const owned = urlsRef.current;
+    return () => { for (const url of owned) URL.revokeObjectURL(url); owned.clear(); };
+  }, []);
+
+  const onImportCards = (event: ChangeEvent<HTMLInputElement>) => {
+    const incoming = Array.from(event.currentTarget.files ?? []);
+    event.currentTarget.value = "";
+    if (!incoming.length) return;
+    const remaining = Math.max(0, MAX_SESSION_CARDS - cards.length);
+    const accepted = incoming.filter(isSupportedCardImage).slice(0, remaining);
+    const rejected = incoming.length - accepted.length;
+    setImageError(rejected ? rejected + " imagem(ns) recusada(s). Use PNG, JPG ou WebP até 8 MB, no máximo " +
+      MAX_SESSION_CARDS + " cards por sessão." : "");
+    const created: DesktopImageCard[] = [];
+    try {
+      for (const file of accepted) {
+        const url = URL.createObjectURL(file);
+        urlsRef.current.add(url);
+        const index = cards.length + created.length;
+        created.push({
+          id: "card-" + (globalThis.crypto?.randomUUID?.() ?? (Date.now() + "-" + index)),
+          url, name: file.name,
+          position: { x: 8 + (index % 4) * 15, y: 22 + (index % 3) * 16 },
+        });
+      }
+      setCards((current) => [...current, ...created]);
+    } catch {
+      for (const card of created) {
+        urlsRef.current.delete(card.url);
+        URL.revokeObjectURL(card.url);
+      }
+      setImageError("Não foi possível abrir a imagem neste navegador.");
+    }
+  };
+
+  const removeCard = (id: string) => {
+    const card = cards.find((item) => item.id === id);
+    if (!card) return;
+    urlsRef.current.delete(card.url);
+    URL.revokeObjectURL(card.url);
+    setCards((current) => current.filter((item) => item.id !== id));
+  };
+
   const swatches = [
     ["Principal", palette.accentPrimary], ["Secundária", palette.accentRed],
     ["Destaque", palette.accentYellow], ["Superfície", palette.surface],
@@ -30,6 +89,21 @@ export function SimulatedDesktop({ palette, themeName }: {
             onClick={() => setScreenMode("standard")}>1920 × 1080</button>
         </div>
       </header>
+      <div className="theme-desktop-element-tools" aria-label="Inserir elementos no desktop">
+        <button type="button" onClick={() => setClockVisible((current) => !current)}>
+          {clockVisible ? "Remover relógio" : "Adicionar relógio digital"}
+        </button>
+        <label className="theme-desktop-import">
+          Importar card de personagem
+          <input type="file" multiple accept=".png,.jpg,.jpeg,.webp,image/png,image/jpeg,image/webp"
+            aria-label="Selecionar imagens para cards" onChange={onImportCards} />
+        </label>
+        <small>Widgets e cards são elementos diferentes. Mova arrastando a alça ou com as setas.</small>
+      </div>
+      {imageError && <p role="alert" className="theme-desktop-import-error">{imageError}</p>}
+      <p className="theme-desktop-session-note">
+        Prévia temporária: imagens e posições ainda não são salvas. Os arquivos nunca são enviados ao servidor.
+      </p>
       {!portraitConfirmed && (
         <div className="theme-desktop-portrait-note">
           <p>Para uma melhor experiência, recomendamos usar o celular na horizontal. A edição com ele em pé não é recomendada.</p>
@@ -107,11 +181,30 @@ export function SimulatedDesktop({ palette, themeName }: {
               {panel === "sobre" && (
                 <div className="theme-desktop-about">
                   <strong>Uma base para o futuro editor</strong>
-                  <p>Esta visualização mostra apenas layout e paleta. Cards de personagens, widgets reais, wallpapers pessoais, arraste e salvamento de layouts ainda não estão implementados aqui.</p>
+                  <p>Cards de personagens, widgets reais: agora esta prévia já permite importar imagens como cards independentes e usar um relógio digital com hora local. Wallpapers pessoais, mais widgets, layouts permanentes e agrupamentos ainda não estão implementados.</p>
                   <p>Trocar as abas da prévia não modifica nem salva o seu tema.</p>
                 </div>
               )}
             </div>
+          </div>
+          <div className="theme-desktop-elements-layer" ref={areaRef}
+            aria-label="Elementos posicionáveis do desktop simulado">
+            {clockVisible && (
+              <DesktopMovable position={clockPosition} onMove={setClockPosition}
+                label="relógio digital" onRemove={() => setClockVisible(false)}
+                areaRef={areaRef}>
+                <DesktopClockWidget palette={palette} />
+              </DesktopMovable>
+            )}
+            {cards.map((card) => (
+              <DesktopMovable key={card.id} position={card.position}
+                onMove={(position) => setCards((current) =>
+                  current.map((item) => item.id === card.id ? { ...item, position } : item))}
+                label={"card " + card.name} onRemove={() => removeCard(card.id)}
+                areaRef={areaRef}>
+                <DesktopCharacterCard name={card.name} url={card.url} palette={palette}/>
+              </DesktopMovable>
+            ))}
           </div>
           <div className="theme-desktop-dock" style={{
             backgroundColor: palette.surfaceContainerHigh,
@@ -123,7 +216,7 @@ export function SimulatedDesktop({ palette, themeName }: {
         </div>
       </div>
       <p className="theme-desktop-footnote">
-        A visualização usa somente cores e formas CSS; sem imagens de terceiros, relógio ou indicadores de hardware fictícios.
+        Relógio com horário local real; cards usam somente imagens importadas neste navegador. Não há dados fictícios de hardware nem execução de QML.
       </p>
     </section>
   );

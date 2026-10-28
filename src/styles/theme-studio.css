@@ -119,3 +119,56 @@
   .theme-desktop-canvas{min-height:325px;}
   .theme-desktop-content{height:72%;width:90%;}
 }
+
+
+/* M4/M5 bridge: real local clock widget and independent imported image cards. */
+.theme-desktop-element-tools{display:flex;gap:.55rem;align-items:center;flex-wrap:wrap;margin:.25rem 0 .6rem;}
+.theme-desktop-element-tools>button,.theme-desktop-import{
+  display:inline-flex;align-items:center;justify-content:center;min-height:42px;
+  padding:.55rem .8rem;border-radius:9px;border:1px solid var(--color-outline);
+  background:var(--color-surface);color:var(--color-text);font-size:.73rem;cursor:pointer;
+}
+.theme-desktop-import{position:relative;overflow:hidden;}
+.theme-desktop-import input{
+  position:absolute;width:1px;height:1px;opacity:0;overflow:hidden;clip-path:inset(50%);
+}
+.theme-desktop-import:focus-within,.theme-desktop-element-tools>button:focus-visible{
+  outline:2px solid var(--color-accent-yellow);outline-offset:3px;
+}
+.theme-desktop-element-tools small{font-size:.65rem;color:var(--color-text-variant);line-height:1.4;}
+.theme-desktop-session-note{font-size:.68rem;color:var(--color-text-variant);margin:.35rem 0 .75rem;line-height:1.5;}
+.theme-desktop-import-error{color:var(--color-accent-red);font-size:.71rem;margin:.5rem 0;}
+.theme-desktop-elements-layer{
+  position:absolute;left:6%;right:6%;top:14%;bottom:12%;
+  z-index:4;pointer-events:none;
+}
+.desktop-editable-element{position:absolute;pointer-events:auto;width:max-content;max-width:24%;touch-action:none;}
+.desktop-element-controls{
+  display:flex;align-items:center;justify-content:space-between;gap:.35rem;
+  padding:.16rem .2rem;background:color-mix(in srgb,var(--color-surface) 90%,transparent);
+  border:1px solid var(--color-outline);border-radius:8px 8px 0 0;
+}
+.desktop-element-controls button{
+  background:transparent;border:0;color:var(--color-text);
+  font-size:.56rem;cursor:pointer;min-width:28px;min-height:24px;
+}
+.desktop-element-handle{flex:1;touch-action:none;cursor:grab!important;user-select:none;}
+.desktop-element-handle:active{cursor:grabbing!important;}
+.desktop-element-controls button:focus-visible{outline:2px solid var(--color-accent-yellow);outline-offset:2px;}
+.desktop-clock-widget{
+  min-width:140px;padding:.7rem 1rem;border:1px solid;border-radius:0 0 12px 12px;
+  display:flex;flex-direction:column;align-items:center;gap:.2rem;
+  backdrop-filter:blur(12px);box-shadow:0 8px 32px #0006;
+}
+.desktop-clock-kicker{font:.54rem ui-monospace,monospace;letter-spacing:.16em;}
+.desktop-clock-time{font:700 clamp(1.1rem,2.3vw,2.05rem)/1.15 ui-sans-serif,system-ui;letter-spacing:-.04em;font-variant-numeric:tabular-nums;white-space:nowrap}
+.desktop-clock-date{font:.6rem/1.3 ui-sans-serif,system-ui;text-align:center;text-transform:capitalize;max-width:170px;}
+.desktop-character-card{width:clamp(80px,11vw,135px);margin:0;border:1px solid;border-radius:0 0 11px 11px;overflow:hidden;box-shadow:0 9px 27px #0008;}
+.desktop-character-card img{display:block;width:100%;height:clamp(65px,10vw,116px);object-fit:cover;object-position:center;}
+.desktop-character-card figcaption{padding:.35rem .5rem;font:.59rem/1.3 ui-sans-serif,system-ui;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+@media(max-width:800px){
+  .desktop-editable-element{max-width:none;}
+  .desktop-clock-widget{min-width:115px;padding:.5rem .65rem;}
+  .desktop-character-card{width:95px;}
+  .desktop-character-card img{height:83px;}
+}

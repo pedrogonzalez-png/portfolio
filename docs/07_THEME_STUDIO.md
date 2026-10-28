@@ -166,3 +166,11 @@ Catálogo inicial, sujeito a comparação exata com o desktop/versão base:
 - **Abrir desktop ampliado** ativa uma simulação DOM/CSS 2D proporcional, com opções de aspecto 3440×1440 e 1920×1080, barra, dock e janelas visuais com três painéis alternáveis (Visão geral, Paleta e Sobre). Tudo é deliberadamente demonstrativo; nenhuma mídia, widget, card de personagem, wallpaper MP4 ou QML real foi implementado ainda.
 - Prévia ampliada herda alterações do rascunho em tempo real; muda apenas o Theme Studio, sem alterar o Arch real, o portfolio 3D, a seleção aplicada ou dados salvos. Mobile vertical tem aviso de orientação que pode ser dispensado.
 - Desktop simulado é um **andaime visual para a etapa de widgets/layouts**, não conclusão do editor de desktop previsto em M5. M4 permanece IN_PROGRESS até QA manual e aceitação.
+
+## M4 → M5 — primeiro relógio real + primeiros cards de personagem (28/10/2026)
+
+- Inspecionamos os QMLs no commit pinado 8fbb6716cba628a13103e665e9538021683a7250 da referência pctrade/end4-pC: ClockWidget.qml, DigitalClock.qml, ImageCardWidget.qml. O relógio web usa horário e data locais reais (Intl.DateTimeFormat pt-BR), atualiza a cada segundo e herda a paleta; é adaptação React/CSS do estilo digital, não QML executado.
+- Cards de personagem não são widgets: cada card recebe sua própria imagem PNG/JPG/WebP, selecionada pelo visitante, ID único e URL blob local. Imagens com até 8 MB cada, máximo temporário de 20 cards por sessão; SVG e arquivos incompatíveis são recusados. Não há imagens inventadas ou uploads para servidores.
+- Relógio e cards têm alças independentes com arraste via pointer (mouse/touch) ou movimentação por setas; Shift + seta aumenta o passo; remoção individual. Posicionamento percentual limitado à área da prévia.
+- IMPORTANTE: arquivos importados, relógio e posições existem apenas durante a sessão da prévia. URL.revokeObjectURL libera as imagens ao remover ou fechar o editor; não há IndexedDB, salvamento/exportação de mídia, layout por wallpaper, grid, grupos, snap ou undo/redo. Não afirmar persistência ou conclusão dessas funções.
+- Esta implementação inicia elementos reais do desktop simulado; M4/M5 ainda IN_PROGRESS até QA no navegador e persistência dos elementos em marco posterior. Os cinco temas oficiais continuam imutáveis, assim como o Arch real e o portfolio 3D.
