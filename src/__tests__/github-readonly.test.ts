@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
-  directoryEntries, getRepoTree, normalizeRepoPath, readRepoFile, resolveRepo,
+  directoryEntries, getRepoTree, normalizeRepoPath, readRepoFile, resolveRepo, validatedStaticSnapshot,
 } from "../services/githubReadonly";
 
 afterEach(() => vi.unstubAllGlobals());
@@ -35,6 +35,7 @@ describe("GitHub readonly allowlist", () => {
     const sha = "a".repeat(40);
     const treeSha = "b".repeat(40);
     const fetchMock = vi.fn(async (url: string) => {
+      if (url.endsWith("/github-index.json")) return { ok: false, status: 404 };
       let payload: unknown;
       if (url.endsWith("/repos/pedrogonzalez-png/jogo-site")) {
         payload = { default_branch: "main" };
@@ -61,6 +62,32 @@ describe("GitHub readonly allowlist", () => {
     expect(file.content).toBe("console.log('hi')");
     expect(file.url).toContain("/pedrogonzalez-png/jogo-site/blob/main/src/main.js");
     await expect(readRepoFile("abismo", "src/other.js")).rejects.toThrow("não encontrado");
-    expect(fetchMock).toHaveBeenCalledTimes(3);
+    expect(fetchMock).toHaveBeenCalledTimes(4);
+  });
+});
+
+
+describe("generated public index security", () => {
+  const sha = "a".repeat(40);
+  const valid = {
+    schemaVersion: 1, generatedAt: new Date().toISOString(),
+    repos: [{
+      repoId: "abismo", repoFullName: "pedrogonzalez-png/jogo-site",
+      branch: "main", treeSha: sha, truncated: false,
+      entries: [{ path: "src/main.js", type: "blob", sha, size: 42 }],
+    }],
+  };
+  it("accepts only the exact allowlisted repo and labels snapshot provenance", () => {
+    expect(validatedStaticSnapshot(valid, "abismo", "pedrogonzalez-png/jogo-site"))
+      .toMatchObject({ source: "snapshot", entries: [{ path: "src/main.js" }] });
+    expect(validatedStaticSnapshot(valid, "dotfiles-Arch", "pedrogonzalez-png/dotfiles-Arch")).toBeNull();
+    expect(validatedStaticSnapshot(valid, "abismo", "attacker/fake")).toBeNull();
+  });
+  it("rejects malformed, outdated or traversal-capable snapshots", () => {
+    expect(validatedStaticSnapshot({ ...valid, generatedAt: "2001-01-01T00:00:00Z" },
+      "abismo", "pedrogonzalez-png/jogo-site")).toBeNull();
+    expect(validatedStaticSnapshot({ ...valid, repos: [{ ...valid.repos[0],
+      entries: [{ path: "../private", type: "blob", sha }] }] },
+      "abismo", "pedrogonzalez-png/jogo-site")).toBeNull();
   });
 });

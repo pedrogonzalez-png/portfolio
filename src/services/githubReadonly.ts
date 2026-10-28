@@ -18,6 +18,8 @@ export interface RepoSnapshot {
   treeSha: string;
   entries: RepoEntry[];
   truncated: boolean;
+  source?: "snapshot" | "live";
+  generatedAt?: string;
 }
 
 export interface CommitSummary {
@@ -107,9 +109,66 @@ function ensureAllowed(repoId: string) {
   return repo;
 }
 
+/** A build-generated public index, never a source of additional repo permissions. */
+type ApprovedIndex = { schemaVersion: number; generatedAt: string; repos: RepoSnapshot[] };
+const INDEX_PATH = import.meta.env.BASE_URL + "github-index.json";
+
+export function validatedStaticSnapshot(data: unknown, repoId: string, repoFullName: string): RepoSnapshot | null {
+  if (!data || typeof data !== "object") return null;
+  const index = data as Partial<ApprovedIndex>;
+  if (index.schemaVersion !== 1 || !Array.isArray(index.repos) ||
+      typeof index.generatedAt !== "string") return null;
+  const generatedAt = Date.parse(index.generatedAt);
+  if (!Number.isFinite(generatedAt) || generatedAt > Date.now() + 86_400_000 ||
+      Date.now() - generatedAt > 90 * 86_400_000) return null;
+
+  const raw = index.repos.find((item) => item?.repoId === repoId && item?.repoFullName === repoFullName);
+  if (!raw || typeof raw.branch !== "string" || !/^[a-zA-Z0-9._/-]{1,130}$/.test(raw.branch) ||
+      raw.branch.includes("..") || raw.branch.startsWith("/") || raw.branch.endsWith("/") ||
+      typeof raw.treeSha !== "string" || !/^[a-f0-9]{40}$/.test(raw.treeSha) ||
+      typeof raw.truncated !== "boolean" || !Array.isArray(raw.entries) ||
+      raw.entries.length > MAX_TREE_ENTRIES) return null;
+
+  const entries: RepoEntry[] = [];
+  for (const item of raw.entries) {
+    if (!item || (item.type !== "blob" && item.type !== "tree") ||
+        typeof item.path !== "string" || item.path.startsWith("/") ||
+        item.path.split("/").some((part) => !part || part === "." || part === "..") ||
+        typeof item.sha !== "string" || !/^[a-f0-9]{40}$/.test(item.sha) ||
+        (item.size !== undefined && (!Number.isSafeInteger(item.size) || item.size < 0))) return null;
+    entries.push({ path: item.path, type: item.type, sha: item.sha, size: item.size });
+  }
+  return {
+    repoId, repoFullName, branch: raw.branch, treeSha: raw.treeSha,
+    truncated: raw.truncated, entries,
+    generatedAt: index.generatedAt, source: "snapshot",
+  };
+}
+
+async function loadPublishedIndex(): Promise<unknown> {
+  return cached("public:index", async () => {
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 4000);
+      try {
+        const response = await fetch(INDEX_PATH, { signal: controller.signal });
+        if (!response.ok || !response.headers?.get("content-type")?.includes("application/json")) return null;
+        return await response.json() as unknown;
+      } finally {
+        clearTimeout(timeout);
+      }
+    } catch {
+      // Local Vite dev, a missed static file, or offline mode: use live API.
+      return null;
+    }
+  });
+}
+
 export async function getRepoTree(repoId: string): Promise<RepoSnapshot> {
   const repo = ensureAllowed(repoId);
   return cached("tree:" + repo.id, async () => {
+    const fromIndex = validatedStaticSnapshot(await loadPublishedIndex(), repo.id, repo.repoFullName);
+    if (fromIndex) return fromIndex;
     const metadata = await getJson<{ default_branch: string }>(
       "/repos/" + repo.repoFullName,
     );
@@ -126,6 +185,7 @@ export async function getRepoTree(repoId: string): Promise<RepoSnapshot> {
       repoFullName: repo.repoFullName,
       branch,
       treeSha: tree.sha,
+      source: "live" as const,
       truncated: Boolean(tree.truncated) || tree.tree.length > MAX_TREE_ENTRIES,
       entries: tree.tree.slice(0, MAX_TREE_ENTRIES)
         .filter((entry): entry is RepoEntry =>

@@ -23,7 +23,7 @@ O relatório anterior chamava o M3 de concluído, apesar de `cat`, `git log` e `
 - **Linha do tempo de commits reais: implementada parcialmente**, com paginação limitada a dez páginas, doze commits por página, detalhamento `git show` sob demanda. A curadoria manual de marcos e sincronização completa com o terminal ainda não foram feitas.
 - **Gramáticas sob demanda implementadas** para JavaScript, TypeScript, JSX/TSX, CSS, HTML e Markdown, com realce de tokens no tema Changli e numeração de linhas. JSON recebe realce básico usando parser compatível com JavaScript (não é um validador de JSON estrito). A revisão visual da coloração e cobertura das gramáticas permanece pendente.
 - Grafo de commits 3D e objeto terminal integrado à cena 3D; dependem de maturidade da UI.
-- Índice estático de arquivos gerado no CI para reduzir dependência de quota da API.
+- Índice estático gerado **opcionalmente no CI** a partir da mesma allowlist JSON do catálogo (`src/data/approved-repos.json`) com até 4.000 entradas por projeto. O navegador prioriza o índice validado (máximo 90 dias) e recorre à API GitHub quando ausente, expirado ou inválido. Não inclui conteúdo de arquivos, apenas caminhos e SHAs, e não libera repositórios adicionais. CI não deve falhar se a API de terceiros estiver indisponível.
 - Teste manual completo no navegador do proprietário, rede offline/rate limit real e acessibilidade com leitor de tela.
 - Qualquer demo de Abismo/site-3D continua sem URL publicada autorizada; M2 ainda tem gate pendente.
 
@@ -40,4 +40,4 @@ GitHub Actions é a fonte de evidência para TypeScript, testes, build e lint. N
 
 ## Próxima tarefa M3
 
-Conferir visualmente árvore, abas, Markdown, syntax highlighting e histórico no Arch. Em seguida, produzir um índice estático de arquivos no CI para reduzir dependência da quota da API e revisar acessibilidade, históricos e curadoria. Não marcar M3 `DONE` antes da validação manual.
+Conferir visualmente árvore, abas, Markdown, syntax highlighting e histórico no Arch. Em seguida, verificar que o índice gerado está presente no build implantado e revisar acessibilidade, históricos e curadoria. Não marcar M3 `DONE` antes da validação manual.

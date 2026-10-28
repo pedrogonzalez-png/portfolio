@@ -1,3 +1,4 @@
+import APPROVED_GITHUB_REPOS from "../data/approved-repos.json";
 /**
  * M0 — Catálogo de projetos aprovados (MANIFESTO VERSÃO M2-01).
  * Atualizado conforme PR-M2-01 (apenas documentação — sem URLs falsas,
@@ -30,7 +31,7 @@ export interface Project {
  */
 export const ABISMO: Project = {
   id: "abismo",
-  repoFullName: "pedrogonzalez-png/jogo-site",
+  repoFullName: APPROVED_GITHUB_REPOS["abismo"],
   title: "Abismo",
   summary:
     "RPG ação/exploração top-down com ASCII de alta densidade, combate souls-like, mundo procedural e saves IndexedDB. (Phaser 4, Vite 8, JS ESM.) Status: draft — não finalizado até confirmação do proprietário.",
@@ -52,7 +53,7 @@ export const ABISMO: Project = {
  */
 export const SITE3D: Project = {
   id: "site-3d",
-  repoFullName: "pedrogonzalez-png/site-3D",
+  repoFullName: APPROVED_GITHUB_REPOS["site-3d"],
   title: "site-3D",
   summary:
     "Experiência web interativa de seleção de personagens com roleta em arco, vídeos intro/idle e busca. (React 19, Vite 8.) Status: draft — não finalizado até confirmação do proprietário.",
@@ -74,7 +75,7 @@ export const SITE3D: Project = {
  */
 export const HYPRLAND_THEMES: Project = {
   id: "hyprland-themes",
-  repoFullName: "pedrogonzalez-png/Hyprland-Themes",
+  repoFullName: APPROVED_GITHUB_REPOS["hyprland-themes"],
   title: "Hyprland-Themes",
   summary:
     "Galeria dos cinco temas oficiais (Changli, Hiyuki, Emilia, Furina, Hotline Miami) com tokens JSON e entrada para Theme Studio. Status: draft — não finalizado até confirmação do proprietário.",

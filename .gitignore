@@ -47,3 +47,6 @@ dist/
 .env.*
 !.env.example
 *.bak
+
+# Generated at build time (not source-controlled)
+public/github-index.json

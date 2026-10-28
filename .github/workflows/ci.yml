@@ -28,6 +28,12 @@ jobs:
       - name: Test (unit and integration)
         run: npm run test
 
+      - name: Generate approved GitHub index (optional network cache)
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node scripts/generate-github-index.mjs
+
       - name: Build
         run: npm run build
 
