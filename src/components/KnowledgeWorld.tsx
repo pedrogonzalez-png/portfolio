@@ -4,14 +4,13 @@ import { Line, RoundedBox } from "@react-three/drei";
 import { AdditiveBlending, BufferAttribute, BufferGeometry, CatmullRomCurve3, Color, Vector2, Vector3 } from "three";
 import type { Group } from "three";
 import { useTheme } from "../stores/themeContext";
-import { type KnowledgeNode, type KnowledgeProjectId } from "../data/knowledge";
+import { type KnowledgeProjectId } from "../data/knowledge";
 
 export type SpatialCoordinate = { x: number; y: number };
 export type KnowledgeWorldProps = {
   activeProject: KnowledgeProjectId;
   skillPositions: readonly { id: string; position: SpatialCoordinate }[];
   activeSkill: string | null;
-  nodes: readonly KnowledgeNode[];
   onContextLost: () => void;
 };
 
@@ -123,8 +122,8 @@ function Aura({ at, size, color }: { at: [number, number, number]; size: number;
 }
 
 function Architecture({
-  skillPositions, activeSkill, nodes,
-}: Pick<KnowledgeWorldProps, "skillPositions" | "activeSkill" | "nodes">) {
+  skillPositions, activeSkill,
+}: Pick<KnowledgeWorldProps, "skillPositions" | "activeSkill">) {
   const { theme } = useTheme();
   const { viewport } = useThree();
   const rig = useRef<Group>(null);
