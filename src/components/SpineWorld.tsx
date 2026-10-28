@@ -1,12 +1,11 @@
 import { useEffect, useMemo, useRef, useState, Suspense } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { AdditiveBlending, CatmullRomCurve3, DynamicDrawUsage, MathUtils, Object3D, Vector2, Vector3 } from "three";
-import type { Group, InstancedMesh, ShaderMaterial } from "three";
+import { AdditiveBlending, DynamicDrawUsage, MathUtils, Vector2, Vector3 } from "three";
+import type { ShaderMaterial } from "three";
 import { useAccessibility } from "./accessibilityContext";
 import { GlassScreens } from "./GlassScreens";
 
 const PARTICLES = 7200;
-const VERTEBRAE = 23;
 
 const particleVertex = `
   uniform float uTime;
@@ -107,57 +106,6 @@ function OrganicDust() {
   );
 }
 
-function VertebralStructure() {
-  const group = useRef<Group>(null);
-  const mesh = useRef<InstancedMesh>(null);
-  const template = useMemo(() => new Object3D(), []);
-  const centerLine = useMemo(() => new CatmullRomCurve3([
-    new Vector3(0.1, -3.9, -0.02),
-    new Vector3(-0.22, -1.8, 0),
-    new Vector3(0.18, 0.1, -0.12),
-    new Vector3(-0.1, 2.0, 0.02),
-    new Vector3(0.08, 4.0, 0),
-  ]), []);
-
-  useEffect(() => {
-    if (!mesh.current) return;
-    for (let i = 0; i < VERTEBRAE; i++) {
-      const t = i / (VERTEBRAE - 1);
-      const p = centerLine.getPoint(t);
-      template.position.copy(p);
-      template.rotation.set(Math.sin(t * 11) * 0.24 + 0.15, 0, Math.cos(t * 9) * 0.28);
-      const taper = 0.55 + Math.sin(t * Math.PI) * 0.58;
-      template.scale.set(taper, taper, 0.6 + taper * 0.42);
-      template.updateMatrix();
-      mesh.current.setMatrixAt(i, template.matrix);
-    }
-    mesh.current.instanceMatrix.needsUpdate = true;
-  }, [centerLine, template]);
-
-  useFrame(({ clock }, delta) => {
-    if (group.current) {
-      const t = clock.elapsedTime;
-      group.current.rotation.y += Math.min(delta, 0.06) * 0.055;
-      group.current.rotation.z = Math.sin(t * 0.3) * 0.035;
-    }
-  });
-
-  return (
-    <group ref={group}>
-      <mesh>
-        <tubeGeometry args={[centerLine, 180, 0.055, 8, false]} />
-        <meshStandardMaterial color="#A85244" emissive="#C96A42" emissiveIntensity={0.95} metalness={0.8} roughness={0.22} />
-      </mesh>
-      <instancedMesh ref={mesh} args={[undefined, undefined, VERTEBRAE]}>
-        <torusGeometry args={[0.53, 0.15, 8, 28]} />
-        <meshStandardMaterial color="#C47A68" emissive="#6A2729" emissiveIntensity={0.24} metalness={0.82} roughness={0.25} transparent opacity={0.88} />
-      </instancedMesh>
-      <OrganicDust />
-    </group>
-  );
-}
-
-
 function SpineCameraJourney() {
   const { camera } = useThree();
   const progress = useRef(0);
@@ -192,7 +140,7 @@ function SpineCameraJourney() {
   return null;
 }
 
-function SpineCanvas() {
+function ConstellationCanvas() {
   return (
     <div className="spine-world" aria-hidden="true">
       <Canvas camera={{ position: [0, 0, 13], fov: 43 }} dpr={[1, 1.5]} gl={{ alpha: true, antialias: true, powerPreference: "high-performance" }}>
@@ -200,7 +148,7 @@ function SpineCanvas() {
         <ambientLight intensity={1.5} />
         <pointLight position={[4, 4, 5]} intensity={42} color="#f8b88a" />
         <pointLight position={[-4, -3, 4]} intensity={17} color="#b82946" />
-        <VertebralStructure />
+        <OrganicDust />
         <GlassScreens />
       </Canvas>
     </div>
@@ -253,7 +201,7 @@ export function SpineWorld() {
 
   return (
     <Suspense fallback={<div className="spine-fallback" aria-hidden="true" />}>
-      <SpineCanvas />
+      <ConstellationCanvas />
     </Suspense>
   );
 }
