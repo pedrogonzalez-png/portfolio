@@ -42,8 +42,8 @@ describe("terminal → visual Git navigation", () => {
       render(makeExplorer({ id: 2, kind: "detail", detail }));
       await waitFor(() => expect(screen.getByRole("region", { name: "Visualizador de diff Git" })).toBeInTheDocument());
       expect(screen.getByText("Comparison (ahead)")).toBeInTheDocument();
-      expect(screen.getByText(/src\/game\.js/)).toBeInTheDocument();
-      expect(screen.getByText(/Fonte GitHub/)).not.toBeInTheDocument();
+      expect(screen.getAllByText(/src\/game\.js/).length).toBeGreaterThanOrEqual(2);
+      expect(screen.queryByText(/Fonte GitHub/)).not.toBeInTheDocument();
     } finally { spy.mockRestore(); }
   });
 });
