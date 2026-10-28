@@ -68,7 +68,12 @@ function useCarouselWheel(
       const next = current + direction;
       if (next < 0 || next >= count) {
         accumulation = 0;
-        return; // Natural scroll continues past the first/last panel.
+        // Absorb leftover trackpad inertia from the last change, then let
+        // a subsequent wheel gesture leave the carousel naturally.
+        if (performance.now() - lastChangeAt < WHEEL_COOLDOWN_MS) {
+          event.preventDefault();
+        }
+        return;
       }
 
       event.preventDefault();
