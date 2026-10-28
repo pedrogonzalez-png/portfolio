@@ -29,6 +29,21 @@ interface BackupHeader {
 const encoder = new TextEncoder();
 const decoder = new TextDecoder("utf-8", { fatal: true });
 
+function readBytes(blob: Blob, start: number, end: number): Promise<ArrayBuffer> {
+  const slice = blob.slice(start, end);
+  if (typeof slice.arrayBuffer === "function") return slice.arrayBuffer();
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (reader.result instanceof ArrayBuffer) resolve(reader.result);
+      else reject(new Error("Falha ao ler bytes do arquivo."));
+    };
+    reader.onerror = () => reject(new Error("Não foi possível ler o backup."));
+    reader.readAsArrayBuffer(slice);
+  });
+}
+
+
 export function createDesktopBackup(layout: StoredDesktopLayout): Blob {
   if (!isStoredDesktopLayout(layout)) throw new Error("O layout está inválido e não pode ser exportado.");
   const header: BackupHeader = {
@@ -58,7 +73,7 @@ export function createDesktopBackup(layout: StoredDesktopLayout): Blob {
 /** Reject malformed offsets, forged MIME/types, trailing bytes and oversized files. */
 export async function parseDesktopBackup(file: Blob): Promise<StoredDesktopLayout> {
   if (file.size < 12 || file.size > MAX_BACKUP_BYTES) throw new Error("Tamanho de backup inválido.");
-  const prefix = new Uint8Array(await file.slice(0, 12).arrayBuffer());
+  const prefix = new Uint8Array(await readBytes(file, 0, 12));
   if (decoder.decode(prefix.slice(0, 8)) !== MAGIC)
     throw new Error("Arquivo não é um backup válido do Theme Studio.");
   const headerSize = new DataView(prefix.buffer).getUint32(8, true);
@@ -66,7 +81,7 @@ export async function parseDesktopBackup(file: Blob): Promise<StoredDesktopLayou
     throw new Error("Cabeçalho do backup inválido.");
   let raw: unknown;
   try {
-    raw = JSON.parse(decoder.decode(await file.slice(12, headerSize + 12).arrayBuffer()));
+    raw = JSON.parse(decoder.decode(await readBytes(file, 12, headerSize + 12)));
   } catch {
     throw new Error("Metadados do backup ilegíveis.");
   }
