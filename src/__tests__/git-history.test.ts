@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { visibleCommitEdges } from "../components/CommitGraph";
+import { visibleCommitEdges } from "../services/gitGraph";
 import { technicalMilestonesForRepo } from "../services/gitMilestones";
 import type { CommitSummary } from "../services/githubReadonly";
 
