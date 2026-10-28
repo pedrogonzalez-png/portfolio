@@ -6,7 +6,7 @@ import type { Mesh, PerspectiveCamera } from "three";
 
 /**
  * Optically transmissive 3D surfaces registered to the screen positions of
- * accessible DOM buttons. The spine is in the same WebGL scene and can refract
+ * accessible DOM buttons. The atmospheric particles are in the same WebGL scene and can refract
  * through these plates. Non-WebGL clients use the HTML/CSS fallback.
  */
 function GlassScreen({ index }: { index: number }) {
