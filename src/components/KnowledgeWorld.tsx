@@ -49,9 +49,9 @@ const veilFragment = [
   "  float glow = bell(p.x + 0.18, 20.0) * bell(p.y + 0.09, 9.0);",
   "  float flare = bell(p.x - 0.28, 32.0) * bell(p.y - 0.12, 60.0);",
   "  vec3 color = vec3(0.015,0.012,0.028);",
-  "  color += uWarm*(ribbon*0.21 + filament*0.50 + glow*0.14);",
-  "  color += uRose*(second*0.31 + flare*0.26);",
-  "  color += vec3(0.32,0.47,0.65)*(filament*0.19 + second*0.11);",
+  "  color += uWarm*(ribbon*0.15 + filament*0.31 + glow*0.085);",
+  "  color += uRose*(second*0.19 + flare*0.16);",
+  "  color += vec3(0.32,0.47,0.65)*(filament*0.15 + second*0.085);",
   "  gl_FragColor = vec4(color, 1.0);",
   "}",
 ].join("\n");
@@ -165,7 +165,7 @@ function FlowingLight() {
           <meshBasicMaterial
             color={index === 0 ? theme.palette.accentYellow : index === 1 ? "#8daeda" : theme.palette.accentRed}
             transparent
-            opacity={index === 1 ? 0.46 : 0.39}
+            opacity={index === 1 ? 0.29 : 0.22}
             depthWrite={false}
             blending={AdditiveBlending}
           />
@@ -268,11 +268,11 @@ function AmbientRings() {
     <group ref={group} position={[0, 0, -5.6]}>
       <mesh rotation={[0.56, -0.30, 0.14]}>
         <torusGeometry args={[viewport.height * 0.68, 0.012, 5, 144]} />
-        <meshBasicMaterial color={theme.palette.accentYellow} opacity={0.20} transparent depthWrite={false} side={DoubleSide} />
+        <meshBasicMaterial color={theme.palette.accentYellow} opacity={0.11} transparent depthWrite={false} side={DoubleSide} />
       </mesh>
       <mesh rotation={[0.1, 0.28, -0.20]}>
         <torusGeometry args={[viewport.height * 0.89, 0.009, 5, 144]} />
-        <meshBasicMaterial color={theme.palette.accentRed} opacity={0.15} transparent depthWrite={false} />
+        <meshBasicMaterial color={theme.palette.accentRed} opacity={0.09} transparent depthWrite={false} />
       </mesh>
     </group>
   );
@@ -283,17 +283,21 @@ function SharedGlass({ skillPositions, activeSkill }: Pick<KnowledgeWorldProps, 
   const { theme } = useTheme();
   const { gl, size } = useThree();
   const dpr = gl.getPixelRatio();
-  const bufferWidth = Math.max(1, Math.min(1400, Math.round(size.width * dpr)));
-  const bufferHeight = Math.max(1, Math.min(900, Math.round(size.height * dpr)));
+  const canvasWidth = Math.max(1, Math.round(size.width * dpr));
+  const canvasHeight = Math.max(1, Math.round(size.height * dpr));
+  // Preserve the stage's aspect ratio: independent caps distort glass refraction.
+  const scale = Math.min(1, 1400 / canvasWidth, 900 / canvasHeight);
+  const bufferWidth = Math.max(1, Math.round(canvasWidth * scale));
+  const bufferHeight = Math.max(1, Math.round(canvasHeight * scale));
   const target = useFBO(bufferWidth, bufferHeight, { depthBuffer: false, samples: 0 });
   const glassGroup = useRef<Group>(null);
   const uniforms = useMemo(() => ({
     uBackdrop: { value: target.texture },
-    uResolution: { value: new Vector2(Math.max(1,Math.round(size.width*dpr)), Math.max(1,Math.round(size.height*dpr))) },
+    uResolution: { value: new Vector2(canvasWidth, canvasHeight) },
     uTime: { value: 0 },
     uTint: { value: new Color(theme.palette.accentYellow) },
     uFocus: { value: 1 },
-  }), [target.texture, size.width, size.height, dpr, theme.palette.accentYellow]);
+  }), [target.texture, canvasWidth, canvasHeight, theme.palette.accentYellow]);
 
   useFrame(({ scene, camera, clock }) => {
     if (!glassGroup.current) return;
@@ -312,8 +316,8 @@ function SharedGlass({ skillPositions, activeSkill }: Pick<KnowledgeWorldProps, 
 
   const panes: Pane[] = [
     { x: 50, y: 50, w: 40, h: 44, z: -0.75, focus: true },
-    { x: 12, y: 51, w: 16, h: 25, z: -1.7, turn: 0.17 },
-    { x: 88, y: 51, w: 16, h: 25, z: -1.7, turn: -0.17 },
+    { x: 12, y: 51, w: 16, h: 25, z: -1.7, turn: -0.17 },
+    { x: 88, y: 51, w: 16, h: 25, z: -1.7, turn: 0.17 },
     ...skillPositions.map(({ position, id }) => ({
       x: position.x, y: position.y, w: 13, h: 8.6, z: -1.25,
       focus: activeSkill === id,
