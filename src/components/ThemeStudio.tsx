@@ -1,6 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { useTheme } from "../stores/themeContext";
 import type { Theme, ThemePalette } from "../stores/themes";
+import { ThemeContrastAudit } from "./ThemeContrastAudit";
+import { SimulatedDesktop } from "./SimulatedDesktop";
+import { suggestReadableText } from "../services/themeContrast";
 import "../styles/theme-studio.css";
 
 const EDITABLE_COLORS: { key: keyof ThemePalette; label: string }[] = [
@@ -28,6 +31,7 @@ export function ThemeStudio({ onClose }: { onClose: () => void }) {
   const [draft, setDraft] = useState<Draft | null>(theme.kind === "custom" ? draftOf(theme) : null);
   const [notice, setNotice] = useState("");
   const [error, setError] = useState("");
+  const [desktopOpen, setDesktopOpen] = useState(false);
   const dialogRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
 
@@ -198,6 +202,32 @@ export function ThemeStudio({ onClose }: { onClose: () => void }) {
             </div>
           </div>
         </div>
+
+        <div className="theme-studio-preview-tools">
+          <div>
+            <strong>Explore o ambiente ampliado</strong>
+            <p>Confira a prévia em proporção ultrawide ou 16:9, sem mudar seu desktop real.</p>
+          </div>
+          <button type="button" aria-expanded={desktopOpen}
+            aria-controls="theme-desktop-preview"
+            onClick={() => setDesktopOpen((open) => !open)}>
+            {desktopOpen ? "Recolher desktop simulado" : "Abrir desktop ampliado"}
+          </button>
+        </div>
+        {desktopOpen && (
+          <div id="theme-desktop-preview">
+            <SimulatedDesktop palette={palette} themeName={editingName} />
+          </div>
+        )}
+
+        <ThemeContrastAudit palette={palette}
+          onFixText={editing ? () => {
+            setDraft({
+              ...editing,
+              palette: { ...editing.palette, text: suggestReadableText(editing.palette) },
+            });
+            setNotice("");
+          } : undefined} />
 
         {editing && (
           <section className="theme-studio-editor" aria-label="Editar meu tema">

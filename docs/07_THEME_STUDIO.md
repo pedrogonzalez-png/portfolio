@@ -158,3 +158,11 @@ Catálogo inicial, sujeito a comparação exata com o desktop/versão base:
 - Editor simples: nome, três acentos, fundo, superfície e texto, com prévia isolada. **Salvar** persiste; **Aplicar** altera a aparência global. Editar o tema atualmente aplicado não o modifica até o usuário reaplicar, inclusive após recarregar.
 - Storage provisório de M4: localStorage para paletas pequenas, até 12 cópias, validando ID, origem, hex e integridade. Falha de armazenamento comunica erro sem marcar como salvo. IndexedDB para widgets, imagens e layouts segue reservado a M5/M6.
 - Os cinco oficiais permanecem imutáveis. Sem widgets, wallpaper e exportação nesta etapa. M4 ainda IN_PROGRESS até teste visual e auditoria de contraste.
+
+## M4 — terceiro bloco: contraste e desktop simulado ampliado (28/10/2026)
+
+- Análise indicativa de contraste sRGB/WCAG 2.x na **prévia local**, com quatro pares de cores usuais: texto sobre fundo, texto sobre superfície, texto secundário sobre superfície (meta 4,5:1) e acento sobre fundo usado como elemento gráfico (meta 3:1). Mostra proporção calculada, status e aviso. Não é uma certificação de acessibilidade de todos os componentes do site nem bloqueia salvar uma paleta.
+- Nas cópias pessoais, botão opcional **Sugerir texto legível** escolhe branco ou preto maximizando a pior razão de contraste entre fundo e superfície. O ajuste modifica somente o rascunho; Salvar e Aplicar seguem etapas independentes.
+- **Abrir desktop ampliado** ativa uma simulação DOM/CSS 2D proporcional, com opções de aspecto 3440×1440 e 1920×1080, barra, dock e janelas visuais com três painéis alternáveis (Visão geral, Paleta e Sobre). Tudo é deliberadamente demonstrativo; nenhuma mídia, widget, card de personagem, wallpaper MP4 ou QML real foi implementado ainda.
+- Prévia ampliada herda alterações do rascunho em tempo real; muda apenas o Theme Studio, sem alterar o Arch real, o portfolio 3D, a seleção aplicada ou dados salvos. Mobile vertical tem aviso de orientação que pode ser dispensado.
+- Desktop simulado é um **andaime visual para a etapa de widgets/layouts**, não conclusão do editor de desktop previsto em M5. M4 permanece IN_PROGRESS até QA manual e aceitação.
