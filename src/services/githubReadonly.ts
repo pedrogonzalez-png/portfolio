@@ -148,7 +148,7 @@ export function directoryEntries(snapshot: RepoSnapshot, path: string): RepoEntr
   }).sort((a, b) => a.type === b.type ? a.path.localeCompare(b.path) : a.type === "tree" ? -1 : 1);
 }
 
-export async function readRepoFile(repoId: string, path: string): Promise<{ content: string; url: string; size: number }> {
+export async function readRepoFile(repoId: string, path: string): Promise<{ content: string; url: string; size: number; blobSha: string }> {
   const repo = ensureAllowed(repoId);
   const snapshot = await getRepoTree(repo.id);
   const entry = snapshot.entries.find((item) => item.path === path && item.type === "blob");
@@ -165,16 +165,17 @@ export async function readRepoFile(repoId: string, path: string): Promise<{ cont
   const content = new TextDecoder("utf-8", { fatal: true }).decode(bytes);
   const url = "https://github.com/" + repo.repoFullName + "/blob/" + encodeURIComponent(snapshot.branch) + "/" +
     path.split("/").map(encodeURIComponent).join("/");
-  return { content, url, size: result.size };
+  return { content, url, size: result.size, blobSha: entry.sha };
 }
 
-export async function realGitLog(repoId: string): Promise<{ commits: CommitSummary[]; branch: string }> {
+export async function realGitLog(repoId: string, page = 1): Promise<{ commits: CommitSummary[]; branch: string }> {
+  if (!Number.isInteger(page) || page < 1 || page > 10) throw new Error("Página do histórico fora do intervalo permitido.");
   const repo = ensureAllowed(repoId);
   const snapshot = await getRepoTree(repo.id);
-  const result = await cached("log:" + repo.id + ":" + snapshot.branch, () => getJson<Array<{
+  const result = await cached("log:" + repo.id + ":" + snapshot.branch + ":" + page, () => getJson<Array<{
     sha: string;
     commit: { message: string; author: { name: string; date: string } | null };
-  }>>("/repos/" + repo.repoFullName + "/commits?sha=" + encodeURIComponent(snapshot.branch) + "&per_page=12"));
+  }>>("/repos/" + repo.repoFullName + "/commits?sha=" + encodeURIComponent(snapshot.branch) + "&per_page=12&page=" + page));
   return {
     branch: snapshot.branch,
     commits: result.map((item) => ({
