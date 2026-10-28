@@ -6,6 +6,8 @@ import type { Group } from "three";
 import { useTheme } from "../stores/themeContext";
 import { type KnowledgeProjectId } from "../data/knowledge";
 
+export type KnowledgeSelection = { kind: "skill"; id: string } | { kind: "project"; id: KnowledgeProjectId } | null;
+
 export type SpatialCoordinate = { x: number; y: number };
 export type KnowledgeWorldProps = {
   activeProject: KnowledgeProjectId;
