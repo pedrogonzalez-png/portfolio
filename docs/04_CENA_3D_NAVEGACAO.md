@@ -97,3 +97,12 @@ Criar um **único controlador de transições** com cancelamento/interrupt: não
 - Tema acompanha tokens CSS globais do Theme Studio; no mobile, os mesmos nós aparecem como botões em lista; o SVG é somente decorativo e não depende de WebGL.
 - Testes automatizados de allowlist, filtros, conexões e interação por botões em `src/__tests__/knowledge-tree.test.tsx`.
 - **Status: IN_PROGRESS** até CI e revisão visual/manual no navegador real. O grafo 3D integrado à câmera cinematográfica não é reivindicado como implementado; esta é a primeira versão navegável e acessível.
+
+## Refinamento visual — espaço tridimensional de conhecimentos (28/10/2026)
+
+- O grafo plano mostrado na primeira versão passa a oferecer **cena Three.js real** em navegadores desktop com WebGL e movimento permitido.
+- Três placas centrais de vidro físico com diferentes coordenadas Z, onze placas menores em constelação espacial, linhas curvas 3D, anéis distantes e campo de partículas. A câmera reage suavemente ao cursor e se aproxima um pouco da seleção; não prende o scroll nem altera a navegação geral.
+- Rótulos continuam **botões DOM focáveis** projetados sobre cada objeto via Drei Html. Filtro por categoria, seleção de tecnologia/projeto e links de evidência permanecem funcionais.
+- Material utiliza transparência, clearcoat e transmissão moderada; cores acompanham o tema global. Sem cópia de shaders/assets de Active Theory — somente referência conceitual de profundidade e atmosfera WebGL.
+- Até 919px, com movimento reduzido, sem WebGL ou fora do viewport, o sistema mantém a versão DOM/SVG. A renderização WebGL pesada é montada apenas quando a seção entra em vista. Evento de perda de contexto volta para a alternativa leve.
+- **Aceite ainda pendente:** inspeção visual em navegador no Arch, teste de perda de contexto e desempenho medido em GPU integrada/dedicada. Build e testes automatizados não substituem QA visual.
