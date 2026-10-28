@@ -118,3 +118,17 @@ A segunda composição utiliza:
 - A geometria de vidro, o campo de partículas e os fios luminosos são WebGL real; **texto, chips, botões e navegação ficam em HTML sobre o canvas**, não dentro dele. Isso elimina a oclusão de títulos observada na primeira captura.
 - Os detalhes e os filtros existentes continuam compartilhados com a versão DOM/SVG acessível, usada em mobile e quando WebGL/movimento não estiver disponível.
 - A inspeção visual continua pendente; nenhuma alegação de equivalência à Active Theory. Trata-se de uma referência conceitual de profundidade, ritmo, foco e imersão.
+
+## Refração óptica real — pesquisa e revisão (28/10/2026)
+
+Após pesquisa de referências públicas da Active Theory, o usuário reforçou que desejava **vidro óptico translúcido e refrativo**, e não cards escuros imitando vidro com CSS. A referência visual são painéis claros refratando cenas WebGL luminosas, com bordas espectrais; nenhuma geometria, mídia, fonte, shader ou código da Active Theory foi copiado.
+
+Implementação original no `src/components/KnowledgeWorld.tsx`:
+
+- O cenário de fundo possui véu procedimental shader GLSL, filamentos tridimensionais orgânicos, anéis distantes e partículas, todos **atrás** das placas. As superfícies mudam visualmente o que se vê por trás.
+- Uma única captura offscreen por frame usando **useFBO** renderiza o fundo sem as placas; um shader próprio compartilha essa textura por todos os vidros. O fragment shader desloca a amostra de acordo com a curvatura das bordas, normais, oscilação sutil e dispersão cromática (RGB). Nenhuma placa tem FBO individual.
+- O material usa quase só pixels refratados do cenário, com leve cor derivada do tema e reflexão direcional sutil. **Retiradas as camadas CSS marrons opacas e os efeitos wireframe** que cobriam o material.
+- Texto/títulos/botões permanecem DOM legível sobre o WebGL, sem refratar letras e sem bloquear a interação com assistentes de acessibilidade.
+- Refração em resolução controlada com teto de 1400 × 900 pixels no FBO, DPR máximo de 1,5 no canvas e cena desligada fora de vista; mobile e movimento reduzido continuam na alternativa leve.
+- A experiência é de autoria original, **inspirada pela linguagem visual**, não uma reconstrução literal ou equivalência ao pipeline Hydra/WebGL proprietário da referência.
+- **QA visual pendente** no navegador do proprietário: visibilidade das fitas através do vidro, color fringing nas bordas, nitidez do título e FPS. Build automatizado não comprova essas propriedades de renderização.
