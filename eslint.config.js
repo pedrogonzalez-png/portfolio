@@ -5,6 +5,7 @@ import reactRefresh from "eslint-plugin-react-refresh";
 import tseslint from "typescript-eslint";
 
 export default tseslint.config(
+  { ignores: ["dist/**", "node_modules/**", "build/**", ".claude-flow/**", ".swarm/**", "**/*.bak"] },
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {
@@ -20,7 +21,6 @@ export default tseslint.config(
       "react-hooks": reactHooks,
       "react-refresh": reactRefresh,
     },
-    ignores: ["dist/", "node_modules/", "build/", ".claude-flow/", "*.db", "*.sqlite"],
     rules: {
       ...reactHooks.configs.recommended.rules,
       "react-refresh/only-export-components": [

@@ -1,9 +1,8 @@
-import { EditorView, basicSetup } from "@codemirror/basic-setup";
-import { keymap } from "@codemirror/view";
-import { defaultKeymap } from "@codemirror/commands";
-import { EditorState, type EditorStateConfig } from "@codemirror/state";
-import { markdown } from "@codemirror/lang-markdown";
 import { useEffect, useRef } from "react";
+import { EditorState } from "@codemirror/state";
+import { EditorView, keymap } from "@codemirror/view";
+import { defaultKeymap } from "@codemirror/commands";
+import { markdown } from "@codemirror/lang-markdown";
 
 interface CodeMirrorProps {
   content: string;
@@ -12,35 +11,28 @@ interface CodeMirrorProps {
 
 export function CodeMirror({ content, readOnly = true }: CodeMirrorProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const viewRef = useRef<EditorView | null>(null);
 
   useEffect(() => {
     if (!containerRef.current) return;
-    const startState = EditorState.create({
+    const state = EditorState.create({
       doc: content,
       extensions: [
-        basicSetup(),
-        keymap.of([...defaultKeymap]),
+        EditorState.readOnly.of(readOnly),
+        EditorView.editable.of(!readOnly),
+        keymap.of(defaultKeymap),
         markdown(),
-        EditorView.updateListener.of((update) => {
-          if (!readOnly && update.docChanged) {
-            // Não permitir edição para readonly — opcionalmente visível se readOnly = false
-          }
+        EditorView.theme({
+          "&": { backgroundColor: "#170e12", color: "#f7e7d8", fontSize: "13px" },
+          ".cm-content": { fontFamily: "ui-monospace, monospace", padding: "1rem" },
+          ".cm-gutters": { backgroundColor: "#211418", color: "#bc8d77", border: "none" },
         }),
-      ].filter(Boolean) as EditorStateConfig["extensions"],
+      ],
     });
+    const view = new EditorView({ state, parent: containerRef.current });
+    return () => {
+      view.destroy();
+    };
+  }, [readOnly, content]);
 
-    const view = new EditorView({ state: startState, parent: containerRef.current });
-    viewRef.current = view;
-
-    return () => view.destroy();
-  }, [content, readOnly]);
-
-  useEffect(() => {
-    if (viewRef.current) {
-      viewRef.current.dispatch({ changes: { from: 0, to: viewRef.current.state.doc.length, insert: content } });
-    }
-  }, [content]);
-
-  return <div ref={containerRef} style={{ border: "1px solid #444", borderRadius: "0.5rem", overflow: "hidden" }} />;
+  return <div ref={containerRef} style={{ border: "1px solid rgba(227,179,122,.22)", borderRadius: "0.75rem", overflow: "hidden" }} />;
 }
