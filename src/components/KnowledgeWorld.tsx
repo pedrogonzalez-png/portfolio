@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { RoundedBox, useFBO } from "@react-three/drei";
-import { AdditiveBlending, BufferAttribute, BufferGeometry, Color, DoubleSide, Vector2, Vector3 } from "three";
+import { AdditiveBlending, BufferAttribute, BufferGeometry, CatmullRomCurve3, Color, DoubleSide, Vector2, Vector3 } from "three";
 import type { Group, ShaderMaterial } from "three";
 import { useTheme } from "../stores/themeContext";
 import type { KnowledgeProjectId } from "../data/knowledge";
@@ -126,6 +126,52 @@ function Backdrop() {
         depthWrite={false}
       />
     </mesh>
+  );
+}
+
+/**
+ * A few sculptural light ribbons behind the glass make optical bending visible.
+ * They're not an anatomical object or a copy of the agency's artwork.
+ */
+function FlowingLight() {
+  const { theme } = useTheme();
+  const { viewport } = useThree();
+  const movement = useRef<Group>(null);
+  const strands = useMemo(() => [0, 1, 2].map((index) => {
+    const curve = new CatmullRomCurve3(Array.from({ length: 24 }, (_, step) => {
+      const t = step / 23;
+      const phase = index * 1.55;
+      return new Vector3(
+        (t - 0.5) * viewport.width * 0.85,
+        Math.sin(t * Math.PI * (2.7 + index * 0.15) + phase) * viewport.height * (0.20 + index * 0.025)
+          + (index - 1) * 0.53,
+        -3.8 + Math.sin(t * Math.PI * 2.2 + phase) * 0.7,
+      );
+    }));
+    return { index, curve };
+  }), [viewport.width, viewport.height]);
+
+  useFrame(({ clock }) => {
+    if (!movement.current) return;
+    movement.current.rotation.y = Math.sin(clock.elapsedTime * 0.12) * 0.036;
+    movement.current.position.y = Math.sin(clock.elapsedTime * 0.26) * 0.12;
+  });
+
+  return (
+    <group ref={movement}>
+      {strands.map(({ index, curve }) => (
+        <mesh key={index}>
+          <tubeGeometry args={[curve, 200, index === 1 ? 0.018 : 0.012, 6, false]} />
+          <meshBasicMaterial
+            color={index === 0 ? theme.palette.accentYellow : index === 1 ? "#8daeda" : theme.palette.accentRed}
+            transparent
+            opacity={index === 1 ? 0.46 : 0.39}
+            depthWrite={false}
+            blending={AdditiveBlending}
+          />
+        </mesh>
+      ))}
+    </group>
   );
 }
 
@@ -322,6 +368,7 @@ export default function KnowledgeWorld(props: KnowledgeWorldProps) {
       <color attach="background" args={["#090b15"]} />
       <Backdrop />
       <AmbientRings />
+      <FlowingLight />
       <OpticalDust />
       <SharedGlass skillPositions={props.skillPositions} activeSkill={props.activeSkill} />
       <CameraDrift />
