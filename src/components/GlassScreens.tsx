@@ -22,7 +22,7 @@ function GlassScreen({ index }: { index: number }) {
     [],
   );
 
-  useFrame(() => {
+  useFrame((_, delta) => {
     const object = plate.current;
     if (!object) return;
 
@@ -70,10 +70,21 @@ function GlassScreen({ index }: { index: number }) {
       .addScaledVector(scratch.cameraX, x)
       .addScaledVector(scratch.cameraY, y);
 
+    const location = button.dataset.position;
+    const targetAngle = MathUtils.degToRad(
+      location === "left" ? -36 : location === "right" ? 36 : 0,
+    );
+    const previousAngle = (object.userData.carouselAngle as number | undefined) ?? targetAngle;
+    const angle = MathUtils.damp(previousAngle, targetAngle, 8.0, delta);
+    object.userData.carouselAngle = angle;
+
     object.position.copy(scratch.position);
     object.quaternion.copy(camera.quaternion);
+    object.rotateY(angle);
+    // The DOM rect is already perspective-projected. Restore the width lost
+    // by rotating the real WebGL pane so both glass layers stay aligned.
     object.scale.set(
-      (bounds.width / viewport.width) * visibleWidth,
+      (bounds.width / viewport.width) * visibleWidth / Math.max(.68, Math.cos(angle)),
       (bounds.height / viewport.height) * visibleHeight,
       1,
     );
