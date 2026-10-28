@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import type { FormEvent, KeyboardEvent as ReactKeyboardEvent } from "react";
-import { CodeMirror } from "./CodeMirror";
+import { RepositoryExplorer, type EditorTab } from "./RepositoryExplorer";
 import {
   approvedRepos,
   directoryEntries,
@@ -16,7 +16,6 @@ import type { RepoSnapshot } from "../services/githubReadonly";
 import "../styles/terminal.css";
 
 type TerminalLine = { command: string; output: string; error?: boolean };
-type ViewerFile = { path: string; content: string; url: string; repo: string };
 
 const HELP = [
   "Terminal virtual — somente leitura; nenhum comando roda no seu computador.",
@@ -50,7 +49,10 @@ export function Terminal({ onClose }: { onClose: () => void }) {
   const [repoId, setRepoId] = useState<string | null>(null);
   const [snapshot, setSnapshot] = useState<RepoSnapshot | null>(null);
   const [cwd, setCwd] = useState("");
-  const [viewer, setViewer] = useState<ViewerFile | null>(null);
+  const [tabs, setTabs] = useState<EditorTab[]>([]);
+  const [activePath, setActivePath] = useState<string | null>(null);
+  const [explorerBusy, setExplorerBusy] = useState(false);
+  const [explorerError, setExplorerError] = useState("");
   const [busy, setBusy] = useState(false);
   const [previous, setPrevious] = useState<string[]>([]);
   const [previousIndex, setPreviousIndex] = useState(-1);
@@ -59,6 +61,7 @@ export function Terminal({ onClose }: { onClose: () => void }) {
   const dialogRef = useRef<HTMLDivElement>(null);
   const transcriptRef = useRef<HTMLDivElement>(null);
   const busyRef = useRef(false);
+  const currentRepoRef = useRef<string | null>(null);
 
   useEffect(() => {
     const priorFocus = document.activeElement as HTMLElement | null;
@@ -125,10 +128,13 @@ export function Terminal({ onClose }: { onClose: () => void }) {
         const approved = resolveRepo(rest[0]);
         if (!approved) throw new Error("Repositório não autorizado. Digite repos.");
         const tree = await getRepoTree(approved.id);
+        currentRepoRef.current = approved.id;
         setRepoId(approved.id);
         setSnapshot(tree);
         setCwd("");
-        setViewer(null);
+        setTabs([]);
+        setActivePath(null);
+        setExplorerError("");
         output = "Aberto: " + tree.repoFullName + "\nBranch: " + tree.branch +
           "\nTree SHA: " + tree.treeSha + "\n" +
           tree.entries.length + " entradas indexadas" +
@@ -173,7 +179,11 @@ export function Terminal({ onClose }: { onClose: () => void }) {
           } else {
             const file = await readRepoFile(repoId, path);
             if (verb === "code") {
-              setViewer({ path, content: file.content, url: file.url, repo: tree.repoFullName });
+              setTabs((current) => [...current.filter((tab) => tab.path !== path), {
+                path, content: file.content, url: file.url, repo: tree.repoFullName, blobSha: file.blobSha,
+              }].slice(-7));
+              setActivePath(path);
+              setExplorerError("");
               output = "Arquivo real aberto: " + path + " (" + file.size + " bytes)\nGitHub: " + file.url;
             } else {
               output = "GitHub / " + tree.repoFullName + " / " + tree.branch + " / " + path +
@@ -213,6 +223,36 @@ export function Terminal({ onClose }: { onClose: () => void }) {
     }
   };
 
+  const openExplorerFile = async (path: string) => {
+    if (!repoId || !snapshot || explorerBusy) return;
+    if (tabs.some((tab) => tab.path === path)) {
+      setActivePath(path);
+      return;
+    }
+    const requestedRepo = repoId;
+    setExplorerBusy(true);
+    setExplorerError("");
+    try {
+      const file = await readRepoFile(requestedRepo, path);
+      if (requestedRepo !== currentRepoRef.current) return;
+      setTabs((current) => [...current.filter((tab) => tab.path !== path), {
+        path, content: file.content, url: file.url, repo: snapshot.repoFullName, blobSha: file.blobSha,
+      }].slice(-7));
+      setActivePath(path);
+    } catch (cause) {
+      setExplorerError(cause instanceof Error ? cause.message : "Falha ao carregar arquivo do GitHub.");
+    } finally {
+      setExplorerBusy(false);
+    }
+  };
+  const closeTab = (path: string) => {
+    setTabs((current) => {
+      const next = current.filter((tab) => tab.path !== path);
+      setActivePath((previous) => previous === path ? (next.at(-1)?.path ?? null) : previous);
+      return next;
+    });
+  };
+
   const onSubmit = (event: FormEvent) => {
     event.preventDefault();
     void runCommand(input);
@@ -243,7 +283,7 @@ export function Terminal({ onClose }: { onClose: () => void }) {
           </div>
           <button type="button" onClick={onClose} aria-label="Fechar terminal">✕</button>
         </header>
-        <div className={"terminal-workspace" + (viewer ? " terminal-workspace--split" : "")}>
+        <div className={"terminal-workspace" + (snapshot ? " terminal-workspace--split" : "")}>
           <section className="terminal-shell" aria-label="Console de comandos">
             <div className="terminal-transcript" ref={transcriptRef} role="log" aria-live="polite">
               {history.map((line, index) => (
@@ -268,16 +308,17 @@ export function Terminal({ onClose }: { onClose: () => void }) {
               ))}
             </div>
           </section>
-          {viewer && (
-            <section className="terminal-editor" aria-label="Leitor de código do GitHub">
-              <div className="terminal-filebar">
-                <strong title={viewer.path}>{viewer.path}</strong>
-                <a href={viewer.url} target="_blank" rel="noopener noreferrer">Ver no GitHub ↗</a>
-                <button type="button" aria-label="Fechar arquivo" onClick={() => setViewer(null)}>✕</button>
-              </div>
-              <p className="terminal-filesource">{viewer.repo} · arquivo real · readonly</p>
-              <div className="terminal-codewrap"><CodeMirror content={viewer.content} /></div>
-            </section>
+          {snapshot && (
+            <RepositoryExplorer
+              snapshot={snapshot}
+              tabs={tabs}
+              activePath={activePath}
+              onSelectTab={setActivePath}
+              onCloseTab={closeTab}
+              onOpenFile={(path) => { void openExplorerFile(path); }}
+              busy={explorerBusy}
+              error={explorerError}
+            />
           )}
         </div>
       </div>
