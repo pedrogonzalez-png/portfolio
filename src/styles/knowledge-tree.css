@@ -151,3 +151,19 @@
   .knowledge-immersive .knowledge-hub:hover,
   .knowledge-immersive .knowledge-hub:focus-visible{transform:none}
 }
+
+/* Keep the viewport size stable when the GPU scene is paused outside view. */
+@media (min-width:920px) {
+  .knowledge-visual:not(.knowledge-immersive) {
+    height: clamp(650px, 67vw, 790px);
+    max-height: 80svh;
+    min-height: 615px;
+  }
+}
+@media(max-width:760px) {
+  .knowledge-visual:not(.knowledge-immersive) {
+    height: auto;
+    max-height: none;
+    min-height: 0;
+  }
+}
