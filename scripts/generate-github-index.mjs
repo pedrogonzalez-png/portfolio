@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+/* global URL, process, fetch, AbortSignal, console */
 /**
  * Build-time public GitHub tree index. No credentials are written to disk.
  * Exactly the manually allowlisted public repositories are fetched.
