@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from "react";
-import type { PointerEvent as ReactPointerEvent } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import type { KeyboardEvent as ReactKeyboardEvent, PointerEvent as ReactPointerEvent } from "react";
 import { PLACEHOLDER_PROJECTS, type Project } from "./PlaceholderCatalog";
 import { EmbeddedDemo } from "./EmbeddedDemo";
 import { SpineWorld } from "./SpineWorld";
@@ -32,43 +32,104 @@ function handlePanelLeave(event: ReactPointerEvent<HTMLButtonElement>) {
   element.style.setProperty("--tilt-y", "0deg");
 }
 
-function useStageScroll(stageRef: React.RefObject<HTMLDivElement | null>) {
+const WHEEL_THRESHOLD = 36;
+const WHEEL_COOLDOWN_MS = 530;
+
+/**
+ * Consume the wheel only while the project stage is actually centered on
+ * screen. At the first/last project the visitor is free to scroll out in the
+ * same direction; the carousel never traps page navigation.
+ */
+function useCarouselWheel(
+  stageRef: React.RefObject<HTMLDivElement | null>,
+  activeRef: React.RefObject<number>,
+  count: number,
+  setActive: (index: number) => void,
+  modalOpen: boolean,
+) {
   useEffect(() => {
     const stage = stageRef.current;
-    if (!stage) return;
-    let frame = 0;
-    const update = () => {
-      if (frame) return;
-      frame = window.requestAnimationFrame(() => {
-        frame = 0;
-        const rect = stage.getBoundingClientRect();
-        const length = window.innerHeight + rect.height;
-        const progress = Math.min(1, Math.max(0, (window.innerHeight - rect.top) / Math.max(1, length)));
-        stage.style.setProperty("--journey", progress.toFixed(4));
-        stage.style.setProperty("--float-a", ((0.5 - progress) * 95).toFixed(1) + "px");
-        stage.style.setProperty("--float-b", ((progress - 0.5) * 110).toFixed(1) + "px");
-        stage.style.setProperty("--float-c", ((0.5 - progress) * 80).toFixed(1) + "px");
-      });
+    if (!stage || count <= 1) return;
+
+    let accumulation = 0;
+    let previousWheelAt = 0;
+    let lastChangeAt = -Infinity;
+
+    const onWheel = (event: WheelEvent) => {
+      if (modalOpen || event.ctrlKey || event.altKey || event.shiftKey || event.metaKey) return;
+      const viewport = stage.getBoundingClientRect();
+      // Don't hijack normal scrolling when the carousel isn't in view.
+      if (viewport.top > window.innerHeight * 0.68 ||
+          viewport.bottom < window.innerHeight * 0.32) return;
+
+      const current = activeRef.current;
+      const direction = Math.sign(event.deltaY);
+      if (!direction || !Number.isFinite(event.deltaY)) return;
+      const next = current + direction;
+      if (next < 0 || next >= count) {
+        accumulation = 0;
+        return; // Natural scroll continues past the first/last panel.
+      }
+
+      event.preventDefault();
+      const now = performance.now();
+      if (now - lastChangeAt < WHEEL_COOLDOWN_MS) return;
+      if (now - previousWheelAt > 230 || Math.sign(accumulation) !== direction) {
+        accumulation = 0;
+      }
+      previousWheelAt = now;
+      // Respect wheel deltaMode: lines/pages should count as distinct steps.
+      const factor = event.deltaMode === 1 ? 20 : event.deltaMode === 2 ? 120 : 1;
+      accumulation += event.deltaY * factor;
+      if (Math.abs(accumulation) >= WHEEL_THRESHOLD) {
+        accumulation = 0;
+        lastChangeAt = now;
+        setActive(next);
+      }
     };
-    update();
-    window.addEventListener("scroll", update, { passive: true });
-    window.addEventListener("resize", update);
-    return () => {
-      window.removeEventListener("scroll", update);
-      window.removeEventListener("resize", update);
-      if (frame) window.cancelAnimationFrame(frame);
-    };
-  }, [stageRef]);
+
+    stage.addEventListener("wheel", onWheel, { passive: false });
+    return () => stage.removeEventListener("wheel", onWheel);
+  }, [stageRef, activeRef, count, setActive, modalOpen]);
 }
 
 export function ProjectPanel() {
   const [selected, setSelected] = useState<Project | null>(null);
   const [showDemo, setShowDemo] = useState(false);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const activeRef = useRef(0);
   const stageRef = useRef<HTMLDivElement>(null);
   const closeButton = useRef<HTMLButtonElement>(null);
   const trigger = useRef<HTMLButtonElement | null>(null);
+  const projects = useMemo(
+    () => PLACEHOLDER_PROJECTS.filter((p) => p.featured && p.status !== "hidden"),
+    [],
+  );
 
-  useStageScroll(stageRef);
+  const activate = useCallback((index: number) => {
+    const next = Math.max(0, Math.min(projects.length - 1, index));
+    activeRef.current = next;
+    setActiveIndex(next);
+  }, [projects.length]);
+
+  useCarouselWheel(stageRef, activeRef, projects.length, activate, selected !== null);
+
+  const onCarouselKeyDown = (event: ReactKeyboardEvent<HTMLDivElement>) => {
+    if (selected || event.altKey || event.ctrlKey || event.metaKey) return;
+    if (event.key === "ArrowRight" || event.key === "ArrowDown") {
+      event.preventDefault();
+      activate(activeRef.current + 1);
+    } else if (event.key === "ArrowLeft" || event.key === "ArrowUp") {
+      event.preventDefault();
+      activate(activeRef.current - 1);
+    } else if (event.key === "Home") {
+      event.preventDefault();
+      activate(0);
+    } else if (event.key === "End") {
+      event.preventDefault();
+      activate(projects.length - 1);
+    }
+  };
 
   useEffect(() => {
     if (!selected) return;
@@ -96,27 +157,42 @@ export function ProjectPanel() {
 
   return (
     <>
-      <div id="spine-stage" className="spine-stage" ref={stageRef}>
+      <div
+        id="spine-stage"
+        className="spine-stage project-carousel"
+        ref={stageRef}
+        role="region"
+        aria-roledescription="carrossel"
+        aria-label="Carrossel de projetos"
+        tabIndex={0}
+        onKeyDown={onCarouselKeyDown}
+      >
         <SpineWorld />
-        <div className="spine-guide" aria-hidden="true">
-          <span>02 / NÚCLEO CRIATIVO</span>
-          <span>TRÊS PROJETOS · UMA JORNADA</span>
-        </div>
-        <div className="project-grid orbit-grid immersive-panels">
-          {PLACEHOLDER_PROJECTS.filter((p) => p.featured && p.status !== "hidden").map((project, index) => {
+        <div className="project-grid orbit-grid immersive-panels arc-carousel" aria-label="Projetos em destaque">
+          {projects.map((project, index) => {
             const meta = PANEL_META[project.id] ?? { category: "PROJECT / DEVELOPMENT", headline: project.title };
+            const relative = (index - activeIndex + projects.length) % projects.length;
+            const position = relative === 0 ? "center" : relative === 1 ? "right" : "left";
             return (
               <button
                 key={project.id}
-                className={"project-card orbit-card cinematic-panel cinematic-panel-" + index}
+                className={"project-card orbit-card cinematic-panel cinematic-panel-" + index + " carousel-" + position}
+                data-position={position}
+                aria-current={position === "center" ? "true" : undefined}
                 type="button"
                 onPointerMove={handlePanelMove}
                 onPointerLeave={handlePanelLeave}
                 onClick={(event) => {
-                  trigger.current = event.currentTarget;
-                  setSelected(project);
+                  if (index !== activeIndex) {
+                    activate(index);
+                  } else {
+                    trigger.current = event.currentTarget;
+                    setSelected(project);
+                  }
                 }}
-                aria-label={"Abrir detalhes de " + project.title}
+                aria-label={index === activeIndex
+                  ? "Abrir detalhes de " + project.title
+                  : "Trazer " + project.title + " para o centro"}
               >
                 <span className="cinematic-panel-visual" aria-hidden="true">
                   <ProjectArtwork projectId={project.id} />
@@ -132,13 +208,24 @@ export function ProjectPanel() {
                 </span>
                 <span className="cinematic-panel-bottom" aria-hidden="true">
                   <span className="cinematic-panel-note">CONCEITO VISUAL · EM DESENVOLVIMENTO</span>
-                  <span className="cinematic-panel-explore">EXPLORE <span>↗</span></span>
+                  <span className="cinematic-panel-explore">
+                    {index === activeIndex ? "EXPLORAR" : "FOCAR"} <span>↗</span>
+                  </span>
                 </span>
               </button>
             );
           })}
         </div>
       </div>
+      <div className="carousel-controls" aria-label="Navegação dos projetos">
+        <button type="button" aria-label="Projeto anterior" onClick={() => activate(activeIndex - 1)} disabled={activeIndex === 0}>←</button>
+        <div className="carousel-progress" role="status" aria-live="polite">
+          <span>{String(activeIndex + 1).padStart(2, "0")} / {String(projects.length).padStart(2, "0")}</span>
+          <strong>{projects[activeIndex]?.title}</strong>
+        </div>
+        <button type="button" aria-label="Próximo projeto" onClick={() => activate(activeIndex + 1)} disabled={activeIndex === projects.length - 1}>→</button>
+      </div>
+      <p className="carousel-instructions">Use a rodinha do mouse sobre os painéis ou as setas para alternar projetos.</p>
       <p className="projects-disclaimer">
         Três projetos autorizados · As artes são conceituais; nenhuma demonstração foi publicada
       </p>
