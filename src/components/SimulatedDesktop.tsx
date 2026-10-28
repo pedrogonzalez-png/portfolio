@@ -7,14 +7,18 @@ import {
   isSupportedCardImage, MAX_SESSION_CARDS, type DesktopImageCard, type DesktopPosition,
 } from "../services/desktopElements";
 import type { ThemePalette } from "../stores/themes";
+import {
+  readDesktopLayout, writeDesktopLayout,
+} from "../services/desktopPersistence";
+import type { StoredDesktopLayout, DesktopScreenMode } from "../services/desktopPersistence";
 
 type DesktopPanel = "inicio" | "paleta" | "sobre";
-type ScreenMode = "ultrawide" | "standard";
+
 
 export function SimulatedDesktop({ palette, themeName }: {
   palette: ThemePalette; themeName: string;
 }) {
-  const [screenMode, setScreenMode] = useState<ScreenMode>("ultrawide");
+  const [screenMode, setScreenMode] = useState<DesktopScreenMode>("ultrawide");
   const [panel, setPanel] = useState<DesktopPanel>("inicio");
   const [portraitConfirmed, setPortraitConfirmed] = useState(false);
   const [clockVisible, setClockVisible] = useState(false);
@@ -23,12 +27,123 @@ export function SimulatedDesktop({ palette, themeName }: {
   const [imageError, setImageError] = useState("");
   const areaRef = useRef<HTMLDivElement>(null);
   const urlsRef = useRef<Set<string>>(new Set());
+  const mediaRef = useRef<Map<string, Blob>>(new Map());
+  const aliveRef = useRef(true);
+  const editedRef = useRef(false);
+  const revisionRef = useRef(0);
+  const [storageBusy, setStorageBusy] = useState(false);
+  const [storageLoading, setStorageLoading] = useState(true);
+  const [storageStatus, setStorageStatus] = useState("Buscando organização salva no navegador...");
+
+  const markEdited = () => {
+    editedRef.current = true;
+    revisionRef.current += 1;
+    setStorageStatus("Alterações não salvas. Use Salvar organização para manter os elementos.");
+  };
+
+  const useSnapshot = (layout: StoredDesktopLayout) => {
+    const created: DesktopImageCard[] = [];
+    const media = new Map<string, Blob>();
+    try {
+      for (const card of layout.cards) {
+        const url = URL.createObjectURL(card.image);
+        created.push({ id: card.id, name: card.name, position: { ...card.position }, url });
+        media.set(card.id, card.image);
+      }
+    } catch {
+      for (const card of created) URL.revokeObjectURL(card.url);
+      throw new Error("Não foi possível recuperar as imagens salvas.");
+    }
+    for (const url of urlsRef.current) URL.revokeObjectURL(url);
+    urlsRef.current = new Set(created.map((card) => card.url));
+    mediaRef.current = media;
+    setCards(created);
+    setClockVisible(layout.clockVisible);
+    setClockPosition({ ...layout.clockPosition });
+    setScreenMode(layout.screenMode);
+    editedRef.current = false;
+    revisionRef.current += 1;
+    setImageError("");
+    setStorageStatus("Organização recuperada do navegador.");
+  };
 
   useEffect(() => {
-    // Each imported image is local to this preview session.
-    const owned = urlsRef.current;
-    return () => { for (const url of owned) URL.revokeObjectURL(url); owned.clear(); };
+    aliveRef.current = true;
+    const restoreOnOpen = async () => {
+      try {
+        const layout = await readDesktopLayout();
+        if (!aliveRef.current || editedRef.current) return;
+        if (layout) useSnapshot(layout);
+        else setStorageStatus("Nenhuma organização salva ainda. Monte o desktop e clique em Salvar.");
+      } catch (cause) {
+        if (aliveRef.current && !editedRef.current) {
+          setStorageStatus(cause instanceof Error ? cause.message : "Armazenamento local indisponível.");
+        }
+      } finally {
+        if (aliveRef.current) setStorageLoading(false);
+      }
+    };
+    void restoreOnOpen();
+    return () => {
+      aliveRef.current = false;
+      for (const url of urlsRef.current) URL.revokeObjectURL(url);
+      urlsRef.current.clear();
+      mediaRef.current.clear();
+    };
+    // Restore only when the editor first opens. Explicit Restore handles subsequent reads.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const saveOrganization = async () => {
+    if (storageBusy || storageLoading) return;
+    setStorageBusy(true);
+    setStorageStatus("Salvando organização neste navegador...");
+    const revision = revisionRef.current;
+    try {
+      const storedCards = cards.map((card) => {
+        const image = mediaRef.current.get(card.id);
+        if (!image) throw new Error("Imagem local não disponível. Reimporte o card antes de salvar.");
+        return { id: card.id, name: card.name, position: { ...card.position }, image };
+      });
+      const layout: StoredDesktopLayout = {
+        schemaVersion: 1,
+        screenMode, clockVisible, clockPosition: { ...clockPosition },
+        cards: storedCards, savedAt: Date.now(),
+      };
+      await writeDesktopLayout(layout);
+      if (!aliveRef.current) return;
+      if (revision !== revisionRef.current) {
+        setStorageStatus("Organização anterior salva; houve novas alterações. Salve novamente.");
+      } else {
+        editedRef.current = false;
+        setStorageStatus("Organização salva neste navegador! Ela será recuperada ao voltar.");
+      }
+    } catch (cause) {
+      if (aliveRef.current) {
+        setStorageStatus(cause instanceof Error ? cause.message : "Falha ao salvar organização.");
+      }
+    } finally {
+      if (aliveRef.current) setStorageBusy(false);
+    }
+  };
+
+  const restoreOrganization = async () => {
+    if (storageBusy || storageLoading) return;
+    setStorageBusy(true);
+    setStorageStatus("Recuperando última organização salva...");
+    try {
+      const layout = await readDesktopLayout();
+      if (!aliveRef.current) return;
+      if (layout) useSnapshot(layout);
+      else setStorageStatus("Nenhuma organização salva neste navegador.");
+    } catch (cause) {
+      if (aliveRef.current) setStorageStatus(
+        cause instanceof Error ? cause.message : "Falha ao recuperar a organização.",
+      );
+    } finally {
+      if (aliveRef.current) setStorageBusy(false);
+    }
+  };
 
   const onImportCards = (event: ChangeEvent<HTMLInputElement>) => {
     const incoming = Array.from(event.currentTarget.files ?? []);
@@ -45,16 +160,21 @@ export function SimulatedDesktop({ palette, themeName }: {
         const url = URL.createObjectURL(file);
         urlsRef.current.add(url);
         const index = cards.length + created.length;
+        const id = "card-" + (globalThis.crypto?.randomUUID?.() ?? (Date.now() + "-" + index));
+        mediaRef.current.set(id, file);
         created.push({
-          id: "card-" + (globalThis.crypto?.randomUUID?.() ?? (Date.now() + "-" + index)),
-          url, name: file.name,
+          id, url, name: file.name,
           position: { x: 8 + (index % 4) * 15, y: 22 + (index % 3) * 16 },
         });
       }
-      setCards((current) => [...current, ...created]);
+      if (created.length) {
+        setCards((current) => [...current, ...created]);
+        markEdited();
+      }
     } catch {
       for (const card of created) {
         urlsRef.current.delete(card.url);
+        mediaRef.current.delete(card.id);
         URL.revokeObjectURL(card.url);
       }
       setImageError("Não foi possível abrir a imagem neste navegador.");
@@ -65,8 +185,10 @@ export function SimulatedDesktop({ palette, themeName }: {
     const card = cards.find((item) => item.id === id);
     if (!card) return;
     urlsRef.current.delete(card.url);
+    mediaRef.current.delete(id);
     URL.revokeObjectURL(card.url);
     setCards((current) => current.filter((item) => item.id !== id));
+    markEdited();
   };
 
   const swatches = [
@@ -84,13 +206,13 @@ export function SimulatedDesktop({ palette, themeName }: {
         </div>
         <div className="theme-desktop-resolutions" role="group" aria-label="Formato da prévia">
           <button type="button" aria-pressed={screenMode === "ultrawide"}
-            onClick={() => setScreenMode("ultrawide")}>3440 × 1440</button>
+            onClick={() => { setScreenMode("ultrawide"); markEdited(); }}>3440 × 1440</button>
           <button type="button" aria-pressed={screenMode === "standard"}
-            onClick={() => setScreenMode("standard")}>1920 × 1080</button>
+            onClick={() => { setScreenMode("standard"); markEdited(); }}>1920 × 1080</button>
         </div>
       </header>
       <div className="theme-desktop-element-tools" aria-label="Inserir elementos no desktop">
-        <button type="button" onClick={() => setClockVisible((current) => !current)}>
+        <button type="button" onClick={() => { setClockVisible((current) => !current); markEdited(); }}>
           {clockVisible ? "Remover relógio" : "Adicionar relógio digital"}
         </button>
         <label className="theme-desktop-import">
@@ -101,8 +223,21 @@ export function SimulatedDesktop({ palette, themeName }: {
         <small>Widgets e cards são elementos diferentes. Mova arrastando a alça ou com as setas.</small>
       </div>
       {imageError && <p role="alert" className="theme-desktop-import-error">{imageError}</p>}
+      <div className="theme-desktop-save-tools" aria-label="Salvar e recuperar organização">
+        <button type="button" onClick={() => void saveOrganization()}
+          disabled={storageLoading || storageBusy}>
+          {storageBusy ? "Processando..." : "Salvar organização"}
+        </button>
+        <button type="button" onClick={() => void restoreOrganization()}
+          disabled={storageLoading || storageBusy}>
+          Restaurar última organização salva
+        </button>
+        <p role="status" aria-live="polite">{storageStatus}</p>
+      </div>
       <p className="theme-desktop-session-note">
-        Prévia temporária: imagens e posições ainda não são salvas. Os arquivos nunca são enviados ao servidor.
+        Imagens, relógio e posições só persistem após Salvar organização (IndexedDB local).
+        Restaurar substitui alterações não salvas. Dados ficam neste navegador, sem envio ao servidor;
+        limpar os dados do site pode apagá-los.
       </p>
       {!portraitConfirmed && (
         <div className="theme-desktop-portrait-note">
@@ -181,7 +316,7 @@ export function SimulatedDesktop({ palette, themeName }: {
               {panel === "sobre" && (
                 <div className="theme-desktop-about">
                   <strong>Uma base para o futuro editor</strong>
-                  <p>Cards de personagens, widgets reais: agora esta prévia já permite importar imagens como cards independentes e usar um relógio digital com hora local. Wallpapers pessoais, mais widgets, layouts permanentes e agrupamentos ainda não estão implementados.</p>
+                  <p>Nesta prévia, o relógio local e os cards importados podem ser salvos no IndexedDB do navegador com suas posições. Wallpapers pessoais, múltiplos layouts por resolução, mais widgets e agrupamentos ainda não estão implementados.</p>
                   <p>Trocar as abas da prévia não modifica nem salva o seu tema.</p>
                 </div>
               )}
@@ -190,16 +325,22 @@ export function SimulatedDesktop({ palette, themeName }: {
           <div className="theme-desktop-elements-layer" ref={areaRef}
             aria-label="Elementos posicionáveis do desktop simulado">
             {clockVisible && (
-              <DesktopMovable position={clockPosition} onMove={setClockPosition}
-                label="relógio digital" onRemove={() => setClockVisible(false)}
+              <DesktopMovable position={clockPosition} onMove={(next) => {
+                  setClockPosition(next);
+                  markEdited();
+                }}
+                label="relógio digital" onRemove={() => { setClockVisible(false); markEdited(); }}
                 areaRef={areaRef}>
                 <DesktopClockWidget palette={palette} />
               </DesktopMovable>
             )}
             {cards.map((card) => (
               <DesktopMovable key={card.id} position={card.position}
-                onMove={(position) => setCards((current) =>
-                  current.map((item) => item.id === card.id ? { ...item, position } : item))}
+                onMove={(position) => {
+                  setCards((current) => current.map((item) =>
+                    item.id === card.id ? { ...item, position } : item));
+                  markEdited();
+                }}
                 label={"card " + card.name} onRemove={() => removeCard(card.id)}
                 areaRef={areaRef}>
                 <DesktopCharacterCard name={card.name} url={card.url} palette={palette}/>
@@ -216,7 +357,7 @@ export function SimulatedDesktop({ palette, themeName }: {
         </div>
       </div>
       <p className="theme-desktop-footnote">
-        Relógio com horário local real; cards usam somente imagens importadas neste navegador. Não há dados fictícios de hardware nem execução de QML.
+        Relógio com horário local real; imagens e posições podem ser salvas localmente via IndexedDB. Não há upload, dados fictícios de hardware ou execução de QML.
       </p>
     </section>
   );

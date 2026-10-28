@@ -181,3 +181,11 @@ Catálogo inicial, sujeito a comparação exata com o desktop/versão base:
 - O botão global **✦ Temas** foi removido do cabeçalho: o tema aplicado continua indicado visualmente, mas o editor completo não compete com a navegação do portfólio.
 - Os cards Abismo e site-3D preservam seu fluxo de detalhes.
 - A janela do Studio usa cobertura opaca do fundo para não deixar os cards do carrossel confundirem sua hierarquia visual. As cores aplicadas continuam globais, mas o acesso à edição é contextual ao projeto.
+
+## M5 — armazenamento local do desktop (28/10/2026)
+
+- O desktop simulado agora oferece **Salvar organização** e **Restaurar última organização salva**. Ao abrir a prévia, tenta recuperar automaticamente um único layout local do navegador. Esta primeira persistência é **global para a prévia** (não separada por wallpaper, tema ou resolução), com o formato de tela salvo como parte da organização. Múltiplos perfis e versões continuam futuros.
+- Dados persistidos em **IndexedDB, versão 1**: posição e presença do relógio, formato 3440×1440/1920×1080, e imagens originais (Blob) dos cards com nome, ID e posição. As imagens não são convertidas para base64 nem enviadas a servidores; URLs blob usadas na tela são **recriadas** na recuperação e revogadas na remoção/fechamento.
+- **Salvamento explícito, não automático:** arrastar, importar, remover ou mudar formato marca alterações como não salvas. Fechar sem salvar mantém apenas a organização anterior; Restaurar substitui mudanças da sessão. A aplicação do tema permanece separada.
+- A interface só informa sucesso quando o IndexedDB confirma a transação. Falha por espaço, permissão ou IndexedDB ausente gera mensagem visível e preserva a edição em memória. Validação estrita de versão, tipo, limite de 20 imagens de até 8 MB, dimensões, IDs e posições rejeita registros corrompidos.
+- Continuam ausentes: projetos de layout múltiplo, perfil por wallpaper, organização em grupos, undo/redo, exportação/backup de mídia, upload e integração com Quickshell real. O navegador pode apagar dados do site; persistência não equivale a backup portátil. O M5 permanece IN_PROGRESS até QA real no Arch e essas funcionalidades adicionais.
