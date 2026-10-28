@@ -77,14 +77,16 @@ const lensFragment = [
   "uniform float uTime;",
   "uniform vec3 uTint;",
   "uniform float uFocus;",
+  "uniform vec2 uPanelSize;",
+  "uniform float uCorner;",
   "varying vec2 vUv;",
   "varying vec3 vViewNormal;",
   "varying vec3 vViewDirection;",
   "void main() {",
   "  vec2 p = vUv - 0.5;",
-  "  vec2 q = abs(p) - vec2(0.458);",
-  "  float roundedDistance = length(max(q, 0.0)) + min(max(q.x, q.y), 0.0) - 0.042;",
-  "  float alpha = 1.0 - smoothstep(-0.006, 0.006, roundedDistance);",
+  "  vec2 q = abs(p * uPanelSize) - (uPanelSize * 0.5 - vec2(uCorner));",
+  "  float roundedDistance = length(max(q, 0.0)) + min(max(q.x, q.y), 0.0) - uCorner;",
+  "  float alpha = 1.0 - smoothstep(-1.0, 1.0, roundedDistance);",
   "  if (alpha <= 0.001) discard;",
   "  float side = min(min(vUv.x, 1.0-vUv.x), min(vUv.y, 1.0-vUv.y));",
   "  float rim = 1.0 - smoothstep(0.0, 0.075, side);",
@@ -225,10 +227,12 @@ function Lens({
     uTime: { value: number };
     uTint: { value: Color };
     uFocus: { value: number };
+    uPanelSize: { value: Vector2 };
+    uCorner: { value: number };
   };
 }) {
   const { theme } = useTheme();
-  const { viewport } = useThree();
+  const { viewport, size } = useThree();
   const { x, y, w, h, z, turn = 0, focus = false } = pane;
   const p = spacePoint(x, y, viewport.width, viewport.height, z);
   const width = w / 100 * viewport.width;
@@ -236,12 +240,14 @@ function Lens({
   const ownUniforms = useMemo(() => ({
     ...uniforms,
     uFocus: { value: focus ? 1 : 0 },
-  }), [focus, uniforms]);
+    uPanelSize: { value: new Vector2((w / 100) * size.width, (h / 100) * size.height) },
+    uCorner: { value: focus && w > 30 ? 25 : h > 15 ? 19 : 13 },
+  }), [focus, w, h, size.width, size.height, uniforms]);
 
   return (
     <group position={p} rotation={[0, turn, 0]}>
       {/* The thick beveled body gives depth. Its color must not obscure the lens. */}
-      <RoundedBox args={[width, height, 0.15]} radius={0.12} smoothness={4}>
+      <RoundedBox args={[width, height, 0.15]} radius={0.21} smoothness={4}>
         <meshBasicMaterial
           color={theme.palette.accentYellow}
           opacity={focus ? 0.055 : 0.034}
@@ -325,12 +331,14 @@ function SharedGlass({ skillPositions, activeSkill }: Pick<KnowledgeWorldProps, 
     uniforms.uTime.value = clock.elapsedTime;
   }, -1);
 
+  const chipWidth = Math.max(135, Math.min(182, size.width * 0.13)) / size.width * 100;
   const panes: Pane[] = [
     { x: 50, y: 50, w: 40, h: 44, z: -0.75, focus: true },
     { x: 12, y: 51, w: 16, h: 25, z: -1.7, turn: -0.17 },
     { x: 88, y: 51, w: 16, h: 25, z: -1.7, turn: 0.17 },
     ...skillPositions.map(({ position, id }) => ({
-      x: position.x, y: position.y, w: 13, h: 8.6, z: -1.25,
+      x: position.x, y: position.y, w: chipWidth,
+      h: (id === "procedural" ? 57 : 47) / size.height * 100, z: -1.25,
       focus: activeSkill === id,
     })),
   ];
