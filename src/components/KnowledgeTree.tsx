@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { PLACEHOLDER_PROJECTS } from "./PlaceholderCatalog";
 import {
   KNOWLEDGE_DOMAINS,
@@ -9,6 +9,8 @@ import {
   type KnowledgeProjectId,
 } from "../data/knowledge";
 import "../styles/knowledge-tree.css";
+
+const KnowledgeWorld = lazy(() => import("./KnowledgeWorld"));
 
 type Selection = { kind: "skill"; id: string } | { kind: "project"; id: KnowledgeProjectId } | null;
 type DomainFilter = KnowledgeDomain | "all";
@@ -93,6 +95,45 @@ function NodeDetails({
 export function KnowledgeTree() {
   const [filter, setFilter] = useState<DomainFilter>("all");
   const [selection, setSelection] = useState<Selection>(null);
+  const [immersive, setImmersive] = useState(false);
+  const [webglFailed, setWebglFailed] = useState(false);
+  const stageRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    let observer: IntersectionObserver | null = null;
+    const update = () => {
+      observer?.disconnect();
+      observer = null;
+      let capable = !webglFailed && !motion.matches && window.innerWidth >= 920;
+      if (capable) {
+        try {
+          const probe = document.createElement("canvas");
+          capable = Boolean(probe.getContext("webgl2") || probe.getContext("webgl"));
+        } catch {
+          capable = false;
+        }
+      }
+      if (!capable) { setImmersive(false); return; }
+      if (typeof IntersectionObserver === "undefined" || !stageRef.current) {
+        setImmersive(true);
+        return;
+      }
+      observer = new IntersectionObserver(
+        ([entry]) => setImmersive(Boolean(entry?.isIntersecting)),
+        { rootMargin: "240px" },
+      );
+      observer.observe(stageRef.current);
+    };
+    update();
+    window.addEventListener("resize", update);
+    motion.addEventListener("change", update);
+    return () => {
+      observer?.disconnect();
+      window.removeEventListener("resize", update);
+      motion.removeEventListener("change", update);
+    };
+  }, [webglFailed]);
   const visibleNodes = useMemo(
     () => KNOWLEDGE_NODES.filter((node) => filter === "all" || node.domain === filter),
     [filter],
@@ -131,7 +172,27 @@ export function KnowledgeTree() {
         ))}
       </div>
 
-      <div className="knowledge-visual" role="group" aria-label="Conexões entre tecnologias e projetos">
+      <div
+        ref={stageRef}
+        className={"knowledge-visual" + (immersive ? " knowledge-immersive" : "")}
+        role="group"
+        aria-label="Conexões entre tecnologias e projetos"
+      >
+        {immersive ? (
+          <Suspense fallback={<div className="knowledge-loading" role="status">Carregando espaço 3D...</div>}>
+            <KnowledgeWorld
+              nodes={visibleNodes}
+              selection={selection}
+              onSelect={setSelection}
+              onContextLost={() => setWebglFailed(true)}
+            />
+            <div className="knowledge-stage-hud" aria-hidden="true">
+              <span>KNOWLEDGE / SPATIAL NETWORK</span>
+              <span>INTERAJA COM O CURSOR · SELECIONE OS VIDROS</span>
+            </div>
+          </Suspense>
+        ) : (
+          <>
         <svg
           className="knowledge-edges"
           aria-hidden="true"
@@ -195,6 +256,8 @@ export function KnowledgeTree() {
             <span>{node.label}</span>
           </button>
         ))}
+          </>
+        )}
       </div>
 
       <div className="knowledge-detail" aria-live="polite" aria-atomic="true">
