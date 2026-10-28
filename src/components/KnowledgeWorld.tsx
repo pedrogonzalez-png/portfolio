@@ -227,8 +227,6 @@ function Lens({
     uTime: { value: number };
     uTint: { value: Color };
     uFocus: { value: number };
-    uPanelSize: { value: Vector2 };
-    uCorner: { value: number };
   };
 }) {
   const { theme } = useTheme();
