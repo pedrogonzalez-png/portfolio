@@ -47,7 +47,7 @@ describe("WCAG color contrast math and preview", () => {
     const contrast = screen.getByRole("region", { name: "Análise de contraste da prévia" });
     expect(within(contrast).getByText(/combinação\(ões\) abaixo da meta/)).toBeInTheDocument();
     fireEvent.click(within(contrast).getByRole("button", { name: "Sugerir texto legível" }));
-    expect(screen.getByLabelText("Texto")).toHaveValue("#FFFFFF");
+    expect(screen.getByLabelText("Texto")).toHaveValue("#ffffff");
     expect(readCustomThemes()[0].palette.text).toBe(originalSavedText);
     expect(screen.getByTestId("active-theme")).toHaveTextContent("changli");
     expect(screen.getByRole("button", { name: "Salvar alterações" })).toBeEnabled();
