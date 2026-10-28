@@ -8,9 +8,13 @@ import {
 } from "../services/desktopElements";
 import type { ThemePalette } from "../stores/themes";
 import {
-  DESKTOP_LAYOUT_SLOTS, readDesktopLayout, writeDesktopLayout,
+  DESKTOP_LAYOUT_SLOTS, defaultDesktopLayoutNames, readDesktopLayout, readDesktopLayoutNames,
+  writeDesktopLayout, writeDesktopLayoutName,
 } from "../services/desktopPersistence";
-import type { StoredDesktopLayout, DesktopScreenMode, DesktopLayoutSlot } from "../services/desktopPersistence";
+import type {
+  StoredDesktopLayout, DesktopScreenMode, DesktopLayoutSlot, DesktopLayoutNames,
+} from "../services/desktopPersistence";
+import { BACKUP_EXTENSION, createDesktopBackup, parseDesktopBackup } from "../services/desktopBackup";
 import {
   checkpointPositions, emptyPositionHistory, redoPositions, snapshotPositions, undoPositions,
 } from "../services/desktopHistory";
@@ -37,6 +41,9 @@ export function SimulatedDesktop({ palette, themeName }: {
   const revisionRef = useRef(0);
   const [storageBusy, setStorageBusy] = useState(false);
   const [activeSlot, setActiveSlot] = useState<DesktopLayoutSlot>("default");
+  const [layoutNames, setLayoutNames] = useState<DesktopLayoutNames>(defaultDesktopLayoutNames);
+  const [nameDraft, setNameDraft] = useState("Principal");
+  const [pendingImport, setPendingImport] = useState<{ fileName: string; layout: StoredDesktopLayout } | null>(null);
   const [history, setHistory] = useState(emptyPositionHistory);
   const [storageLoading, setStorageLoading] = useState(true);
   const [storageStatus, setStorageStatus] = useState("Buscando organização salva no navegador...");
@@ -135,6 +142,13 @@ export function SimulatedDesktop({ palette, themeName }: {
       }
     };
     void restoreOnOpen();
+    void readDesktopLayoutNames().then((names) => {
+      if (!aliveRef.current) return;
+      setLayoutNames(names);
+      setNameDraft(names.default);
+    }).catch(() => {
+      // The old default layout remains usable even if custom labels are unavailable.
+    });
     return () => {
       aliveRef.current = false;
       for (const url of urlsRef.current) URL.revokeObjectURL(url);
@@ -198,9 +212,106 @@ export function SimulatedDesktop({ palette, themeName }: {
     }
   };
 
+  const saveLayoutName = async () => {
+    if (storageBusy || storageLoading) return;
+    setStorageBusy(true);
+    try {
+      const name = await writeDesktopLayoutName(activeSlot, nameDraft);
+      if (!aliveRef.current) return;
+      setLayoutNames((current) => ({ ...current, [activeSlot]: name }));
+      setNameDraft(name);
+      setStorageStatus("Nome salvo para esta organização.");
+    } catch (cause) {
+      if (aliveRef.current) setStorageStatus(
+        cause instanceof Error ? cause.message : "Falha ao salvar o nome.",
+      );
+    } finally {
+      if (aliveRef.current) setStorageBusy(false);
+    }
+  };
+
+  const exportLayout = async () => {
+    if (storageBusy || storageLoading) return;
+    if (editedRef.current || nameDraft !== layoutNames[activeSlot]) {
+      setStorageStatus("Salve as alterações e o nome do layout antes de exportar.");
+      return;
+    }
+    setStorageBusy(true);
+    try {
+      const stored = await readDesktopLayout(activeSlot);
+      if (!aliveRef.current) return;
+      if (!stored) { setStorageStatus("Salve esta organização antes de exportar."); return; }
+      const backup = createDesktopBackup(stored);
+      const url = URL.createObjectURL(backup);
+      const anchor = document.createElement("a");
+      const name = layoutNames[activeSlot].normalize("NFKD")
+        .replace(/[^a-z0-9_-]+/gi, "-").replace(/^-+|-+$/g, "").slice(0, 40) || "layout";
+      anchor.href = url;
+      anchor.download = name + BACKUP_EXTENSION;
+      document.body.appendChild(anchor);
+      try { anchor.click(); } finally {
+        anchor.remove();
+        window.setTimeout(() => URL.revokeObjectURL(url), 3000);
+      }
+      setStorageStatus("Backup do layout ativo preparado para download, com imagens originais.");
+    } catch (cause) {
+      if (aliveRef.current) setStorageStatus(
+        cause instanceof Error ? cause.message : "Falha ao exportar backup.",
+      );
+    } finally {
+      if (aliveRef.current) setStorageBusy(false);
+    }
+  };
+
+  const selectBackup = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.currentTarget.files?.[0];
+    event.currentTarget.value = "";
+    if (!file || storageBusy || storageLoading) return;
+    if (editedRef.current) {
+      setStorageStatus("Salve ou restaure as alterações atuais antes de importar.");
+      return;
+    }
+    setStorageBusy(true);
+    setPendingImport(null);
+    setStorageStatus("Validando arquivo de backup...");
+    try {
+      if (!file.name.toLowerCase().endsWith(BACKUP_EXTENSION))
+        throw new Error("Selecione um arquivo .ptsbackup exportado pelo Theme Studio.");
+      const layout = await parseDesktopBackup(file);
+      if (!aliveRef.current) return;
+      setPendingImport({ fileName: file.name, layout });
+      setStorageStatus("Backup validado. Confirme para substituir o layout selecionado.");
+    } catch (cause) {
+      if (aliveRef.current) setStorageStatus(
+        cause instanceof Error ? cause.message : "Backup inválido.",
+      );
+    } finally {
+      if (aliveRef.current) setStorageBusy(false);
+    }
+  };
+
+  const confirmImport = async () => {
+    if (!pendingImport || storageBusy || storageLoading || editedRef.current) return;
+    setStorageBusy(true);
+    setStorageStatus("Importando backup para o layout ativo...");
+    try {
+      await writeDesktopLayout(pendingImport.layout, activeSlot);
+      if (!aliveRef.current) return;
+      applySnapshot(pendingImport.layout);
+      setPendingImport(null);
+      setStorageStatus("Backup importado e salvo nesta organização.");
+    } catch (cause) {
+      if (aliveRef.current) setStorageStatus(
+        cause instanceof Error ? cause.message : "Falha ao importar o backup.",
+      );
+    } finally {
+      if (aliveRef.current) setStorageBusy(false);
+    }
+  };
+
   const switchSlot = async (slot: DesktopLayoutSlot) => {
     if (slot === activeSlot || storageBusy || storageLoading) return;
-    if (editedRef.current) {
+    if (editedRef.current || nameDraft !== layoutNames[activeSlot]) {
       setStorageStatus("Salve ou restaure as alterações atuais antes de trocar de layout.");
       return;
     }
@@ -220,6 +331,8 @@ export function SimulatedDesktop({ palette, themeName }: {
         setStorageStatus("Layout vazio. Monte sua organização e clique em Salvar.");
       }
       setActiveSlot(slot);
+      setNameDraft(layoutNames[slot]);
+      setPendingImport(null);
     } catch (cause) {
       if (aliveRef.current) setStorageStatus(
         cause instanceof Error ? cause.message : "Falha ao carregar outro layout.",
@@ -328,9 +441,17 @@ export function SimulatedDesktop({ palette, themeName }: {
           value={activeSlot} disabled={storageLoading || storageBusy}
           onChange={(event) => void switchSlot(event.target.value as DesktopLayoutSlot)}>
           {DESKTOP_LAYOUT_SLOTS.map((slot) =>
-            <option key={slot.id} value={slot.id}>{slot.label}</option>)}
+            <option key={slot.id} value={slot.id}>{layoutNames[slot.id]}</option>)}
         </select>
         <span>Quatro organizações locais independentes. A Principal mantém seu salvamento anterior.</span>
+        <label htmlFor="desktop-layout-name">Nome da organização</label>
+        <input id="desktop-layout-name" aria-label="Nome da organização" type="text"
+          maxLength={32} value={nameDraft} disabled={storageLoading || storageBusy}
+          onChange={(event) => setNameDraft(event.target.value)} />
+        <button type="button" onClick={() => void saveLayoutName()}
+          disabled={storageLoading || storageBusy || nameDraft === layoutNames[activeSlot]}>
+          Salvar nome
+        </button>
       </div>
       <div className="theme-desktop-undo-tools" aria-label="Desfazer e refazer posições">
         <button type="button" onClick={undo} disabled={!history.past.length}>↶ Desfazer movimento</button>
@@ -348,8 +469,35 @@ export function SimulatedDesktop({ palette, themeName }: {
         </button>
         <p role="status" aria-live="polite">{storageStatus}</p>
       </div>
+      <div className="theme-desktop-backup-tools" aria-label="Backup portátil do layout">
+        <button type="button" disabled={storageLoading || storageBusy}
+          onClick={() => void exportLayout()}>Exportar backup do layout</button>
+        <label className="theme-desktop-backup-import">
+          Selecionar backup para importar
+          <input type="file" aria-label="Selecionar arquivo de backup"
+            accept=".ptsbackup,application/octet-stream"
+            disabled={storageLoading || storageBusy} onChange={(event) => void selectBackup(event)} />
+        </label>
+        {pendingImport && (
+          <div className="theme-desktop-backup-review" role="group" aria-label="Confirmar substituição do layout">
+            <p>Arquivo: <strong>{pendingImport.fileName}</strong>. Contém {pendingImport.layout.cards.length}
+              {pendingImport.layout.cards.length === 1 ? " card" : " cards"} e
+              {pendingImport.layout.clockVisible ? " um relógio" : " nenhum relógio"}.
+              Confirmar substituirá os dados salvos de <strong>{layoutNames[activeSlot]}</strong>.</p>
+            <button type="button" disabled={storageBusy} onClick={() => void confirmImport()}>
+              Confirmar importação e substituir
+            </button>
+            <button type="button" onClick={() => {
+              setPendingImport(null);
+              setStorageStatus("Importação cancelada. Nenhum dado foi substituído.");
+            }}>Cancelar importação</button>
+          </div>
+        )}
+      </div>
       <p className="theme-desktop-session-note">
-        Cada organização é salva separadamente no IndexedDB local. Para trocar de layout, salve
+        Cada organização e seu nome são salvos separadamente no IndexedDB local.
+        O backup exporta apenas o layout ativo, incluindo suas imagens; confira a origem antes de importar.
+        Para trocar de layout, salve
         ou restaure as alterações atuais. Desfazer/refazer cobre apenas posições e é temporário.
         Restaurar substitui alterações não salvas. Nada é enviado ao servidor;
         limpar os dados do site pode apagá-los.

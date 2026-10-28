@@ -75,6 +75,71 @@ export function isStoredDesktopLayout(value: unknown): value is StoredDesktopLay
     new Set(data.cards.map((card: StoredDesktopCard) => card.id)).size === data.cards.length;
 }
 
+export type DesktopLayoutNames = Record<DesktopLayoutSlot, string>;
+export function defaultDesktopLayoutNames(): DesktopLayoutNames {
+  return Object.fromEntries(DESKTOP_LAYOUT_SLOTS.map((slot) =>
+    [slot.id, slot.label])) as DesktopLayoutNames;
+}
+export function validateDesktopLayoutName(value: string): string {
+  const name = value.trim();
+  if (!name || name.length > 32 || /[\u0000-\u001F\u007F]/.test(name))
+    throw new Error("Nome do layout deve ter de 1 a 32 caracteres, sem controles.");
+  return name;
+}
+
+/** Names use separate keys in the original store; the old "default" Blob is untouched. */
+export async function readDesktopLayoutNames(): Promise<DesktopLayoutNames> {
+  const db = await openDatabase();
+  return new Promise((resolve, reject) => {
+    const names = defaultDesktopLayoutNames();
+    let failed = false;
+    try {
+      const transaction = db.transaction(STORE, "readonly");
+      const store = transaction.objectStore(STORE);
+      for (const slot of DESKTOP_LAYOUT_SLOTS) {
+        const request = store.get("name:" + slot.id);
+        request.onsuccess = () => {
+          const name: unknown = request.result;
+          if (typeof name === "string") {
+            try { names[slot.id] = validateDesktopLayoutName(name); }
+            catch { /* Invalid labels get safe default labels. */ }
+          }
+        };
+      }
+      transaction.oncomplete = () => { db.close(); if (!failed) resolve(names); };
+      const fail = () => {
+        db.close();
+        if (!failed) { failed = true; reject(new Error("Falha ao ler nomes dos layouts.")); }
+      };
+      transaction.onerror = fail;
+      transaction.onabort = fail;
+    } catch {
+      db.close();
+      reject(new Error("Falha ao ler nomes dos layouts."));
+    }
+  });
+}
+
+export async function writeDesktopLayoutName(slot: DesktopLayoutSlot, value: string): Promise<string> {
+  const key = ensureSlot(slot);
+  const name = validateDesktopLayoutName(value);
+  const db = await openDatabase();
+  return new Promise((resolve, reject) => {
+    let settled = false;
+    const fail = () => {
+      db.close();
+      if (!settled) { settled = true; reject(new Error("Falha ao salvar nome do layout.")); }
+    };
+    try {
+      const transaction = db.transaction(STORE, "readwrite");
+      transaction.objectStore(STORE).put(name, "name:" + key);
+      transaction.oncomplete = () => { db.close(); if (!settled) { settled = true; resolve(name); } };
+      transaction.onerror = fail;
+      transaction.onabort = fail;
+    } catch { fail(); }
+  });
+}
+
 function databaseUnavailable(): Error {
   return new Error("IndexedDB indisponível. Verifique as permissões deste navegador.");
 }
