@@ -41,6 +41,9 @@ Criar um **único controlador de transições** com cancelamento/interrupt: não
 
 ## Constelação de projetos [DECIDIDO]
 
+**Decisão visual atual (27/10/2026):** remover o objeto decorativo vermelho em formato de coluna/medula. Manter a constelação de painéis de vidro 3D, as partículas de ambiente, a câmera e as interações previstas neste documento. Não substituir o centro por outro objeto anatômico nem recriar essa estrutura sem pedido explícito.
+
+
 - Painéis de vidro 3D em alturas, profundidades e orientações diferentes; cada projeto tem ID, título, uma descrição breve, thumbnail autorizada, tecnologias, status e ações possíveis.
 - Estados do painel: `idle`, `hover`, `near`, `opening`, `expanded`, `closing`. Só um expanded.
 - Aproximação: a própria superfície gira/alinha em direção à câmera, expande e revela interface de conteúdo (HTML acessível em camada com clipping/transform combinados); não criar um segundo site visualmente desconectado.
