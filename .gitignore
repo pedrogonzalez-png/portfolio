@@ -40,3 +40,10 @@ Thumbs.db
 # Templates para placeholders e drafts conforme doc 01/11
 *.db
 *.sqlite
+
+node_modules/
+dist/
+.env
+.env.*
+!.env.example
+*.bak
