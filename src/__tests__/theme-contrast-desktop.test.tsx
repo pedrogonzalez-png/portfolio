@@ -75,7 +75,7 @@ describe("expanded 2D desktop simulation", () => {
     expect(within(desktop).getByText(OFFICIAL_THEMES[2].palette.accentPrimary))
       .toBeInTheDocument();
     fireEvent.click(within(desktop).getByRole("button", { name: "Sobre" }));
-    expect(within(desktop).getByText(/Cards de personagens, widgets reais/))
+    expect(within(desktop).getByText(/Nesta prévia, o relógio local e os cards importados/))
       .toBeInTheDocument();
 
     expect(screen.getByTestId("active-theme")).toHaveTextContent("changli");
