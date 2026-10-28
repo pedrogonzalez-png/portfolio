@@ -18,8 +18,6 @@ export default function SceneIntegration() {
       }
     }
     setAvailable(enabled);
-    document.documentElement.classList.toggle("has-webgl", enabled);
-    return () => document.documentElement.classList.remove("has-webgl");
   }, [reducedMotion]);
 
   if (!available) return null;
