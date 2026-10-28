@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { useTheme } from "../stores/ThemeProvider";
+import { useTheme } from "../stores/themeContext";
 
 export function TopMenu() {
   const { theme } = useTheme();

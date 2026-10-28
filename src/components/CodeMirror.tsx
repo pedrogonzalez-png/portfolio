@@ -11,7 +11,6 @@ interface CodeMirrorProps {
 
 export function CodeMirror({ content, readOnly = true }: CodeMirrorProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const viewRef = useRef<EditorView | null>(null);
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -30,20 +29,10 @@ export function CodeMirror({ content, readOnly = true }: CodeMirrorProps) {
       ],
     });
     const view = new EditorView({ state, parent: containerRef.current });
-    viewRef.current = view;
     return () => {
-      viewRef.current = null;
       view.destroy();
     };
-  }, [readOnly]);
-
-  useEffect(() => {
-    const view = viewRef.current;
-    if (!view || view.state.doc.toString() === content) return;
-    view.dispatch({
-      changes: { from: 0, to: view.state.doc.length, insert: content },
-    });
-  }, [content]);
+  }, [readOnly, content]);
 
   return <div ref={containerRef} style={{ border: "1px solid rgba(227,179,122,.22)", borderRadius: "0.75rem", overflow: "hidden" }} />;
 }

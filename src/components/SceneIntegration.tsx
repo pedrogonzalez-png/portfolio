@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, useState } from "react";
-import { useAccessibility } from "./AccessibilityProvider";
+import { useAccessibility } from "./accessibilityContext";
 
 const Scene3D = lazy(() => import("../scenes/Scene3D"));
 

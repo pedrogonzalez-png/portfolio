@@ -1,36 +1,21 @@
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
-
-interface AccessibilityContextValue {
-  reducedMotion: boolean;
-  audioMuted: boolean;
-  setAudioMuted: (muted: boolean) => void;
-  setReducedMotion: (reduced: boolean) => void;
-}
-
-const AccessibilityContext = createContext<AccessibilityContextValue | null>(null);
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { AccessibilityContext, type AccessibilityContextValue } from "./accessibilityContext";
 
 function useMediaQuery(query: string): boolean {
   const [matches, setMatches] = useState(false);
   useEffect(() => {
-    const m = window.matchMedia(query);
-    setMatches(m.matches);
-    const handler = (e: MediaQueryListEvent) => setMatches(e.matches);
-    m.addEventListener("change", handler);
-    return () => m.removeEventListener("change", handler);
+    const queryList = window.matchMedia(query);
+    setMatches(queryList.matches);
+    const handler = (event: MediaQueryListEvent) => setMatches(event.matches);
+    queryList.addEventListener("change", handler);
+    return () => queryList.removeEventListener("change", handler);
   }, [query]);
   return matches;
 }
 
 export function AccessibilityProvider({ children }: { children: React.ReactNode }) {
   const systemReduced = useMediaQuery("(prefers-reduced-motion: reduce)");
-  const [audioMuted, setAudioMutedState] = useState(true); // áudio desligado até opt-in (doc 01)
+  const [audioMuted, setAudioMutedState] = useState(true);
   const [reducedMotion, setReducedMotion] = useState(systemReduced);
 
   useEffect(() => {
@@ -51,10 +36,4 @@ export function AccessibilityProvider({ children }: { children: React.ReactNode 
       {children}
     </AccessibilityContext.Provider>
   );
-}
-
-export function useAccessibility() {
-  const ctx = useContext(AccessibilityContext);
-  if (!ctx) throw new Error("useAccessibility must be used within AccessibilityProvider");
-  return ctx;
 }
