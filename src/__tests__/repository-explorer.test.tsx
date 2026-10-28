@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import * as github from "../services/githubReadonly";
 
 vi.mock("../components/CodeMirror", () => ({
@@ -72,7 +72,7 @@ describe("readonly GitHub explorer UI", () => {
     const { onCloseTab, onSelectTab } = renderExplorer({ tabs: [opened], activePath: opened.path });
     expect(screen.getByTestId("readonly-source")).toHaveTextContent(opened.content);
     expect(screen.getByText(/blob dddddddddd/)).toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", { name: "main.js" }));
+    fireEvent.click(within(screen.getByRole("group", { name: "Arquivos abertos" })).getByRole("button", { name: "main.js" }));
     expect(onSelectTab).toHaveBeenCalledWith(opened.path);
     fireEvent.click(screen.getByRole("button", { name: /Fechar aba src\/main\.js/ }));
     expect(onCloseTab).toHaveBeenCalledWith(opened.path);
