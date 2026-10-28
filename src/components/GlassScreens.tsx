@@ -1,6 +1,7 @@
 import { useMemo, useRef } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import { MathUtils, Vector3 } from "three";
+import { MeshTransmissionMaterial } from "@react-three/drei";
 import type { Mesh, PerspectiveCamera } from "three";
 
 /**
@@ -82,20 +83,26 @@ function GlassScreen({ index }: { index: number }) {
   return (
     <mesh ref={plate} frustumCulled={false}>
       <boxGeometry args={[1, 1, 0.036]} />
-      <meshPhysicalMaterial
-        color={index === 1 ? "#d6c7e7" : index === 2 ? "#f0cedb" : "#f5d2cb"}
-        roughness={0.08}
-        metalness={0}
-        transmission={0.98}
-        thickness={1.25}
-        ior={1.18}
-        attenuationColor={index === 1 ? "#6c456e" : "#82495b"}
-        attenuationDistance={2.1}
+      <MeshTransmissionMaterial
+        color={index === 1 ? "#e4d4fc" : index === 2 ? "#f3c9dc" : "#f9d6d1"}
+        transmission={1}
+        thickness={0.62}
+        ior={1.28}
+        roughness={0.065}
+        chromaticAberration={0.039}
+        anisotropicBlur={0.085}
+        distortion={0.09}
+        distortionScale={0.31}
+        temporalDistortion={0.035}
+        samples={4}
+        resolution={256}
+        backside={false}
         clearcoat={1}
-        clearcoatRoughness={0.055}
-        specularIntensity={1}
-        specularColor="#fff4f7"
-        envMapIntensity={1.2}
+        clearcoatRoughness={0.045}
+        attenuationColor={index === 1 ? "#80527e" : "#955c6d"}
+        attenuationDistance={2.9}
+        metalness={0}
+        envMapIntensity={1.1}
         transparent
         opacity={1}
         depthWrite={false}
