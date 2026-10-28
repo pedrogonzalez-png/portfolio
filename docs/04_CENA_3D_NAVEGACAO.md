@@ -106,3 +106,15 @@ Criar um **único controlador de transições** com cancelamento/interrupt: não
 - Material utiliza transparência, clearcoat e transmissão moderada; cores acompanham o tema global. Sem cópia de shaders/assets de Active Theory — somente referência conceitual de profundidade e atmosfera WebGL.
 - Até 919px, com movimento reduzido, sem WebGL ou fora do viewport, o sistema mantém a versão DOM/SVG. A renderização WebGL pesada é montada apenas quando a seção entra em vista. Evento de perda de contexto volta para a alternativa leve.
 - **Aceite ainda pendente:** inspeção visual em navegador no Arch, teste de perda de contexto e desempenho medido em GPU integrada/dedicada. Build e testes automatizados não substituem QA visual.
+
+## Correção da direção visual — foco e legibilidade (28/10/2026)
+
+A captura enviada pelo proprietário mostrou três problemas concretos na versão anterior: conexões sobrepostas de três projetos ao mesmo tempo, vidro marrom opaco/sem hierarquia e o título de Abismo ausente no cartão. Essa direção **não foi aprovada** e foi substituída.
+
+A segunda composição utiliza:
+- **Um projeto principal por vez** em um grande painel de vidro central; dois outros projetos aparecem recuados nas laterais com ações de navegação. O foco muda por setas e clique; sem captura do scroll global.
+- **Somente conexões comprovadas do projeto em foco**: os chips técnicos ocupam arcos superior/inferior calculados sem posições repetidas, e os filamentos saem apenas do centro. Sem teia cruzando três núcleos.
+- Vidro mais transparente e escuro com reflexo fino, contraste claro para título e descrição, brilho Changli usado com parcimônia, anéis e partículas em diferentes camadas Z.
+- A geometria de vidro, o campo de partículas e os fios luminosos são WebGL real; **texto, chips, botões e navegação ficam em HTML sobre o canvas**, não dentro dele. Isso elimina a oclusão de títulos observada na primeira captura.
+- Os detalhes e os filtros existentes continuam compartilhados com a versão DOM/SVG acessível, usada em mobile e quando WebGL/movimento não estiver disponível.
+- A inspeção visual continua pendente; nenhuma alegação de equivalência à Active Theory. Trata-se de uma referência conceitual de profundidade, ritmo, foco e imersão.
