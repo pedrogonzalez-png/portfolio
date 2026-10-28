@@ -1,12 +1,15 @@
 import { useEffect, useMemo, useRef } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { Line, RoundedBox } from "@react-three/drei";
-import { AdditiveBlending, BufferAttribute, BufferGeometry, CatmullRomCurve3, Color, Vector2, Vector3 } from "three";
-import type { Group } from "three";
+import { RoundedBox, useFBO } from "@react-three/drei";
+import { AdditiveBlending, BufferAttribute, BufferGeometry, Color, DoubleSide, Vector2, Vector3 } from "three";
+import type { Group, ShaderMaterial } from "three";
 import { useTheme } from "../stores/themeContext";
-import { type KnowledgeProjectId } from "../data/knowledge";
+import type { KnowledgeProjectId } from "../data/knowledge";
 
-export type KnowledgeSelection = { kind: "skill"; id: string } | { kind: "project"; id: KnowledgeProjectId } | null;
+export type KnowledgeSelection =
+  | { kind: "skill"; id: string }
+  | { kind: "project"; id: KnowledgeProjectId }
+  | null;
 
 export type SpatialCoordinate = { x: number; y: number };
 export type KnowledgeWorldProps = {
@@ -16,158 +19,280 @@ export type KnowledgeWorldProps = {
   onContextLost: () => void;
 };
 
-const worldPoint = (x: number, y: number, width: number, height: number, z: number) =>
+const spacePoint = (x: number, y: number, width: number, height: number, z: number) =>
   new Vector3((x / 100 - 0.5) * width, (0.5 - y / 100) * height, z);
 
-/** A restrained glint instead of broad brown opaque rectangles. */
-function GlassSlab({
-  x, y, w, h, z, focus = false, turn = 0,
-}: {
-  x: number; y: number; w: number; h: number; z: number;
-  focus?: boolean; turn?: number;
-}) {
+// The background has recognizable bright ribbons for the lens to refract.
+// It uses original mathematical shapes, no external textures or reference assets.
+const veilVertex = [
+  "varying vec2 vUv;",
+  "void main() {",
+  "  vUv = uv;",
+  "  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);",
+  "}",
+].join("\n");
+
+const veilFragment = [
+  "uniform float uTime;",
+  "uniform vec3 uWarm;",
+  "uniform vec3 uRose;",
+  "varying vec2 vUv;",
+  "float bell(float x, float k) { return exp(-x*x*k); }",
+  "void main() {",
+  "  vec2 p = vUv - 0.5;",
+  "  float t = uTime * 0.14;",
+  "  float current = p.y - 0.19*sin(p.x*6.8 + t) - 0.045*cos(p.x*15.0-t);",
+  "  float ribbon = bell(current, 120.0) * (0.4 + 0.6*bell(p.x, 7.0));",
+  "  float filament = bell(current + 0.055*sin(p.x*12.0-t), 2600.0);",
+  "  float returnWave = p.y + 0.16*sin(p.x*6.1 - t*0.7) + 0.11;",
+  "  float second = bell(returnWave, 600.0) * 0.72;",
+  "  float glow = bell(p.x + 0.18, 20.0) * bell(p.y + 0.09, 9.0);",
+  "  float flare = bell(p.x - 0.28, 32.0) * bell(p.y - 0.12, 60.0);",
+  "  vec3 color = vec3(0.015,0.012,0.028);",
+  "  color += uWarm*(ribbon*0.21 + filament*0.50 + glow*0.14);",
+  "  color += uRose*(second*0.31 + flare*0.26);",
+  "  color += vec3(0.32,0.47,0.65)*(filament*0.19 + second*0.11);",
+  "  gl_FragColor = vec4(color, 1.0);",
+  "}",
+].join("\n");
+
+// All panes read the same offscreen image: genuine screen-space refraction,
+// prism edges and grazing-angle reflection, rather than opaque CSS tint.
+const lensVertex = [
+  "varying vec2 vUv;",
+  "varying vec3 vViewNormal;",
+  "varying vec3 vViewDirection;",
+  "void main() {",
+  "  vUv = uv;",
+  "  vec4 eye = modelViewMatrix * vec4(position, 1.0);",
+  "  vViewNormal = normalize(normalMatrix * normal);",
+  "  vViewDirection = normalize(-eye.xyz);",
+  "  gl_Position = projectionMatrix * eye;",
+  "}",
+].join("\n");
+
+const lensFragment = [
+  "uniform sampler2D uBackdrop;",
+  "uniform vec2 uResolution;",
+  "uniform float uTime;",
+  "uniform vec3 uTint;",
+  "uniform float uFocus;",
+  "varying vec2 vUv;",
+  "varying vec3 vViewNormal;",
+  "varying vec3 vViewDirection;",
+  "void main() {",
+  "  vec2 p = vUv - 0.5;",
+  "  float side = min(min(vUv.x, 1.0-vUv.x), min(vUv.y, 1.0-vUv.y));",
+  "  float rim = 1.0 - smoothstep(0.008, 0.092, side);",
+  "  float fresnel = pow(1.0 - abs(dot(normalize(vViewNormal), normalize(vViewDirection))), 2.3);",
+  "  vec2 bend = -p*(0.009 + rim*0.028) + vViewNormal.xy*0.006;",
+  "  bend += vec2(sin(vUv.y*15.0 + uTime*0.22), cos(vUv.x*11.0 - uTime*0.19))*0.0015;",
+  "  vec2 uv = clamp(gl_FragCoord.xy/uResolution + bend, vec2(0.002), vec2(0.998));",
+  "  vec2 dispersion = normalize(p+vec2(0.001))*rim*(0.0028 + 0.0012*uFocus);",
+  "  float r = texture2D(uBackdrop, clamp(uv + dispersion, 0.002, 0.998)).r;",
+  "  float g = texture2D(uBackdrop, uv).g;",
+  "  float b = texture2D(uBackdrop, clamp(uv - dispersion, 0.002, 0.998)).b;",
+  "  vec3 refracted = vec3(r,g,b);",
+  "  // A faint color cast is physically plausible; never replace the image by a brown slab.",
+  "  refracted = mix(refracted, refracted*uTint, 0.055);",
+  "  float glint = pow(max(0.0, 1.0-abs(vUv.x*0.8+vUv.y*0.6-0.54)), 52.0)*0.058;",
+  "  float edgeLight = rim*(0.07+uFocus*0.085) + fresnel*0.19;",
+  "  vec3 color = refracted + vec3(0.87,0.85,0.96)*glint + uTint*edgeLight;",
+  "  gl_FragColor = vec4(color, 0.98);",
+  "}",
+].join("\n");
+
+function Backdrop() {
   const { theme } = useTheme();
   const { viewport } = useThree();
-  const position = worldPoint(x, y, viewport.width, viewport.height, z);
-  const width = (w / 100) * viewport.width;
-  const height = (h / 100) * viewport.height;
-  const accent = theme.palette.accentYellow;
+  const material = useRef<ShaderMaterial>(null);
+  const uniforms = useMemo(() => ({
+    uTime: { value: 0 },
+    uWarm: { value: new Color(theme.palette.accentYellow) },
+    uRose: { value: new Color(theme.palette.accentRed) },
+  }), [theme.palette.accentYellow, theme.palette.accentRed]);
+  useFrame((state) => {
+    if (material.current) material.current.uniforms.uTime.value = state.clock.elapsedTime;
+  });
   return (
-    <group position={position} rotation={[0.025, turn, 0]}>
-      <RoundedBox args={[width + 0.045, height + 0.045, 0.15]} radius={0.12} smoothness={4}>
-        <meshBasicMaterial color={accent} transparent opacity={focus ? 0.39 : 0.15} depthWrite={false} />
-      </RoundedBox>
-      <RoundedBox args={[width, height, 0.24]} radius={0.11} smoothness={4} position={[0, 0, 0.09]}>
-        <meshPhysicalMaterial
-          color={theme.palette.surface}
-          roughness={0.12}
-          metalness={0.12}
-          clearcoat={1}
-          clearcoatRoughness={0.08}
-          transmission={0.55}
-          thickness={0.55}
-          transparent
-          opacity={0.56}
-          depthWrite={false}
-        />
-      </RoundedBox>
-      <mesh position={[0, height * 0.48, 0.23]}>
-        <planeGeometry args={[width * 0.83, 0.012]} />
-        <meshBasicMaterial color={accent} transparent opacity={focus ? 0.8 : 0.35} depthWrite={false} />
-      </mesh>
-    </group>
-  );
-}
-
-function Connection({
-  x, y, width, height, selected,
-}: {
-  x: number; y: number; width: number; height: number; selected: boolean;
-}) {
-  const { theme } = useTheme();
-  const points = useMemo(() => {
-    const start = worldPoint(x, y, width, height, -1.0);
-    const end = worldPoint(50, y < 50 ? 29 : 71, width, height, -0.7);
-    const mid = start.clone().lerp(end, 0.47);
-    mid.z = -2.7;
-    mid.y += y < 50 ? 0.19 : -0.19;
-    return new CatmullRomCurve3([start, mid, end]).getPoints(18);
-  }, [x, y, width, height]);
-  return (
-    <Line
-      points={points}
-      color={selected ? theme.palette.accentYellow : theme.palette.accentPrimary}
-      lineWidth={selected ? 2 : 0.8}
-      opacity={selected ? 0.78 : 0.23}
-      transparent depthWrite={false}
-    />
-  );
-}
-
-function StarField() {
-  const { theme } = useTheme();
-  const geometry = useMemo(() => {
-    const coords = new Float32Array(720 * 3);
-    for (let i = 0; i < 720; i += 1) {
-      const rx = Math.sin(i * 77.113 + 0.13) * 43758.5453;
-      const ry = Math.sin(i * 11.847 + 3.71) * 25193.1453;
-      const rz = Math.sin(i * 35.927 + 9.47) * 8345.7323;
-      coords[i * 3] = (rx - Math.floor(rx) - 0.5) * 38;
-      coords[i * 3 + 1] = (ry - Math.floor(ry) - 0.5) * 21;
-      coords[i * 3 + 2] = -4 - (rz - Math.floor(rz)) * 15;
-    }
-    const geom = new BufferGeometry();
-    geom.setAttribute("position", new BufferAttribute(coords, 3));
-    return geom;
-  }, []);
-  useEffect(() => () => geometry.dispose(), [geometry]);
-  const tone = useMemo(() => new Color(theme.palette.accentYellow), [theme.palette.accentYellow]);
-  return (
-    <points geometry={geometry}>
-      <pointsMaterial color={tone} size={0.035} opacity={0.65} transparent sizeAttenuation depthWrite={false} />
-    </points>
-  );
-}
-
-function Aura({ at, size, color }: { at: [number, number, number]; size: number; color: string }) {
-  return (
-    <mesh position={at} scale={size}>
-      <planeGeometry args={[1, 1]} />
+    <mesh position={[0, 0, -7.5]} frustumCulled={false}>
+      <planeGeometry args={[viewport.width * 1.65, viewport.height * 1.6]} />
       <shaderMaterial
-        uniforms={{ uColor: { value: new Color(color) } }}
-        vertexShader={"varying vec2 vUv; void main(){ vUv=uv; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0); }"}
-        fragmentShader={"uniform vec3 uColor; varying vec2 vUv; void main(){ float d=distance(vUv,vec2(.5)); float a=pow(max(0.0,1.0-d*2.0),3.3)*0.19; gl_FragColor=vec4(uColor,a); }"}
-        transparent depthWrite={false} blending={AdditiveBlending}
+        key={theme.id}
+        ref={material}
+        uniforms={uniforms}
+        vertexShader={veilVertex}
+        fragmentShader={veilFragment}
+        depthWrite={false}
       />
     </mesh>
   );
 }
 
-function Architecture({
-  skillPositions, activeSkill,
-}: Pick<KnowledgeWorldProps, "skillPositions" | "activeSkill">) {
+function OpticalDust() {
+  const { theme } = useTheme();
+  const geometry = useMemo(() => {
+    const coords = new Float32Array(490 * 3);
+    for (let i = 0; i < 490; i += 1) {
+      const sx = Math.sin(i * 79.3) * 47758.34;
+      const sy = Math.sin(i * 13.91) * 32139.32;
+      const sz = Math.sin(i * 27.51) * 9117.54;
+      coords[i * 3] = (sx - Math.floor(sx) - 0.5) * 33;
+      coords[i * 3 + 1] = (sy - Math.floor(sy) - 0.5) * 19;
+      coords[i * 3 + 2] = -3.2 - (sz - Math.floor(sz)) * 7.4;
+    }
+    const buffer = new BufferGeometry();
+    buffer.setAttribute("position", new BufferAttribute(coords, 3));
+    return buffer;
+  }, []);
+  useEffect(() => () => geometry.dispose(), [geometry]);
+  return (
+    <points geometry={geometry}>
+      <pointsMaterial
+        size={0.028}
+        color={theme.palette.accentYellow}
+        opacity={0.67}
+        sizeAttenuation
+        transparent
+        depthWrite={false}
+        blending={AdditiveBlending}
+      />
+    </points>
+  );
+}
+
+type Pane = {
+  x: number; y: number; w: number; h: number; z: number;
+  focus?: boolean; turn?: number;
+};
+
+function Lens({
+  pane, uniforms,
+}: {
+  pane: Pane;
+  uniforms: {
+    uBackdrop: { value: import("three").Texture };
+    uResolution: { value: Vector2 };
+    uTime: { value: number };
+    uTint: { value: Color };
+    uFocus: { value: number };
+  };
+}) {
   const { theme } = useTheme();
   const { viewport } = useThree();
-  const rig = useRef<Group>(null);
-  useFrame(({ clock }, delta) => {
-    if (!rig.current) return;
-    rig.current.position.y = Math.sin(clock.elapsedTime * 0.37) * 0.045;
-    rig.current.rotation.y = Math.sin(clock.elapsedTime * 0.19) * 0.012;
-    rig.current.rotation.z = Math.sin(clock.elapsedTime * 0.21) * 0.006;
-    void delta;
+  const { x, y, w, h, z, turn = 0, focus = false } = pane;
+  const p = spacePoint(x, y, viewport.width, viewport.height, z);
+  const width = w / 100 * viewport.width;
+  const height = h / 100 * viewport.height;
+  const ownUniforms = useMemo(() => ({
+    ...uniforms,
+    uFocus: { value: focus ? 1 : 0 },
+  }), [focus, uniforms]);
+  return (
+    <group position={p} rotation={[0.015, turn, 0]}>
+      <RoundedBox args={[width, height, 0.2]} radius={0.15} smoothness={5}>
+        <shaderMaterial
+          vertexShader={lensVertex}
+          fragmentShader={lensFragment}
+          uniforms={ownUniforms}
+          transparent
+          depthWrite={false}
+        />
+      </RoundedBox>
+      <RoundedBox args={[width + 0.045, height + 0.045, 0.205]} radius={0.15} smoothness={4}>
+        <meshBasicMaterial
+          color={theme.palette.accentYellow}
+          wireframe
+          opacity={focus ? 0.15 : 0.08}
+          transparent
+          depthWrite={false}
+        />
+      </RoundedBox>
+      <mesh position={[0, height * 0.468, 0.118]}>
+        <planeGeometry args={[width * 0.73, 0.008]} />
+        <meshBasicMaterial color="#fff5e2" opacity={focus ? 0.56 : 0.22} transparent depthWrite={false} />
+      </mesh>
+      <mesh position={[0, -height * 0.465, 0.118]}>
+        <planeGeometry args={[width * 0.51, 0.006]} />
+        <meshBasicMaterial color={theme.palette.accentRed} opacity={0.28} transparent depthWrite={false} />
+      </mesh>
+    </group>
+  );
+}
+
+function AmbientRings() {
+  const { theme } = useTheme();
+  const { viewport } = useThree();
+  const group = useRef<Group>(null);
+  useFrame(({ clock }) => {
+    if (group.current) group.current.rotation.z = Math.sin(clock.elapsedTime * 0.12) * 0.055;
   });
   return (
-    <>
-      <ambientLight intensity={1.6} />
-      <pointLight position={[-5, 3, 8]} intensity={38} color={theme.palette.accentYellow} />
-      <pointLight position={[6, -2, 5]} intensity={26} color={theme.palette.accentPrimary} />
-      <StarField />
-      <Aura at={[0, 0, -11]} size={21} color={theme.palette.accentPrimary} />
-      <Aura at={[6.8, -1.8, -12]} size={13} color={theme.palette.accentYellow} />
-      <group ref={rig}>
-        <mesh position={[0, 0, -7]} rotation={[0.42, -0.28, 0.22]}>
-          <torusGeometry args={[viewport.height * 0.54, 0.012, 5, 160]} />
-          <meshBasicMaterial color={theme.palette.accentYellow} transparent opacity={0.13} depthWrite={false} />
-        </mesh>
-        <mesh position={[0.2, 0.1, -9]} rotation={[-0.24, 0.37, -0.21]}>
-          <torusGeometry args={[viewport.height * 0.78, 0.008, 5, 160]} />
-          <meshBasicMaterial color={theme.palette.accentPrimary} transparent opacity={0.11} depthWrite={false} />
-        </mesh>
-        <GlassSlab x={50} y={50} w={40} h={44} z={-0.9} focus />
-        <GlassSlab x={12} y={51} w={16} h={25} z={-2.2} turn={0.20} />
-        <GlassSlab x={88} y={51} w={16} h={25} z={-2.2} turn={-0.20} />
-        {skillPositions.map(({ id, position }) => (
-          <group key={id}>
-            <Connection
-              x={position.x} y={position.y}
-              width={viewport.width} height={viewport.height}
-              selected={activeSkill === id}
-            />
-            <GlassSlab x={position.x} y={position.y} w={13} h={8.6} z={-1.65} focus={activeSkill === id} />
-          </group>
-        ))}
-      </group>
-    </>
+    <group ref={group} position={[0, 0, -5.6]}>
+      <mesh rotation={[0.56, -0.30, 0.14]}>
+        <torusGeometry args={[viewport.height * 0.68, 0.012, 5, 144]} />
+        <meshBasicMaterial color={theme.palette.accentYellow} opacity={0.20} transparent depthWrite={false} side={DoubleSide} />
+      </mesh>
+      <mesh rotation={[0.1, 0.28, -0.20]}>
+        <torusGeometry args={[viewport.height * 0.89, 0.009, 5, 144]} />
+        <meshBasicMaterial color={theme.palette.accentRed} opacity={0.15} transparent depthWrite={false} />
+      </mesh>
+    </group>
+  );
+}
+
+/** One shared framebuffer for every lens; no render pass per card. */
+function SharedGlass({ skillPositions, activeSkill }: Pick<KnowledgeWorldProps, "skillPositions" | "activeSkill">) {
+  const { theme } = useTheme();
+  const { gl, size, viewport } = useThree();
+  const dpr = gl.getPixelRatio();
+  const bufferWidth = Math.max(1, Math.min(1400, Math.round(size.width * dpr)));
+  const bufferHeight = Math.max(1, Math.min(900, Math.round(size.height * dpr)));
+  const target = useFBO(bufferWidth, bufferHeight, { depthBuffer: false, samples: 0 });
+  const glassGroup = useRef<Group>(null);
+  const uniforms = useMemo(() => ({
+    uBackdrop: { value: target.texture },
+    uResolution: { value: new Vector2(bufferWidth, bufferHeight) },
+    uTime: { value: 0 },
+    uTint: { value: new Color(theme.palette.accentYellow) },
+    uFocus: { value: 1 },
+  }), [target.texture, bufferWidth, bufferHeight, theme.palette.accentYellow]);
+
+  useFrame(({ scene, camera, clock }) => {
+    if (!glassGroup.current) return;
+    const previous = gl.getRenderTarget();
+    glassGroup.current.visible = false;
+    try {
+      gl.setRenderTarget(target);
+      gl.clear(true, true, true);
+      gl.render(scene, camera);
+    } finally {
+      gl.setRenderTarget(previous);
+      glassGroup.current.visible = true;
+    }
+    uniforms.uTime.value = clock.elapsedTime;
+  }, -1);
+
+  const panes: Pane[] = [
+    { x: 50, y: 50, w: 40, h: 44, z: -0.75, focus: true },
+    { x: 12, y: 51, w: 16, h: 25, z: -1.7, turn: 0.17 },
+    { x: 88, y: 51, w: 16, h: 25, z: -1.7, turn: -0.17 },
+    ...skillPositions.map(({ position, id }) => ({
+      x: position.x, y: position.y, w: 13, h: 8.6, z: -1.25,
+      focus: activeSkill === id,
+    })),
+  ];
+
+  return (
+    <group ref={glassGroup}>
+      {panes.map((pane, index) =>
+        <Lens key={index} pane={pane} uniforms={uniforms} />,
+      )}
+      <mesh position={[0, 0, -2.25]}>
+        <planeGeometry args={[viewport.width * 1.7, viewport.height * 1.5]} />
+        <meshBasicMaterial visible={false} />
+      </mesh>
+    </group>
   );
 }
 
@@ -178,39 +303,41 @@ function CameraDrift() {
     const move = (event: PointerEvent) => {
       const stage = document.getElementById("knowledge-spatial-stage");
       if (!stage) return;
-      const bounds = stage.getBoundingClientRect();
+      const rect = stage.getBoundingClientRect();
+      if (!rect.width || !rect.height) return;
       target.current.set(
-        (event.clientX - bounds.left) / bounds.width * 2 - 1,
-        1 - (event.clientY - bounds.top) / bounds.height * 2,
-      );
-      target.current.clampScalar(-1, 1);
+        (event.clientX - rect.left) / rect.width * 2 - 1,
+        1 - (event.clientY - rect.top) / rect.height * 2,
+      ).clampScalar(-1, 1);
     };
     window.addEventListener("pointermove", move, { passive: true });
     return () => window.removeEventListener("pointermove", move);
   }, []);
   useFrame(({ camera }, delta) => {
-    const speed = 1 - Math.exp(-1.6 * Math.min(delta, 0.06));
-    pointer.current.lerp(target.current, speed);
-    camera.position.x += (pointer.current.x * 0.13 - camera.position.x) * speed;
-    camera.position.y += (pointer.current.y * 0.09 - camera.position.y) * speed;
+    const ease = 1 - Math.exp(-1.4 * Math.min(delta, 0.06));
+    pointer.current.lerp(target.current, ease);
+    camera.position.x += (pointer.current.x * 0.055 - camera.position.x) * ease;
+    camera.position.y += (pointer.current.y * 0.035 - camera.position.y) * ease;
     camera.lookAt(0, 0, 0);
   });
   return null;
 }
 
-function SpatialWorld(props: KnowledgeWorldProps) {
+export default function KnowledgeWorld(props: KnowledgeWorldProps) {
   return (
     <Canvas
       orthographic
       camera={{ position: [0, 0, 16], zoom: 54, near: 0.1, far: 80 }}
       dpr={[1, 1.5]}
-      gl={{ alpha: true, antialias: true, powerPreference: "high-performance" }}
+      gl={{ antialias: true, alpha: false, powerPreference: "high-performance" }}
       onCreated={({ gl }) => gl.domElement.addEventListener("webglcontextlost", props.onContextLost, { once: true })}
     >
+      <color attach="background" args={["#090b15"]} />
+      <Backdrop />
+      <AmbientRings />
+      <OpticalDust />
+      <SharedGlass skillPositions={props.skillPositions} activeSkill={props.activeSkill} />
       <CameraDrift />
-      <Architecture {...props} />
     </Canvas>
   );
 }
-
-export default SpatialWorld;
