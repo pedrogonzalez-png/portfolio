@@ -53,7 +53,7 @@ describe("Desktop IndexedDB schema", () => {
       objectStoreNames: { contains: () => true },
       createObjectStore: vi.fn(),
       close: vi.fn(),
-      transaction: (_name: string, _mode: string) => {
+      transaction: () => {
         const transaction: {
           oncomplete: null | (() => void);
           onerror: null | (() => void);

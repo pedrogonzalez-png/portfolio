@@ -41,7 +41,7 @@ export function SimulatedDesktop({ palette, themeName }: {
     setStorageStatus("Alterações não salvas. Use Salvar organização para manter os elementos.");
   };
 
-  const useSnapshot = (layout: StoredDesktopLayout) => {
+  const applySnapshot = (layout: StoredDesktopLayout) => {
     const created: DesktopImageCard[] = [];
     const media = new Map<string, Blob>();
     try {
@@ -73,7 +73,7 @@ export function SimulatedDesktop({ palette, themeName }: {
       try {
         const layout = await readDesktopLayout();
         if (!aliveRef.current || editedRef.current) return;
-        if (layout) useSnapshot(layout);
+        if (layout) applySnapshot(layout);
         else setStorageStatus("Nenhuma organização salva ainda. Monte o desktop e clique em Salvar.");
       } catch (cause) {
         if (aliveRef.current && !editedRef.current) {
@@ -91,7 +91,6 @@ export function SimulatedDesktop({ palette, themeName }: {
       mediaRef.current.clear();
     };
     // Restore only when the editor first opens. Explicit Restore handles subsequent reads.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const saveOrganization = async () => {
@@ -134,7 +133,7 @@ export function SimulatedDesktop({ palette, themeName }: {
     try {
       const layout = await readDesktopLayout();
       if (!aliveRef.current) return;
-      if (layout) useSnapshot(layout);
+      if (layout) applySnapshot(layout);
       else setStorageStatus("Nenhuma organização salva neste navegador.");
     } catch (cause) {
       if (aliveRef.current) setStorageStatus(
