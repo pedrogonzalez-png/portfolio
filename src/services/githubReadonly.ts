@@ -111,7 +111,7 @@ function ensureAllowed(repoId: string) {
 
 /** A build-generated public index, never a source of additional repo permissions. */
 type ApprovedIndex = { schemaVersion: number; generatedAt: string; repos: RepoSnapshot[] };
-const INDEX_PATH = import.meta.env.BASE_URL + "github-index.json";
+const INDEX_PATH = new URL("github-index.json", document.baseURI).toString();
 
 export function validatedStaticSnapshot(data: unknown, repoId: string, repoFullName: string): RepoSnapshot | null {
   if (!data || typeof data !== "object") return null;
