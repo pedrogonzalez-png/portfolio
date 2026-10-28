@@ -57,6 +57,8 @@ body::before {
   background-clip: text; -webkit-background-clip: text;
   text-shadow: 0 0 80px rgba(201,106,66,.1);
 }
+.hero-name-stage { position: relative; width: 100%; margin: 1.15rem 0 .15rem; }
+.hero-name-stage .hero-title { margin: 0; }
 .hero-title {
   position: relative;
   width: 100%;
