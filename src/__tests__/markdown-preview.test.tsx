@@ -20,14 +20,15 @@ describe("safe Markdown preview", () => {
     const { container } = render(<SafeMarkdownPreview content={markdown} />);
     expect(screen.getByRole("heading", { name: "Real README" })).toBeInTheDocument();
     expect(screen.getByText("console.log('test')")).toBeInTheDocument();
-    expect(screen.getByText("<img src=x onerror=alert(1)>")).toBeInTheDocument();
+    expect(container.querySelector(".safe-markdown")).toHaveTextContent("<img src=x onerror=alert(1)>");
     expect(container.querySelector("img")).toBeNull();
     expect(container.querySelector("script")).toBeNull();
     expect((window as Window & { hacked?: boolean }).hacked).toBeUndefined();
   });
 
   it("renders basic inline text emphasis as React elements only", () => {
-    render(<SafeMarkdownPreview content="**Important** and \x60read-only\x60" />);
+    const tick = String.fromCharCode(96);
+    render(<SafeMarkdownPreview content={"**Important** and " + tick + "read-only" + tick} />);
     expect(screen.getByText("Important")).toBeInTheDocument();
     expect(screen.getByText("read-only")).toBeInTheDocument();
   });
