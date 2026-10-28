@@ -28,7 +28,7 @@ function HomePage() {
 
   return (
     <>
-      <TopMenu onOpenTerminal={openTerminal} onOpenThemeStudio={openStudio} />
+      <TopMenu onOpenTerminal={openTerminal} />
       <main className="site-main">
         <section id="inicio" className="hero" aria-label="Apresentação">
           <div className="hero-content">
@@ -46,7 +46,7 @@ function HomePage() {
           <div className="hero-bottom" aria-hidden="true">
             <span>01 / INTRODUÇÃO</span>
             <span className="scroll-indicator">ROLE PARA EXPLORAR ↓</span>
-            <span>THEME STUDIO / DARK</span>
+            <span>PROJETOS / CRIAÇÃO</span>
           </div>
         </section>
 
@@ -80,7 +80,7 @@ function HomePage() {
         </Suspense>
       )}
       <footer className="site-footer">
-        <span>PORTFÓLIO / THEME STUDIO</span>
+        <span>PORTFÓLIO / PROJETOS</span>
         <span>Protótipo em desenvolvimento — sem demos publicadas</span>
         <a href="#inicio">Voltar ao início ↑</a>
       </footer>

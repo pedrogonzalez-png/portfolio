@@ -190,13 +190,17 @@ export function ProjectPanel({ onOpenThemeStudio }: { onOpenThemeStudio?: () => 
                 onClick={(event) => {
                   if (index !== activeIndex) {
                     activate(index);
+                  } else if (project.id === "hyprland-themes" && onOpenThemeStudio) {
+                    onOpenThemeStudio();
                   } else {
                     trigger.current = event.currentTarget;
                     setSelected(project);
                   }
                 }}
                 aria-label={index === activeIndex
-                  ? "Abrir detalhes de " + project.title
+                  ? (project.id === "hyprland-themes" && onOpenThemeStudio
+                      ? "Abrir Theme Studio de " + project.title
+                      : "Abrir detalhes de " + project.title)
                   : "Trazer " + project.title + " para o centro"}
               >
                 <span className="cinematic-panel-visual" aria-hidden="true">
@@ -254,12 +258,6 @@ export function ProjectPanel({ onOpenThemeStudio }: { onOpenThemeStudio?: () => 
               <a className="primary-action" href={selected.sourceUrl} target="_blank" rel="noopener noreferrer">Ver código no GitHub ↗</a>
               {selected.demoUrl && selected.isFinalizedConfirmed && selected.status === "approved" && (
                 <button className="secondary-action" type="button" onClick={() => setShowDemo(true)}>Abrir demonstração</button>
-              )}
-              {selected.id === "hyprland-themes" && onOpenThemeStudio && (
-                <button className="secondary-action" type="button" onClick={() => {
-                  close();
-                  requestAnimationFrame(onOpenThemeStudio);
-                }}>Abrir Theme Studio · 5 temas</button>
               )}
               <button className="secondary-action" type="button" onClick={close}>Voltar à constelação</button>
             </div>

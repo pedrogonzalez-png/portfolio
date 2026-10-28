@@ -174,3 +174,10 @@ Catálogo inicial, sujeito a comparação exata com o desktop/versão base:
 - Relógio e cards têm alças independentes com arraste via pointer (mouse/touch) ou movimentação por setas; Shift + seta aumenta o passo; remoção individual. Posicionamento percentual limitado à área da prévia.
 - IMPORTANTE: arquivos importados, relógio e posições existem apenas durante a sessão da prévia. URL.revokeObjectURL libera as imagens ao remover ou fechar o editor; não há IndexedDB, salvamento/exportação de mídia, layout por wallpaper, grid, grupos, snap ou undo/redo. Não afirmar persistência ou conclusão dessas funções.
 - Esta implementação inicia elementos reais do desktop simulado; M4/M5 ainda IN_PROGRESS até QA no navegador e persistência dos elementos em marco posterior. Os cinco temas oficiais continuam imutáveis, assim como o Arch real e o portfolio 3D.
+
+## Correção de navegação: somente pelo projeto Hyprland-Themes (28/10/2026)
+
+- O Theme Studio completo pertence ao projeto **Hyprland-Themes** no carrossel de Projetos. Quando o card estiver centralizado, clicar nele abre o Studio diretamente. Clicar no card lateral continua apenas a centralizá-lo.
+- O botão global **✦ Temas** foi removido do cabeçalho: o tema aplicado continua indicado visualmente, mas o editor completo não compete com a navegação do portfólio.
+- Os cards Abismo e site-3D preservam seu fluxo de detalhes.
+- A janela do Studio usa cobertura opaca do fundo para não deixar os cards do carrossel confundirem sua hierarquia visual. As cores aplicadas continuam globais, mas o acesso à edição é contextual ao projeto.

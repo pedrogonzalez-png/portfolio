@@ -3,6 +3,9 @@ import { describe, expect, it, vi } from "vitest";
 vi.mock("../components/SpineWorld", () => ({ SpineWorld: () => null }));
 import { fireEvent, render, screen } from "@testing-library/react";
 import { ProjectPanel } from "../components/ProjectPanel";
+import { TopMenu } from "../components/TopMenu";
+import { ThemeProvider } from "../stores/ThemeProvider";
+import { MemoryRouter } from "react-router-dom";
 
 describe("three-panel carousel", () => {
   it("renders only the three allowlisted projects with Abismo centered initially", () => {
@@ -41,6 +44,21 @@ describe("three-panel carousel", () => {
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
 
+  it("opens Hyprland Theme Studio on card click, leaving other project details intact", () => {
+    const openStudio = vi.fn();
+    render(<ProjectPanel onOpenThemeStudio={openStudio} />);
+    fireEvent.click(screen.getByRole("button", { name: /Trazer Hyprland-Themes para o centro/ }));
+    expect(openStudio).not.toHaveBeenCalled();
+    const card = screen.getByRole("button", { name: "Abrir Theme Studio de Hyprland-Themes" });
+    expect(card).toHaveAttribute("data-position", "center");
+    fireEvent.click(card);
+    expect(openStudio).toHaveBeenCalledTimes(1);
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Projeto anterior" }));
+    fireEvent.click(screen.getByRole("button", { name: /Abrir detalhes de site-3D/ }));
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
+  });
+
   it("responds to wheel input while centered in view and releases scrolling at the final project", () => {
     render(<ProjectPanel />);
     const carousel = screen.getByRole("region", { name: "Carrossel de projetos" });
@@ -63,5 +81,13 @@ describe("three-panel carousel", () => {
     fireEvent.keyDown(carousel, { key: "ArrowLeft" });
     expect(screen.getByRole("button", { name: /Abrir detalhes de Abismo/ }))
       .toHaveAttribute("data-position", "center");
+  });
+});
+
+describe("header navigation", () => {
+  it("keeps Projects in the menu without a competing Themes button", () => {
+    render(<MemoryRouter><ThemeProvider><TopMenu onOpenTerminal={() => {}} /></ThemeProvider></MemoryRouter>);
+    expect(screen.getByRole("link", { name: "Projetos" })).toHaveAttribute("href", "#projetos");
+    expect(screen.queryByRole("button", { name: /Temas|Theme Studio/i })).not.toBeInTheDocument();
   });
 });
