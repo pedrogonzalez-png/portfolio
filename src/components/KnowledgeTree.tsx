@@ -149,6 +149,15 @@ export function KnowledgeTree() {
   const projectName = (id: KnowledgeProjectId) =>
     PLACEHOLDER_PROJECTS.find((project) => project.id === id)?.title ?? id;
 
+  const chooseSelection = (next: Selection) => {
+    setSelection(next);
+    if (next?.kind === "project") setActiveProject(next.id);
+    if (next?.kind === "skill") {
+      const node = KNOWLEDGE_NODES.find((candidate) => candidate.id === next.id);
+      if (node && !node.projects.includes(activeProject)) setActiveProject(node.projects[0]);
+    }
+  };
+
   return (
     <div className="knowledge-shell">
       <div className="knowledge-controls" role="group" aria-label="Filtrar tecnologias por área">
@@ -185,10 +194,7 @@ export function KnowledgeTree() {
               activeProject={activeProject}
               visibleNodes={visibleNodes}
               selection={selection}
-              onSelect={(next) => {
-                setSelection(next);
-                if (next?.kind === "project") setActiveProject(next.id);
-              }}
+              onSelect={chooseSelection}
               onProjectChange={setActiveProject}
               onContextLost={() => setWebglFailed(true)}
             />
@@ -232,7 +238,7 @@ export function KnowledgeTree() {
               (selection?.kind === "skill" && !KNOWLEDGE_NODES.some((node) =>
                 node.id === selection.id && node.projects.includes(hub.id)) ? " is-dimmed" : "")}
             style={{ left: hub.x + "%", top: hub.y + "%" }}
-            onClick={() => setSelection({ kind: "project", id: hub.id })}
+            onClick={() => chooseSelection({ kind: "project", id: hub.id })}
             aria-label={"Destacar projeto: " + projectName(hub.id)}
             aria-pressed={selection?.kind === "project" && selection.id === hub.id}
           >
@@ -250,7 +256,7 @@ export function KnowledgeTree() {
               (selection?.kind === "skill" && selection.id === node.id ? " is-selected" : "") +
               (!highlighted(node) ? " is-dimmed" : "")}
             style={{ left: node.x + "%", top: node.y + "%" }}
-            onClick={() => setSelection({ kind: "skill", id: node.id })}
+            onClick={() => chooseSelection({ kind: "skill", id: node.id })}
             aria-label={node.label + " — " + domainName(node.domain) + ", ver conexões"}
             aria-pressed={selection?.kind === "skill" && selection.id === node.id}
           >
@@ -264,7 +270,7 @@ export function KnowledgeTree() {
 
       <div className="knowledge-detail" aria-live="polite" aria-atomic="true">
         <div className="knowledge-detail-content">
-          <NodeDetails selection={selection} visible={visibleNodes} onSelect={setSelection} />
+          <NodeDetails selection={selection} visible={visibleNodes} onSelect={chooseSelection} />
         </div>
         {selection && (
           <button
