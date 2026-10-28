@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { ChangeEvent, KeyboardEvent } from "react";
 import { DesktopClockWidget } from "./desktop/DesktopClockWidget";
 import { DesktopCharacterCard } from "./desktop/DesktopCharacterCard";
@@ -91,7 +91,7 @@ export function SimulatedDesktop({ palette, themeName }: {
     setImageError("");
   };
 
-  const applySnapshot = (layout: StoredDesktopLayout) => {
+  const applySnapshot = useCallback((layout: StoredDesktopLayout) => {
     const created: DesktopImageCard[] = [];
     const media = new Map<string, Blob>();
     try {
@@ -111,12 +111,12 @@ export function SimulatedDesktop({ palette, themeName }: {
     setClockVisible(layout.clockVisible);
     setClockPosition({ ...layout.clockPosition });
     setScreenMode(layout.screenMode);
-    clearPositionHistory();
+    setHistory(emptyPositionHistory());
     editedRef.current = false;
     revisionRef.current += 1;
     setImageError("");
     setStorageStatus("Organização recuperada do navegador.");
-  };
+  }, []);
 
   useEffect(() => {
     aliveRef.current = true;
@@ -142,7 +142,7 @@ export function SimulatedDesktop({ palette, themeName }: {
       mediaRef.current.clear();
     };
     // Restore only when the editor first opens. Explicit Restore handles subsequent reads.
-  }, []);
+  }, [applySnapshot]);
 
   const saveOrganization = async () => {
     if (storageBusy || storageLoading) return;
