@@ -44,6 +44,8 @@ Criar um **único controlador de transições** com cancelamento/interrupt: não
 
 **Decisão visual atual (27/10/2026):** remover o objeto decorativo vermelho em formato de coluna/medula. Manter a constelação de painéis de vidro 3D, as partículas de ambiente, a câmera e as interações previstas neste documento. Não substituir o centro por outro objeto anatômico nem recriar essa estrutura sem pedido explícito.
 
+**Atualização de apresentação (28/10/2026):** os três painéis devem ficar lado a lado em um arco perspectivo, conforme esboço do proprietário: painel central maior e frontal, painel esquerdo inclinado para o centro e painel direito inclinado simetricamente. A rodinha do mouse sobre a área da constelação troca o projeto central com transição suave, um por gesto; nos extremos, o scroll volta a rolar a página normalmente (não prender o visitante). Os botões de anterior/próximo, as setas do teclado e a seleção por clique/touch devem oferecer o mesmo controle. Clicar em um painel lateral o coloca no centro; clicar no painel central abre os detalhes. Preservar a refração dos vidros, transparência, projetos autorizados, modais e fallback com movimento reduzido. Esta alteração substitui a disposição de cartões escalonados verticalmente, sem criar seção adicional.
+
 
 - Painéis de vidro 3D em alturas, profundidades e orientações diferentes; cada projeto tem ID, título, uma descrição breve, thumbnail autorizada, tecnologias, status e ações possíveis.
 - Estados do painel: `idle`, `hover`, `near`, `opening`, `expanded`, `closing`. Só um expanded.
