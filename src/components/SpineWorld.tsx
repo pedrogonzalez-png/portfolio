@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState, Suspense } from "react";
-import { Canvas, useFrame } from "@react-three/fiber";
-import { AdditiveBlending, CatmullRomCurve3, DynamicDrawUsage, Object3D, Vector2, Vector3 } from "three";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
+import { AdditiveBlending, CatmullRomCurve3, DynamicDrawUsage, MathUtils, Object3D, Vector2, Vector3 } from "three";
 import type { Group, InstancedMesh, ShaderMaterial } from "three";
 import { useAccessibility } from "./accessibilityContext";
 
@@ -156,10 +156,46 @@ function VertebralStructure() {
   );
 }
 
+
+function SpineCameraJourney() {
+  const { camera } = useThree();
+  const progress = useRef(0);
+  const target = useMemo(() => new Vector3(0, 0, 13), []);
+
+  useEffect(() => {
+    const update = () => {
+      const section = document.getElementById("spine-stage");
+      if (!section) return;
+      const bounds = section.getBoundingClientRect();
+      progress.current = MathUtils.clamp(
+        (window.innerHeight - bounds.top) / (window.innerHeight + bounds.height),
+        0,
+        1,
+      );
+    };
+    update();
+    window.addEventListener("scroll", update, { passive: true });
+    window.addEventListener("resize", update);
+    return () => {
+      window.removeEventListener("scroll", update);
+      window.removeEventListener("resize", update);
+    };
+  }, []);
+
+  useFrame((_, delta) => {
+    const t = progress.current;
+    target.set(Math.sin(t * Math.PI * 1.6) * 0.5, (0.5 - t) * 2.2, 13 - Math.sin(t * Math.PI) * 0.8);
+    camera.position.lerp(target, 1 - Math.exp(-2.1 * Math.min(delta, 0.06)));
+    camera.lookAt(0, (0.5 - t) * 0.45, 0);
+  });
+  return null;
+}
+
 function SpineCanvas() {
   return (
     <div className="spine-world" aria-hidden="true">
       <Canvas camera={{ position: [0, 0, 13], fov: 43 }} dpr={[1, 1.5]} gl={{ alpha: true, antialias: true, powerPreference: "high-performance" }}>
+        <SpineCameraJourney />
         <ambientLight intensity={1.5} />
         <pointLight position={[4, 4, 5]} intensity={42} color="#f8b88a" />
         <pointLight position={[-4, -3, 4]} intensity={17} color="#b82946" />
