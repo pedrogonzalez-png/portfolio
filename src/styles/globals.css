@@ -333,3 +333,16 @@ body::before {
   .orbit-grid .orbit-card:nth-child(n) { transform: none; }
   .orbit-grid .orbit-card:hover { transform: none; }
 }
+
+/* M4: prominent surfaces, navigation and transitions follow the selected palette. */
+body,.site-header,.site-footer,.projects-area,.about-area,.project-dialog,.cinematic-panel{transition:background-color .45s ease,color .45s ease,border-color .45s ease;}
+body::before{background:radial-gradient(ellipse 55% 45% at 50% 30%,color-mix(in srgb,var(--color-accent-primary) 17%,transparent),transparent 80%),linear-gradient(180deg,transparent 55%,color-mix(in srgb,var(--color-bg) 64%,transparent))}
+.site-header{background:color-mix(in srgb,var(--color-bg) 74%,transparent);border-bottom-color:color-mix(in srgb,var(--color-outline) 18%,transparent)}
+.site-footer{background:var(--color-bg);border-top-color:color-mix(in srgb,var(--color-outline) 20%,transparent)}
+.hero-title{background:linear-gradient(125deg,var(--color-accent-primary) 8%,var(--color-accent-yellow) 54%,var(--color-accent-red) 95%);background-clip:text;-webkit-background-clip:text}
+.projects-area{background:radial-gradient(ellipse 50% 60% at 50% 48%,color-mix(in srgb,var(--color-accent-primary) 14%,transparent),transparent 75%),linear-gradient(180deg,var(--color-bg),var(--color-surface),var(--color-surface-container))}
+.about-area{background:linear-gradient(145deg,var(--color-surface),var(--color-bg))}
+.project-dialog{background:linear-gradient(135deg,var(--color-surface-container),var(--color-bg));border-color:color-mix(in srgb,var(--color-outline) 35%,transparent)}
+.modal-backdrop{background:color-mix(in srgb,var(--color-bg) 89%,transparent)}
+::selection{color:var(--color-bg);background:var(--color-accent-yellow)}
+@media(prefers-reduced-motion:reduce){body,.site-header,.site-footer,.projects-area,.about-area,.project-dialog,.cinematic-panel{transition:none}}

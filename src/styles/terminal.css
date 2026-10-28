@@ -335,3 +335,13 @@
   border-bottom:1px solid rgba(227,179,122,.22);font-size:.72rem;
 }
 .explorer-load-error p{margin:0;}
+
+/* M4: Kitty terminal and Git interface inherit official global palette. */
+.terminal-dialog{background:linear-gradient(145deg,var(--color-surface-container),var(--color-bg));border-color:color-mix(in srgb,var(--color-outline) 65%,transparent)}
+.terminal-header,.terminal-prompt,.terminal-mobile-tabs{background:var(--color-surface);border-color:color-mix(in srgb,var(--color-outline) 35%,transparent)}
+.terminal-explorer,.explorer-timeline{background:linear-gradient(180deg,var(--color-surface-container),var(--color-bg))}
+.terminal-command,.terminal-prompt label,.explorer-tab.active button{color:var(--color-accent-yellow)}
+.terminal-output,.terminal-header strong,.explorer-repo strong{color:var(--color-text)}
+.explorer-tab.active{background:color-mix(in srgb,var(--color-accent-primary) 18%,transparent)}
+.git-diff-viewer,.git-diff-patch,.git-graph-node{background:var(--color-bg)}
+.git-diff-filename,.explorer-tabs{background:var(--color-surface-container)}

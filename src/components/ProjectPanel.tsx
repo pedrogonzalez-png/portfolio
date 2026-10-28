@@ -98,7 +98,7 @@ function useCarouselWheel(
   }, [stageRef, activeRef, count, setActive, modalOpen]);
 }
 
-export function ProjectPanel() {
+export function ProjectPanel({ onOpenThemeStudio }: { onOpenThemeStudio?: () => void } = {}) {
   const [selected, setSelected] = useState<Project | null>(null);
   const [showDemo, setShowDemo] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
@@ -254,6 +254,12 @@ export function ProjectPanel() {
               <a className="primary-action" href={selected.sourceUrl} target="_blank" rel="noopener noreferrer">Ver código no GitHub ↗</a>
               {selected.demoUrl && selected.isFinalizedConfirmed && selected.status === "approved" && (
                 <button className="secondary-action" type="button" onClick={() => setShowDemo(true)}>Abrir demonstração</button>
+              )}
+              {selected.id === "hyprland-themes" && onOpenThemeStudio && (
+                <button className="secondary-action" type="button" onClick={() => {
+                  close();
+                  requestAnimationFrame(onOpenThemeStudio);
+                }}>Abrir Theme Studio · 5 temas</button>
               )}
               <button className="secondary-action" type="button" onClick={close}>Voltar à constelação</button>
             </div>

@@ -5,11 +5,15 @@ import { ProjectPanel } from "../components/ProjectPanel";
 import SceneIntegration from "../components/SceneIntegration";
 
 const Terminal = lazy(() => import("../components/Terminal").then((module) => ({ default: module.Terminal })));
+const ThemeStudio = lazy(() => import("../components/ThemeStudio").then((module) => ({ default: module.ThemeStudio })));
 
 function HomePage() {
   const [terminalOpen, setTerminalOpen] = useState(false);
+  const [studioOpen, setStudioOpen] = useState(false);
   const openTerminal = useCallback(() => setTerminalOpen(true), []);
   const closeTerminal = useCallback(() => setTerminalOpen(false), []);
+  const openStudio = useCallback(() => setStudioOpen(true), []);
+  const closeStudio = useCallback(() => setStudioOpen(false), []);
 
   useEffect(() => {
     const shortcut = (event: KeyboardEvent) => {
@@ -24,7 +28,7 @@ function HomePage() {
 
   return (
     <>
-      <TopMenu onOpenTerminal={openTerminal} />
+      <TopMenu onOpenTerminal={openTerminal} onOpenThemeStudio={openStudio} />
       <main className="site-main">
         <section id="inicio" className="hero" aria-label="Apresentação">
           <div className="hero-content">
@@ -42,7 +46,7 @@ function HomePage() {
           <div className="hero-bottom" aria-hidden="true">
             <span>01 / INTRODUÇÃO</span>
             <span className="scroll-indicator">ROLE PARA EXPLORAR ↓</span>
-            <span>CHANGli / DARK</span>
+            <span>THEME STUDIO / DARK</span>
           </div>
         </section>
 
@@ -52,7 +56,7 @@ function HomePage() {
             <h2>Um universo de <em>possibilidades.</em></h2>
             <p>Projetos do catálogo autorizado, ainda em desenvolvimento. Abra um painel para conhecer os detalhes.</p>
           </div>
-          <ProjectPanel />
+          <ProjectPanel onOpenThemeStudio={openStudio} />
         </section>
 
         <section id="sobre" className="about-area" aria-label="Sobre e contato">
@@ -70,8 +74,13 @@ function HomePage() {
           <Terminal onClose={closeTerminal} />
         </Suspense>
       )}
+      {studioOpen && (
+        <Suspense fallback={<div role="status">Carregando Theme Studio...</div>}>
+          <ThemeStudio onClose={closeStudio} />
+        </Suspense>
+      )}
       <footer className="site-footer">
-        <span>PORTFÓLIO / CHANGLI</span>
+        <span>PORTFÓLIO / THEME STUDIO</span>
         <span>Protótipo em desenvolvimento — sem demos publicadas</span>
         <a href="#inicio">Voltar ao início ↑</a>
       </footer>

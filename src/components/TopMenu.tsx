@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { useTheme } from "../stores/themeContext";
 
-export function TopMenu({ onOpenTerminal }: { onOpenTerminal: () => void }) {
+export function TopMenu({ onOpenTerminal, onOpenThemeStudio }: { onOpenTerminal: () => void; onOpenThemeStudio: () => void }) {
   const { theme } = useTheme();
   return (
     <header className="site-header">
@@ -15,6 +15,7 @@ export function TopMenu({ onOpenTerminal }: { onOpenTerminal: () => void }) {
         <a href="#sobre">Sobre / Contato</a>
       </nav>
       <button type="button" className="site-terminal-button" onClick={onOpenTerminal} title="Abrir terminal (Ctrl + `)">⌘_ Terminal</button>
+      <button type="button" className="site-theme-button" onClick={onOpenThemeStudio} aria-label={"Abrir Theme Studio. Tema atual: " + theme.name}>✦ Temas</button>
       <div className="theme-indicator"><span className="theme-dot" /> {theme.name}</div>
     </header>
   );

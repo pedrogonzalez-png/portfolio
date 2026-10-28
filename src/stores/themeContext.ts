@@ -4,7 +4,7 @@ import type { Theme } from "./themes";
 export interface ThemeContextValue {
   theme: Theme;
   setTheme: (id: string) => void;
-  availableThemes: Theme[];
+  availableThemes: readonly Theme[];
 }
 
 export const ThemeContext = createContext<ThemeContextValue | null>(null);

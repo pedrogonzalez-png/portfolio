@@ -3,6 +3,7 @@ import { useFrame, useThree } from "@react-three/fiber";
 import { MathUtils, Vector3 } from "three";
 import { MeshTransmissionMaterial } from "@react-three/drei";
 import type { Mesh, PerspectiveCamera } from "three";
+import { useTheme } from "../stores/themeContext";
 
 /**
  * Optically transmissive 3D surfaces registered to the screen positions of
@@ -10,6 +11,7 @@ import type { Mesh, PerspectiveCamera } from "three";
  * through these plates. Non-WebGL clients use the HTML/CSS fallback.
  */
 function GlassScreen({ index }: { index: number }) {
+  const { theme } = useTheme();
   const plate = useRef<Mesh>(null);
   const { camera, gl, size } = useThree();
   const scratch = useMemo(
@@ -95,7 +97,7 @@ function GlassScreen({ index }: { index: number }) {
     <mesh ref={plate} frustumCulled={false}>
       <boxGeometry args={[1, 1, 0.036]} />
       <MeshTransmissionMaterial
-        color={index === 1 ? "#e4d4fc" : index === 2 ? "#f3c9dc" : "#f9d6d1"}
+        color={index === 1 ? theme.palette.accentYellow : index === 2 ? theme.palette.accentRed : theme.palette.textVariant}
         transmission={1}
         thickness={0.62}
         ior={1.28}
@@ -110,7 +112,7 @@ function GlassScreen({ index }: { index: number }) {
         backside={false}
         clearcoat={1}
         clearcoatRoughness={0.045}
-        attenuationColor={index === 1 ? "#80527e" : "#955c6d"}
+        attenuationColor={theme.palette.accentPrimary}
         attenuationDistance={2.9}
         metalness={0}
         envMapIntensity={1.1}

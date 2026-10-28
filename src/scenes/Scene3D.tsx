@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { AdditiveBlending } from "three";
-import type { BufferAttribute } from "three";
+import { AdditiveBlending, Color } from "three";
+import { useTheme } from "../stores/themeContext";
+import type { BufferAttribute, ShaderMaterial } from "three";
 import { advanceParticles, type ParticleState } from "./particlePhysics";
 
 type ParticleData = ParticleState;
@@ -79,14 +80,14 @@ const vertex = `
 const fragment = `
   varying float vEnergy;
   varying float vSeed;
+  uniform vec3 uBronze;
+  uniform vec3 uGold;
+  uniform vec3 uFast;
   void main() {
     vec2 uv = gl_PointCoord - vec2(0.5);
     float dist = dot(uv, uv);
     float alpha = exp(-dist * 22.0) * (0.76 + vEnergy * 0.24);
-    vec3 bronze = vec3(0.75, 0.25, 0.17);
-    vec3 gold = vec3(0.99, 0.67, 0.37);
-    vec3 fast = vec3(1.0, 0.97, 0.89);
-    vec3 color = mix(mix(bronze, gold, vSeed), fast, vEnergy * 0.85);
+    vec3 color = mix(mix(uBronze, uGold, vSeed), uFast, vEnergy * 0.85);
     gl_FragColor = vec4(color, alpha);
   }
 `;
@@ -108,6 +109,13 @@ type PointerState = {
 };
 
 function ParticleName() {
+  const { theme } = useTheme();
+  const colors = useMemo(() => ({
+    bronze: new Color(theme.palette.accentPrimary),
+    gold: new Color(theme.palette.accentYellow),
+    fast: new Color(theme.palette.text),
+  }), [theme.palette]);
+  const material = useRef<ShaderMaterial>(null);
   const { size, gl } = useThree();
   const data = useMemo(() => sampleHeading(size.width, size.height), [size.width, size.height]);
   const positionAttribute = useRef<BufferAttribute>(null);
@@ -211,6 +219,12 @@ function ParticleName() {
   }, [data, gl]);
 
   useFrame((_, delta) => {
+    if (material.current) {
+      const easing = 1 - Math.exp(-5 * Math.min(delta, 0.06));
+      material.current.uniforms.uBronze.value.lerp(colors.bronze, easing);
+      material.current.uniforms.uGold.value.lerp(colors.gold, easing);
+      material.current.uniforms.uFast.value.lerp(colors.fast, easing);
+    }
     if (!data.count || !positionAttribute.current || !energyAttribute.current) return;
     const dt = Math.min(0.04, delta);
     const now = performance.now();
@@ -263,9 +277,10 @@ function ParticleName() {
         <bufferAttribute ref={energyAttribute} attach="attributes-aEnergy" args={[data.energy, 1]} />
       </bufferGeometry>
       <shaderMaterial
+        ref={material}
         vertexShader={vertex}
         fragmentShader={fragment}
-        uniforms={{ uPixelRatio: { value: Math.min(1.75, gl.getPixelRatio()) } }}
+        uniforms={{ uPixelRatio: { value: Math.min(1.75, gl.getPixelRatio()) }, uBronze: { value: colors.bronze.clone() }, uGold: { value: colors.gold.clone() }, uFast: { value: colors.fast.clone() } }}
         transparent
         depthWrite={false}
         blending={AdditiveBlending}

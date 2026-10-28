@@ -407,3 +407,12 @@
   .spine-stage.project-carousel .cinematic-panel-reflection { transition: none; }
   .spine-stage.project-carousel .cinematic-panel-reflection { display: none; }
 }
+
+/* M4: only color layers change; perspective transforms and carousel stay intact. */
+.spine-stage.project-carousel::before{background:radial-gradient(ellipse at center,color-mix(in srgb,var(--color-accent-primary) 20%,transparent),transparent 68%)}
+.spine-stage.project-carousel .arc-carousel .cinematic-panel{border-color:color-mix(in srgb,var(--color-outline) 65%,transparent);background:linear-gradient(135deg,color-mix(in srgb,var(--color-accent-primary) 11%,transparent),color-mix(in srgb,var(--color-surface) 45%,transparent));color:var(--color-text)}
+.spine-stage.project-carousel .arc-carousel .cinematic-panel.carousel-center:is(:hover,:focus-visible){border-color:var(--color-accent-yellow);box-shadow:0 40px 105px #0008,0 0 70px color-mix(in srgb,var(--color-accent-primary) 20%,transparent)}
+.spine-stage.project-carousel .cinematic-panel-category,.spine-stage.project-carousel .cinematic-panel-explore{color:var(--color-accent-yellow)}
+.spine-stage.project-carousel .cinematic-panel-title{color:var(--color-text)}
+.spine-stage.project-carousel .cinematic-panel-note{color:var(--color-text-variant)}
+.carousel-controls button{color:var(--color-accent-yellow);background:var(--color-surface-container);border-color:var(--color-outline)}

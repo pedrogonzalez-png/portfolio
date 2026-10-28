@@ -143,3 +143,11 @@ Catálogo inicial, sujeito a comparação exata com o desktop/versão base:
 - Loja/social de temas, comunidade, sincronização multi-dispositivo, marketplace, IA de criação de temas.
 - MP4 ao fundo do portfólio principal; execução de QML no browser.
 - Microconfigurações não pedidas que dificultam o uso básico.
+
+## M4 — primeiro bloco (28/10/2026)
+
+- Cinco esquemas oficiais exatos (defaults, dark, light) copiados do repositório Hyprland-Themes, cada qual identificado por caminho e SHA em src/data/official-theme-schemes.json.
+- ThemeProvider aplica tokens globais e persiste a escolha em localStorage, com fallback Changli para IDs inválidos ou armazenamento bloqueado.
+- Partículas do nome, iluminação, poeira e vidros agora usam cores da paleta, atualizadas sem desmontar o carrossel ou reiniciar as câmeras. Destaques CSS globais seguem os tokens.
+- Acesso à galeria pelo botão Temas e pelo detalhe Hyprland-Themes. Prévia é local; Aplicar confirma a troca. Os cinco oficiais permanecem imutáveis.
+- M4 continua IN_PROGRESS: duplicação e edição personalizada, auditoria visual de todos os tons/contrastes e teste manual no navegador. M5 (widgets/wallpapers) ainda não foi implementado.

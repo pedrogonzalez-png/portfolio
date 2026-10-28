@@ -2,6 +2,8 @@ import { useEffect, useMemo, useRef, useState, Suspense } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { AdditiveBlending, DynamicDrawUsage, MathUtils, Vector2, Vector3 } from "three";
 import type { ShaderMaterial } from "three";
+import { Color } from "three";
+import { useTheme } from "../stores/themeContext";
 import { useAccessibility } from "./accessibilityContext";
 import { GlassScreens } from "./GlassScreens";
 
@@ -34,16 +36,21 @@ const particleVertex = `
 `;
 const particleFragment = `
   varying float vHeat;
+  uniform vec3 uCopper;
+  uniform vec3 uGold;
   void main() {
     float radius = length(gl_PointCoord - vec2(0.5));
     float glow = exp(-radius * radius * 24.0) * 0.82;
-    vec3 copper = vec3(0.78, 0.29, 0.22);
-    vec3 gold = vec3(0.99, 0.77, 0.53);
-    gl_FragColor = vec4(mix(copper, gold, vHeat), glow);
+    gl_FragColor = vec4(mix(uCopper, uGold, vHeat), glow);
   }
 `;
 
 function OrganicDust() {
+  const { theme } = useTheme();
+  const colors = useMemo(() => ({
+    low: new Color(theme.palette.accentPrimary),
+    high: new Color(theme.palette.accentYellow),
+  }), [theme.palette]);
   const material = useRef<ShaderMaterial>(null);
   const pointer = useRef(new Vector2(80, 80));
   const pointerTarget = useRef(new Vector2(80, 80));
@@ -83,6 +90,8 @@ function OrganicDust() {
   useFrame((_, delta) => {
     if (!material.current) return;
     material.current.uniforms.uTime.value += Math.min(delta, 0.07);
+    material.current.uniforms.uCopper.value.lerp(colors.low, 1 - Math.exp(-5 * delta));
+    material.current.uniforms.uGold.value.lerp(colors.high, 1 - Math.exp(-5 * delta));
     pointer.current.lerp(pointerTarget.current, Math.min(delta * 2.5, 1));
     material.current.uniforms.uPointer.value.copy(pointer.current);
   });
@@ -95,7 +104,7 @@ function OrganicDust() {
       </bufferGeometry>
       <shaderMaterial
         ref={material}
-        uniforms={{ uTime: { value: 0 }, uPointer: { value: new Vector2(80, 80) } }}
+        uniforms={{ uTime: { value: 0 }, uPointer: { value: new Vector2(80, 80) }, uCopper: { value: colors.low.clone() }, uGold: { value: colors.high.clone() } }}
         vertexShader={particleVertex}
         fragmentShader={particleFragment}
         transparent
@@ -141,13 +150,14 @@ function SpineCameraJourney() {
 }
 
 function ConstellationCanvas() {
+  const { theme } = useTheme();
   return (
     <div className="spine-world" aria-hidden="true">
       <Canvas camera={{ position: [0, 0, 13], fov: 43 }} dpr={[1, 1.5]} gl={{ alpha: true, antialias: true, powerPreference: "high-performance" }}>
         <SpineCameraJourney />
         <ambientLight intensity={1.5} />
-        <pointLight position={[4, 4, 5]} intensity={42} color="#f8b88a" />
-        <pointLight position={[-4, -3, 4]} intensity={17} color="#b82946" />
+        <pointLight position={[4, 4, 5]} intensity={42} color={theme.palette.accentYellow} />
+        <pointLight position={[-4, -3, 4]} intensity={17} color={theme.palette.accentPrimary} />
         <OrganicDust />
         <GlassScreens />
       </Canvas>
