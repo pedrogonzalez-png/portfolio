@@ -31,9 +31,7 @@ jobs:
       - name: Build
         run: npm run build
 
-      # Existing warnings are documented technical debt; keep visible, but not a release gate yet.
-      - name: Lint (advisory until baseline is cleaned)
-        continue-on-error: true
+      - name: Lint
         run: npm run lint
 
       - name: Format check (advisory until baseline is cleaned)
