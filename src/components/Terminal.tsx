@@ -20,7 +20,7 @@ type TerminalLine = { command: string; output: string; error?: boolean };
 const HELP = [
   "Terminal virtual — somente leitura; nenhum comando roda no seu computador.",
   "help | repos | open <id> | pwd | ls [path] | cd <path> | tree [path]",
-  "cat <arquivo> | code <arquivo> | find <nome> | git log",
+  "cat <arquivo> | code <arquivo> | find <nome> | git log [página 1-10]",
   "git show <SHA> | git diff <SHA-A> <SHA-B> | whoami | neofetch",
   "goto projects|about|contact | history | clear",
   "Exemplo: open jogo-site → ls src → code src/main.js",
@@ -195,8 +195,14 @@ export function Terminal({ onClose }: { onClose: () => void }) {
         if (!repoId) throw new Error("Escolha primeiro: open <repo-id>");
         const sub = rest[0];
         if (sub === "log") {
-          const data = await realGitLog(repoId);
-          output = "Commits reais de " + data.branch + " (até 12 resultados):\n" +
+          if (rest.length > 2) throw new Error("Uso: git log [página 1-10]");
+          const page = rest[1] === undefined ? 1 : Number(rest[1]);
+          if (!Number.isInteger(page) || page < 1 || page > 10) {
+            throw new Error("Página inválida. Use git log 1 até git log 10.");
+          }
+          const data = await realGitLog(repoId, page);
+          output = "Commits reais de " + data.branch + " · página " + page +
+            " (até 12 resultados; índice limitado a 10 páginas):\n" +
             data.commits.map((c) => c.sha.slice(0, 10) + "  " + c.date.slice(0, 10) +
               "  " + c.author + " — " + c.subject).join("\n");
         } else if (sub === "show") {
