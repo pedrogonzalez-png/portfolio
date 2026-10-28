@@ -2,7 +2,8 @@ import { useMemo } from "react";
 import type { KeyboardEvent as ReactKeyboardEvent } from "react";
 import { KNOWLEDGE_PROJECTS, type KnowledgeNode, type KnowledgeProjectId } from "../data/knowledge";
 import { PLACEHOLDER_PROJECTS } from "./PlaceholderCatalog";
-import KnowledgeWorld, { type KnowledgeSelection, type SpatialCoordinate } from "./KnowledgeWorld";
+import KnowledgeWorld, { type KnowledgeSelection } from "./KnowledgeWorld";
+import { arrangeOrbitSkills } from "../services/knowledgeOrbit";
 import "../styles/knowledge-experience.css";
 
 type Props = {
@@ -13,19 +14,6 @@ type Props = {
   onProjectChange: (id: KnowledgeProjectId) => void;
   onContextLost: () => void;
 };
-
-/** Regular, deliberate arcs: no random overlap or line tangles. */
-export function arrangeOrbitSkills(nodes: readonly KnowledgeNode[]): { id: string; position: SpatialCoordinate }[] {
-  const topCount = Math.ceil(nodes.length / 2);
-  const bottomCount = nodes.length - topCount;
-  const row = (count: number, y: number) =>
-    Array.from({ length: count }, (_, index) => ({
-      x: count === 1 ? 50 : 24 + (52 * index) / (count - 1),
-      y,
-    }));
-  const positions = [...row(topCount, 17), ...row(bottomCount, 84)];
-  return nodes.map((node, index) => ({ id: node.id, position: positions[index] }));
-}
 
 const META: Record<KnowledgeProjectId, { index: string; eyebrow: string; description: string }> = {
   abismo: {
