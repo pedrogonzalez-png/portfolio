@@ -5,10 +5,10 @@ import { OFFICIAL_THEMES } from "../stores/themes";
 import * as storage from "../services/desktopPersistence";
 import type { StoredDesktopLayout } from "../services/desktopPersistence";
 
-vi.mock("../services/desktopPersistence", () => ({
-  readDesktopLayout: vi.fn(),
-  writeDesktopLayout: vi.fn(),
-}));
+vi.mock("../services/desktopPersistence", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../services/desktopPersistence")>();
+  return { ...actual, readDesktopLayout: vi.fn(), writeDesktopLayout: vi.fn() };
+});
 
 const palette = OFFICIAL_THEMES[0].palette;
 const renderDesktop = () => render(<SimulatedDesktop palette={palette} themeName="Changli" />);
