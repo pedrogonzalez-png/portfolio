@@ -1,77 +1,285 @@
-import { useState } from "react";
-import { PLACEHOLDER_PROJECTS } from "./PlaceholderCatalog";
+import { useEffect, useRef, useState } from "react";
+import type { FormEvent, KeyboardEvent as ReactKeyboardEvent } from "react";
+import { CodeMirror } from "./CodeMirror";
+import {
+  approvedRepos,
+  directoryEntries,
+  getRepoTree,
+  normalizeRepoPath,
+  readRepoFile,
+  realGitDiff,
+  realGitLog,
+  realGitShow,
+  resolveRepo,
+} from "../services/githubReadonly";
+import type { RepoSnapshot } from "../services/githubReadonly";
+import "../styles/terminal.css";
 
-interface CommandResult {
-  output: string;
-  error?: boolean;
+type TerminalLine = { command: string; output: string; error?: boolean };
+type ViewerFile = { path: string; content: string; url: string; repo: string };
+
+const HELP = [
+  "Terminal virtual — somente leitura; nenhum comando roda no seu computador.",
+  "help | repos | open <id> | pwd | ls [path] | cd <path> | tree [path]",
+  "cat <arquivo> | code <arquivo> | find <nome> | git log",
+  "git show <SHA> | git diff <SHA-A> <SHA-B> | whoami | neofetch",
+  "goto projects|about|contact | history | clear",
+  "Exemplo: open jogo-site → ls src → code src/main.js",
+].join("\n");
+
+function parseCommand(command: string): string[] {
+  const matches = command.match(/"[^"]*"|'[^']*'|\S+/g) ?? [];
+  if (matches.length > 12 || command.length > 550) throw new Error("Comando muito longo.");
+  return matches.map((word) => {
+    if ((word.startsWith('"') && word.endsWith('"')) ||
+      (word.startsWith("'") && word.endsWith("'"))) return word.slice(1, -1);
+    return word;
+  });
 }
 
-export function Terminal() {
-  const [history, setHistory] = useState<{ command: string; result: CommandResult }[]>([]);
+function limitOutput(text: string): string {
+  if (text.length <= 12500) return text;
+  return text.slice(0, 12500) + "\n[Saída truncada — abra o arquivo em code para leitura completa.]";
+}
+
+export function Terminal({ onClose }: { onClose: () => void }) {
+  const [history, setHistory] = useState<TerminalLine[]>([
+    { command: "", output: "ARCH / PORTFOLIO\nExplorador GitHub readonly. Digite help ou repos para começar." },
+  ]);
   const [input, setInput] = useState("");
+  const [repoId, setRepoId] = useState<string | null>(null);
+  const [snapshot, setSnapshot] = useState<RepoSnapshot | null>(null);
+  const [cwd, setCwd] = useState("");
+  const [viewer, setViewer] = useState<ViewerFile | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [previous, setPrevious] = useState<string[]>([]);
+  const [previousIndex, setPreviousIndex] = useState(-1);
 
-  const runCommand = () => {
-    const cmd = input.trim();
-    if (!cmd) return;
+  const inputRef = useRef<HTMLInputElement>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const transcriptRef = useRef<HTMLDivElement>(null);
+  const busyRef = useRef(false);
 
-    let result: CommandResult;
-    if (cmd === "help") {
-      result = { output: "Available commands: help, whoami, pwd, ls, cd <dir>, cat <path>, git log, git show <sha>, git diff, open <repo-id>, goto <section>, neofetch" };
-    } else if (cmd === "whoami") {
-      result = { output: "visitor — portfolio explorador (não sou o desenvolvedor)" };
-    } else if (cmd === "pwd") {
-      result = { output: "/workspace/portfolio" };
-    } else if (cmd === "ls") {
-      result = { output: PLACEHOLDER_PROJECTS.map((p) => `- ${p.title} (${p.repoFullName})`).join("\\n") };
-    } else if (cmd.startsWith("cd ")) {
-      result = { output: "cd não implementado ainda (em isolamento)" };
-    } else if (cmd.startsWith("cat ")) {
-      const path = cmd.slice(4);
-      if (PLACEHOLDER_PROJECTS.some((p) => p.repoFullName === path)) {
-        result = { output: `Conteúdo de ${path}: [README placeholder]` };
-      } else {
-        result = { output: `cat: ${path}: Não é um diretório` };
+  useEffect(() => {
+    const priorFocus = document.activeElement as HTMLElement | null;
+    const oldOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    inputRef.current?.focus();
+    const onKeys = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        onClose();
       }
-    } else if (cmd.startsWith("git log")) {
-      result = { output: "[commit uuid] autor@dev — assunto\\n\\ncommit-uuid-2\\nautor@dev — segunda edição" };
-    } else if (cmd.startsWith("git show ")) {
-      result = { output: "```\\ncommit abc123\\nMensagem: teste de show\\n```" };
-    } else if (cmd.startsWith("git diff ")) {
-      result = { output: "diff --git a/README.md b/README.md\\nindex 1234abc..56789ef 100644\\n--- a/README.md\\n+++ b/README.md\\n@@ -1 +1 @@\\n-README placeholder -- status draft\\n+README placeholder -- status draft" };
-    } else {
-      result = { output: "Comando não implementado ainda", error: true };
-    }
+      if (event.key !== "Tab" || !dialogRef.current) return;
+      const focusable = Array.from(dialogRef.current.querySelectorAll<HTMLElement>(
+        'button:not([disabled]), input:not([disabled]), a[href], [tabindex="0"]',
+      )).filter((element) => element.getClientRects().length > 0);
+      if (!focusable.length) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault(); last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault(); first.focus();
+      }
+    };
+    window.addEventListener("keydown", onKeys);
+    return () => {
+      document.body.style.overflow = oldOverflow;
+      window.removeEventListener("keydown", onKeys);
+      priorFocus?.focus();
+    };
+  }, [onClose]);
 
-    setHistory([...history, { command: cmd, result }]);
+  useEffect(() => {
+    if (transcriptRef.current) transcriptRef.current.scrollTop = transcriptRef.current.scrollHeight;
+  }, [history]);
+
+  const runCommand = async (raw: string) => {
+    const command = raw.trim();
+    if (!command || busyRef.current) return;
+    busyRef.current = true;
+    setBusy(true);
     setInput("");
+    setPrevious((items) => [...items.slice(-49), command]);
+    setPreviousIndex(-1);
+    try {
+      const args = parseCommand(command);
+      const [verb, ...rest] = args;
+      let output = "";
+      if (verb === "clear") {
+        setHistory([]); return;
+      }
+      if (verb === "help") {
+        output = HELP;
+      } else if (verb === "whoami") {
+        output = "visitor — convidado do portfólio, não uma sessão real do Arch Linux.";
+      } else if (verb === "neofetch") {
+        output = "OS: Portfolio (simulado)\nShell: readonly-fish (simulado)\nTheme: Changli\nFonte: GitHub público (somente repositórios autorizados)";
+      } else if (verb === "repos") {
+        output = approvedRepos().map((repo) => repo.id + "  " + repo.repoFullName + "  [" + repo.status + "]").join("\n");
+      } else if (verb === "history") {
+        output = previous.concat(command).slice(-30).map((cmd, index) => (index + 1) + "  " + cmd).join("\n");
+      } else if (verb === "open") {
+        if (!rest[0] || rest.length !== 1) throw new Error("Uso: open <repo-id>");
+        const approved = resolveRepo(rest[0]);
+        if (!approved) throw new Error("Repositório não autorizado. Digite repos.");
+        const tree = await getRepoTree(approved.id);
+        setRepoId(approved.id);
+        setSnapshot(tree);
+        setCwd("");
+        setViewer(null);
+        output = "Aberto: " + tree.repoFullName + "\nBranch: " + tree.branch +
+          "\nTree SHA: " + tree.treeSha + "\n" +
+          tree.entries.length + " entradas indexadas" +
+          (tree.truncated ? " (ÍNDICE PARCIAL)" : "") + "\nDigite ls ou tree.";
+      } else if (verb === "goto") {
+        const destination = rest[0];
+        const target = destination === "projects" ? "projetos" :
+          destination === "about" || destination === "contact" ? "sobre" : "";
+        if (!target) throw new Error("Uso: goto projects|about|contact");
+        onClose();
+        requestAnimationFrame(() => document.getElementById(target)?.scrollIntoView({ behavior: "smooth" }));
+        output = "Indo para " + target;
+      } else if (verb === "pwd") {
+        output = repoId ? "/" + repoId + "/" + (cwd ? cwd + "/" : "") : "/workspace";
+      } else if (verb === "ls" || verb === "cd" || verb === "cat" ||
+        verb === "code" || verb === "tree" || verb === "find") {
+        if (!repoId) throw new Error("Escolha um repositório antes: repos → open <id>");
+        const tree = snapshot ?? await getRepoTree(repoId);
+        const pathArg = rest.filter((arg) => arg !== "-la" && arg !== "-l")[0] ?? ".";
+        if (verb === "find") {
+          const needle = rest.join(" ").toLowerCase();
+          if (!needle) throw new Error("Uso: find <nome>");
+          const matches = tree.entries.filter((entry) => entry.path.toLowerCase().includes(needle)).slice(0, 65);
+          output = matches.map((entry) => entry.path).join("\n") || "Nenhum nome encontrado no índice.";
+          if (tree.truncated) output += "\n[Aviso: índice parcial do GitHub.]";
+        } else {
+          const path = normalizeRepoPath(cwd, pathArg);
+          if (verb === "cd") {
+            directoryEntries(tree, path);
+            setCwd(path);
+            output = "/" + repoId + (path ? "/" + path : "");
+          } else if (verb === "ls") {
+            const entries = directoryEntries(tree, path);
+            output = entries.map((entry) => (entry.type === "tree" ? "📁 " : "   ") +
+              entry.path.slice(path ? path.length + 1 : 0)).join("\n") || "[Pasta vazia]";
+            if (tree.truncated) output += "\n[Aviso: índice parcial.]";
+          } else if (verb === "tree") {
+            const prefix = path ? path + "/" : "";
+            const entries = tree.entries.filter((entry) => entry.path === path || entry.path.startsWith(prefix)).slice(0, 90);
+            output = entries.map((entry) => (entry.type === "tree" ? "📁 " : "   ") + entry.path).join("\n") || "[Nenhuma entrada]";
+            if (entries.length === 90 || tree.truncated) output += "\n[Árvore limitada; conteúdo parcial.]";
+          } else {
+            const file = await readRepoFile(repoId, path);
+            if (verb === "code") {
+              setViewer({ path, content: file.content, url: file.url, repo: tree.repoFullName });
+              output = "Arquivo real aberto: " + path + " (" + file.size + " bytes)\nGitHub: " + file.url;
+            } else {
+              output = "GitHub / " + tree.repoFullName + " / " + tree.branch + " / " + path +
+                "\n\n" + limitOutput(file.content);
+            }
+          }
+        }
+      } else if (verb === "git") {
+        if (!repoId) throw new Error("Escolha primeiro: open <repo-id>");
+        const sub = rest[0];
+        if (sub === "log") {
+          const data = await realGitLog(repoId);
+          output = "Commits reais de " + data.branch + " (até 12 resultados):\n" +
+            data.commits.map((c) => c.sha.slice(0, 10) + "  " + c.date.slice(0, 10) +
+              "  " + c.author + " — " + c.subject).join("\n");
+        } else if (sub === "show") {
+          if (!rest[1]) throw new Error("Uso: git show <SHA>");
+          output = await realGitShow(repoId, rest[1]);
+        } else if (sub === "diff") {
+          if (!rest[1] || !rest[2]) throw new Error("Uso: git diff <SHA-A> <SHA-B>");
+          output = await realGitDiff(repoId, rest[1], rest[2]);
+        } else {
+          throw new Error("Uso: git log | git show <SHA> | git diff <A> <B>");
+        }
+      } else {
+        throw new Error("Comando não reconhecido. Digite help. Shell real não disponível.");
+      }
+      setHistory((lines) => [...lines.slice(-75), { command, output: limitOutput(output) }]);
+    } catch (error) {
+      setHistory((lines) => [...lines.slice(-75), {
+        command, output: error instanceof Error ? error.message : "Erro ao consultar o GitHub.", error: true,
+      }]);
+    } finally {
+      busyRef.current = false;
+      setBusy(false);
+      inputRef.current?.focus();
+    }
+  };
+
+  const onSubmit = (event: FormEvent) => {
+    event.preventDefault();
+    void runCommand(input);
+  };
+  const onInputKey = (event: ReactKeyboardEvent<HTMLInputElement>) => {
+    if (event.key === "ArrowUp" && previous.length) {
+      event.preventDefault();
+      const next = previousIndex < 0 ? previous.length - 1 : Math.max(0, previousIndex - 1);
+      setPreviousIndex(next); setInput(previous[next]);
+    } else if (event.key === "ArrowDown" && previousIndex >= 0) {
+      event.preventDefault();
+      const next = previousIndex + 1;
+      setPreviousIndex(next < previous.length ? next : -1);
+      setInput(next < previous.length ? previous[next] : "");
+    }
   };
 
   return (
-    <div style={{ fontFamily: "monospace", background: "#0f0f0f", color: "#e0e0e0", padding: "1rem", borderRadius: "0.5rem", maxWidth: 700, margin: "0 auto" }}>
-      <div style={{ display: "flex", gap: "0.5rem", marginBottom: "1rem" }}>
-        <input
-          type="text"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && runCommand()}
-          placeholder="Digite um comando..."
-          style={{ flex: 1, padding: "0.5rem", borderRadius: "0.25rem", border: "none" }}
-        />
-        <button onClick={runCommand} style={{ padding: "0.5rem 1rem", borderRadius: "0.25rem", background: "#333", color: "#fff", border: "none", cursor: "pointer" }}>
-          Executar
-        </button>
-      </div>
-
-      <div style={{ background: "#1a1a1a", borderRadius: "0.5rem", padding: "1rem", maxHeight: "60vh", overflowY: "auto" }}>
-        {history.map((item, i) => (
-          <div key={i} style={{ marginBottom: "0.5rem" }}>
-            <div style={{ color: "#888" }}>$ {item.command}</div>
-            <div style={{ color: item.result.error ? "#ff5555" : "#0f0" }}>{item.result.output}</div>
+    <div className="terminal-backdrop" onMouseDown={(event) => {
+      if (event.target === event.currentTarget) onClose();
+    }}>
+      <div ref={dialogRef} className="terminal-dialog" role="dialog" aria-modal="true" aria-labelledby="terminal-title">
+        <header className="terminal-header">
+          <div>
+            <span className="terminal-dot" aria-hidden="true" />
+            <strong id="terminal-title">KITTY / PORTFÓLIO</strong>
+            <span className="terminal-readonly">GITHUB · SOMENTE LEITURA</span>
           </div>
-        ))}
-        {history.length === 0 && (
-          <div style={{ color: "#555" }}>Digite um comando para começar.</div>
-        )}
+          <button type="button" onClick={onClose} aria-label="Fechar terminal">✕</button>
+        </header>
+        <div className={"terminal-workspace" + (viewer ? " terminal-workspace--split" : "")}>
+          <section className="terminal-shell" aria-label="Console de comandos">
+            <div className="terminal-transcript" ref={transcriptRef} role="log" aria-live="polite">
+              {history.map((line, index) => (
+                <div className="terminal-line" key={index}>
+                  {line.command && <div className="terminal-command">visitor@portfolio:{repoId ?? "~"}$ {line.command}</div>}
+                  <pre className={line.error ? "terminal-error" : "terminal-output"}>{line.output}</pre>
+                </div>
+              ))}
+            </div>
+            <form className="terminal-prompt" onSubmit={onSubmit}>
+              <label htmlFor="terminal-input">{repoId ?? "~"} $</label>
+              <input id="terminal-input" ref={inputRef} value={input}
+                onChange={(event) => setInput(event.target.value)}
+                onKeyDown={onInputKey} autoComplete="off" spellCheck={false}
+                placeholder={busy ? "Consultando GitHub..." : "help, repos, open jogo-site..."}
+                disabled={busy} aria-label="Comando do terminal virtual"/>
+              <button type="submit" disabled={busy || !input.trim()}>{busy ? "..." : "Executar"}</button>
+            </form>
+            <div className="terminal-quick">
+              {["help", "repos", "open jogo-site", "ls", "git log"].map((command) => (
+                <button type="button" key={command} disabled={busy} onClick={() => void runCommand(command)}>{command}</button>
+              ))}
+            </div>
+          </section>
+          {viewer && (
+            <section className="terminal-editor" aria-label="Leitor de código do GitHub">
+              <div className="terminal-filebar">
+                <strong title={viewer.path}>{viewer.path}</strong>
+                <a href={viewer.url} target="_blank" rel="noopener noreferrer">Ver no GitHub ↗</a>
+                <button type="button" aria-label="Fechar arquivo" onClick={() => setViewer(null)}>✕</button>
+              </div>
+              <p className="terminal-filesource">{viewer.repo} · arquivo real · readonly</p>
+              <div className="terminal-codewrap"><CodeMirror content={viewer.content} /></div>
+            </section>
+          )}
+        </div>
       </div>
     </div>
   );
