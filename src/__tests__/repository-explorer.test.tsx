@@ -66,7 +66,7 @@ describe("readonly GitHub explorer UI", () => {
     expect(folder).toHaveFocus();
     fireEvent.keyDown(folder, { key: "ArrowDown" });
     const next = document.activeElement as HTMLButtonElement;
-    expect(next).toHaveAttribute("data-explorer-path", "src/main.js");
+    expect(next).toHaveAttribute("data-explorer-path", "src/scenes");
     fireEvent.keyDown(next, { key: "ArrowLeft" });
     expect(folder).toHaveFocus();
     fireEvent.keyDown(folder, { key: "ArrowLeft" });

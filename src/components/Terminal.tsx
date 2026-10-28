@@ -341,7 +341,7 @@ export function Terminal({ onClose }: { onClose: () => void }) {
               const id = next === "console" ? "terminal-tab-console" : "terminal-tab-explorer";
               document.getElementById(id)?.focus();
             }}>
-            <button ref={mobileConsoleTabRef} id="terminal-tab-console" type="button"
+            <button id="terminal-tab-console" type="button"
               role="tab" aria-selected={mobileView === "console"} aria-controls="terminal-panel-console"
               onClick={() => setMobileView("console")}>Console</button>
             <button id="terminal-tab-explorer" type="button"

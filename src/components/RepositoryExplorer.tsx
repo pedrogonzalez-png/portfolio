@@ -284,7 +284,7 @@ export function RepositoryExplorer({
             <p className="explorer-keyboard-hint" id="explorer-keyboard-hint">
               Navegue com ↑ ↓, abra pastas com → e feche com ←. Enter abre arquivos.
             </p>
-            <div className="explorer-tree" ref={treeRef}
+            <div className="explorer-tree"
               role="group" aria-label="Arquivos do GitHub"
               aria-describedby="explorer-keyboard-hint" onKeyDown={onTreeKeyDown}>
               {search.trim() ? (
