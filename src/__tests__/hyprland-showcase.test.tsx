@@ -31,9 +31,11 @@ describe("Hyprland as the viewer and Configurações as the editor", () => {
       <HyprlandShowcase themes={OFFICIAL_THEMES} selectedId="changli" onChoose={change}/>,
     );
     fireEvent.click(screen.getByRole("button",{name:"Hiyuki"}));
-    expect(container.querySelector("img.real-desktop-wallpaper")).toHaveAttribute(
-      "src",expect.stringContaining("hutuki.mp4.jpg"),
-    );
+    // The earlier hutuki video is not the MoeWalls wallpaper chosen by the owner.
+    expect(container.querySelector("img.real-desktop-wallpaper")).toBeNull();
+    expect(screen.getByRole("link",{name:/ver wallpaper original no MoeWalls/}))
+      .toHaveAttribute("href",expect.stringContaining("hiyuki-entrust-your-wishes-to-me"));
+    expect(screen.getByLabelText("Carregar wallpaper correto da Hiyuki")).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button",{name:/Hsin/}));
     expect(container.querySelector("img.real-desktop-wallpaper")).toHaveAttribute(
       "src",expect.stringContaining("/wallpapers/hsin.png"),
@@ -44,8 +46,8 @@ describe("Hyprland as the viewer and Configurações as the editor", () => {
 
   it("does not claim unpublished widget positions or invent private text", () => {
     render(<HyprlandShowcase themes={OFFICIAL_THEMES} selectedId="changli" onChoose={vi.fn()}/>);
-    expect(screen.getByText(/Posições reais não publicadas/)).toBeInTheDocument();
-    expect(screen.getByText(/Importe as posições reais em Configurações/)).toBeInTheDocument();
+    expect(screen.getByText(/Posições reais do autor não publicadas/)).toBeInTheDocument();
+    expect(screen.getByText(/Organização personalizada salva|Nenhuma posição original disponível/)).toBeInTheDocument();
     expect(screen.queryByLabelText("Importar posições do Quickshell")).not.toBeInTheDocument();
     expect(screen.getAllByText(/Conteúdo privado/).length).toBeGreaterThan(0);
     expect(screen.getByText(/CPU — · RAM —/)).toBeInTheDocument();
