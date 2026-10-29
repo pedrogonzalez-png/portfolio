@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import type { CSSProperties } from "react";
 import { OFFICIAL_THEMES, type Theme, type ThemePalette } from "../stores/themes";
 import { RealDesktopPreview } from "./desktop/RealDesktopPreview";
+import { ChangliDesktop } from "./desktop/ChangliDesktop";
 import { validatePublishedLayouts, type WidgetPlacement, type WidgetKind } from "../services/quickshellLayoutImport";
 import published from "../data/published-widget-layouts.json";
 import "../styles/preset-theme-gallery.css";
@@ -24,7 +25,9 @@ function ProfileDesktop({ view, active, accent }: { view:View; active:boolean; a
   const palette = accent ? { ...view.palette, accentPrimary:accent } : view.palette;
   return (
     <div className="preset-desktop-scene" style={{"--preset-glow":palette.accentPrimary} as CSSProperties}>
-      <RealDesktopPreview palette={palette} themeName={view.name} animationEnabled={active}/>
+      {view.id==="changli" ? <ChangliDesktop active={active} accent={accent}/> : (
+        <>
+          <RealDesktopPreview palette={palette} themeName={view.name} animationEnabled={active}/>
       <div className="preset-desktop-widgets" aria-label={"Widgets publicados de "+view.name}>
         {view.widgets.map((widget,i) => (
           <div key={widget.kind+"-"+i} className={"preset-widget preset-"+widget.kind}
@@ -49,6 +52,8 @@ function ProfileDesktop({ view, active, accent }: { view:View; active:boolean; a
           </div>
         ))}
       </div>
+        </>
+      )}
     </div>
   );
 }
@@ -128,7 +133,7 @@ export function HyprlandShowcase({
         </div>
       </div>
 
-      <div className={"preset-stage preset-stage-"+format} aria-label={"Desktop pronto de "+theme.name}>
+      <div className={"preset-stage preset-stage-"+format+(theme.id==="changli"?" preset-stage-changli":"")} aria-label={"Desktop pronto de "+theme.name}>
         <ProfileDesktop view={current} active accent={accentColor}/>
         {outgoing&&(
           <div key={outgoing.id+":"+outgoing.variant} className="preset-dissolve-out"
