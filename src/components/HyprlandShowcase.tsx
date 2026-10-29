@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import type { ChangeEvent, CSSProperties } from "react";
 import { RealDesktopPreview } from "./desktop/RealDesktopPreview";
 import { OFFICIAL_THEMES, type Theme, type ThemePalette } from "../stores/themes";
