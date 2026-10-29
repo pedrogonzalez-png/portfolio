@@ -28,6 +28,7 @@ export function DesktopWidgetEditor({
   const [expanded,setExpanded]=useState(false);
   const canvasRef=useRef<HTMLDivElement>(null);
   const gestureRef=useRef<Gesture|null>(null);
+  const draggingKindRef=useRef<WidgetKind|null>(null);
   const originalRef=useRef<VisitorWidget[]>(widgets);
   const sourceCount=sourceWidgets?.length??0;
   const edited=loadVisitorWidgets(themeId)!==null;
@@ -77,7 +78,8 @@ export function DesktopWidgetEditor({
 
   const onDrop=(event:DragEvent<HTMLDivElement>)=>{
     event.preventDefault();
-    const value=event.dataTransfer.getData("application/x-hypr-widget");
+    const value=event.dataTransfer?.getData("application/x-hypr-widget") || draggingKindRef.current || "";
+    draggingKindRef.current=null;
     if(!known.has(value))return;
     const pos=coordinate(event.clientX,event.clientY);
     add(value as WidgetKind,pos.x,pos.y);
@@ -85,7 +87,7 @@ export function DesktopWidgetEditor({
 
   const onPointerDown=(event:PointerEvent<HTMLDivElement>,widget:VisitorWidget)=>{
     if((event.target as HTMLElement).closest("button"))return;
-    if(event.button!==0)return;
+    if(event.button!==0 && event.button!==undefined)return;
     originalRef.current=widgetsRef.current;
     gestureRef.current={
       id:widget.id,pointerId:event.pointerId,clientX:event.clientX,clientY:event.clientY,
@@ -203,8 +205,9 @@ export function DesktopWidgetEditor({
           {WIDGET_KINDS.map(kind=>(
             <button type="button" className="hypr-widget-source" key={kind} draggable
               onDragStart={(event)=>{
-                event.dataTransfer.setData("application/x-hypr-widget",kind);
-                event.dataTransfer.effectAllowed="copy";
+                draggingKindRef.current=kind;
+                event.dataTransfer?.setData("application/x-hypr-widget",kind);
+                if(event.dataTransfer)event.dataTransfer.effectAllowed="copy";
               }} onClick={()=>add(kind)} aria-label={"Adicionar "+widgetNames[kind]}>
               {renderWidget(kind)}
             </button>
