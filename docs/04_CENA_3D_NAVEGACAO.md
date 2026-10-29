@@ -138,3 +138,7 @@ Implementação original no `src/components/KnowledgeWorld.tsx`:
 A entrada no projeto Hyprland-Themes **não abre modal/card frontal**: expande uma exposição inline abaixo do carrossel de projetos, com rolagem suave até ela. A própria cena faz uma revelação cinematográfica. Na navegação pelos temas finalizados, o desktop anterior desaparece **da direita para a esquerda** por recorte de máscara e partículas de cores diferentes, enquanto o próximo já está visível por baixo. Efeito reduzido/desativado com `prefers-reduced-motion`.
 
 Não usar essa experiência como editor de temas ou widgets; o visitante só pode trocar entre os cinco presets e alterar uma cor de destaque global. Temas e layouts originais ficam readonly. A reprodução HTML/CSS é apenas prévia; nenhum acesso ao compositor Arch real.
+
+## Correção posterior — rota dedicada (29/10/2026)
+
+A exposição Hyprland-Themes **não** deve surgir embaixo do carrossel nem em card/modal. É uma **página exclusiva**, aberta pela rota `/hyprland-themes`; o botão de saída retorna a `/#projetos`. A página inicia com revelação própria e, em seu interior, os temas alternam pela desintegração da direita para a esquerda. Respeitar preferências de movimento reduzido. O painel do projeto no carrossel apenas navega; não monta o desktop no DOM da página inicial.
