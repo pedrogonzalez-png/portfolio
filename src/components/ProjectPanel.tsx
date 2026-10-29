@@ -221,6 +221,8 @@ export function ProjectPanel({ onOpenThemeStudio }: { onOpenThemeStudio?: () => 
                 className={"project-card orbit-card cinematic-panel cinematic-panel-" + index + " carousel-" + position}
                 data-position={position}
                 data-project-id={project.id}
+                tabIndex={abismoOpen ? -1 : undefined}
+                aria-hidden={abismoOpen ? true : undefined}
                 aria-current={position === "center" ? "true" : undefined}
                 type="button"
                 onPointerMove={handlePanelMove}
@@ -281,9 +283,11 @@ export function ProjectPanel({ onOpenThemeStudio }: { onOpenThemeStudio?: () => 
           <p className="carousel-instructions">Use a rodinha do mouse sobre os painéis ou as setas para alternar projetos.</p>
         </>
       )}
-      <p className="projects-disclaimer">
-        Três projetos selecionados · Abismo pode ser jogado no card após instalar a build local
-      </p>
+      {!abismoOpen && (
+        <p className="projects-disclaimer">
+          Três projetos selecionados · Abismo pode ser jogado no card após instalar a build local
+        </p>
+      )}
       {selected && (
         <div className="modal-backdrop" onMouseDown={(event) => {
           if (event.target === event.currentTarget) close();
