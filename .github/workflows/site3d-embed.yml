@@ -1,0 +1,45 @@
+name: Site 3D embed smoke test
+
+on:
+  pull_request:
+    paths:
+      - "scripts/sync-site3d.mjs"
+      - "src/components/Site3DCard.tsx"
+      - ".github/workflows/site3d-embed.yml"
+      - "package.json"
+  push:
+    paths:
+      - "scripts/sync-site3d.mjs"
+      - "src/components/Site3DCard.tsx"
+      - ".github/workflows/site3d-embed.yml"
+      - "package.json"
+  workflow_dispatch:
+
+jobs:
+  verify-original-site:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - name: Install portfolio dependencies
+        run: npm ci
+      - name: Compile original pinned site-3D
+        run: npm run sync:site3d
+      - name: Verify real HTML and video files
+        run: |
+          test -f public/site-3d/ready.json
+          test -f public/site-3d/index.html
+          test -d public/site-3d/assets
+          grep -q '/site-3d/assets/' public/site-3d/index.html
+          test "$(find public/site-3d/assets -name '*.webm' | wc -l)" -ge 10
+          node -e 'const fs=require("node:fs");const x=JSON.parse(fs.readFileSync("public/site-3d/ready.json"));if(x.build!=="site-3d" || x.base!=="/site-3d/") process.exit(1)'
+      - name: Build portfolio including Site 3D
+        run: npm run build
+      - name: Verify bundled project on deploy output
+        run: |
+          test -f dist/site-3d/index.html
+          test -f dist/site-3d/ready.json
+          test -d dist/site-3d/assets

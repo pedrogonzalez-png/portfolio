@@ -53,3 +53,6 @@ public/github-index.json
 
 # Built Abismo Phaser files are generated locally by npm run sync:abismo
 /public/abismo/
+
+# The original Site 3D React/Vite build is generated locally
+/public/site-3d/
