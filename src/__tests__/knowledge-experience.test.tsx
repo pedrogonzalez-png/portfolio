@@ -71,13 +71,18 @@ describe("redesigned spatial knowledge experience", () => {
     expect(wheel(100).defaultPrevented).toBe(true);
     expect(screen.getByRole("button", { name: "Destacar projeto: site-3D" })).toBeInTheDocument();
 
-    time += 240;
+    time += 300;
+    expect(wheel(110).defaultPrevented).toBe(true);
+    expect(screen.getByRole("button", { name: "Destacar projeto: site-3D" })).toBeInTheDocument();
+
+    // The scene needs time to finish its cinematic hand-off.
+    time += 700;
     expect(wheel(110).defaultPrevented).toBe(true);
     expect(screen.getByRole("button", { name: "Destacar projeto: Hyprland-Themes" })).toBeInTheDocument();
     // At the final project, natural page scrolling resumes.
     expect(wheel(110).defaultPrevented).toBe(false);
 
-    time += 240;
+    time += 700;
     expect(wheel(-110).defaultPrevented).toBe(true);
     expect(screen.getByRole("button", { name: "Destacar projeto: site-3D" })).toBeInTheDocument();
     clock.mockRestore();
