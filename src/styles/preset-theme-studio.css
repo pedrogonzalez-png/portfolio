@@ -1,22 +1,189 @@
-/* Dedicated route /hyprland-themes; a full page, not an inline expansion or modal. */
-.hyprland-dedicated-page{min-height:100svh;width:100%;padding:clamp(1rem,4vw,4rem) clamp(1rem,5vw,6rem) clamp(3rem,7vw,7rem);background:radial-gradient(circle at 70% 13%,color-mix(in srgb,var(--color-accent-primary) 12%,transparent),transparent 42%),var(--color-bg)}
-.preset-studio-inline{position:relative;width:100%;max-width:1800px;margin:0 auto;padding:0;animation:preset-studio-arrive 900ms ease-out both;color:var(--color-text)}
-.preset-studio-heading{display:flex;justify-content:space-between;align-items:start;gap:1.5rem;flex-wrap:wrap;margin:0 0 clamp(1rem,3vw,3rem)}
-.preset-studio-overline{font:700 .67rem ui-monospace,monospace;letter-spacing:.18em;color:var(--color-accent-yellow)}
-.preset-studio-heading h2{font:700 clamp(2.1rem,6vw,5.5rem)/.97 var(--font-display);letter-spacing:-.065em;margin:.8rem 0}
-.preset-studio-heading h2 em{font-style:normal;color:var(--color-accent-primary)}
-.preset-studio-heading p{max-width:70ch;font-size:.87rem;line-height:1.7;color:var(--color-text-variant)}
-.preset-studio-exit{background:transparent;flex:none;border:1px solid var(--color-outline);color:var(--color-text);padding:.78rem 1.1rem;border-radius:30px;cursor:pointer}
-.preset-studio-exit:hover{border-color:var(--color-accent-yellow)}
-.preset-color-only{display:flex;align-items:center;justify-content:space-between;gap:2rem;flex-wrap:wrap;margin-top:2rem;padding:clamp(1rem,2.8vw,2rem);border-radius:18px;background:color-mix(in srgb,var(--color-surface) 65%,transparent);border:1px solid var(--color-outline)}
-.preset-color-only strong{font:650 1.05rem var(--font-display)}
-.preset-color-only p{font-size:.8rem;color:var(--color-text-variant);line-height:1.65;margin:.6rem 0 0;max-width:60ch}
-.preset-color-control{display:flex;gap:.8rem;align-items:center;flex-wrap:wrap}
-.preset-color-control label{font-size:.75rem;font-weight:600}
-.preset-color-control input{min-width:56px;height:40px;cursor:pointer;border:1px solid var(--color-outline);border-radius:10px;background:transparent}
-.preset-color-control output{font:.72rem ui-monospace,monospace}
-.preset-color-control button{min-height:40px;padding:.55rem .9rem;cursor:pointer;border:1px solid var(--color-outline);color:var(--color-text);border-radius:10px;background:var(--color-surface-container);font-size:.75rem}
-.preset-color-control button:disabled{opacity:.45;cursor:default}
-.preset-studio-exit:focus-visible,.preset-color-control input:focus-visible,.preset-color-control button:focus-visible{outline:2px solid var(--color-accent-yellow);outline-offset:3px}
-@keyframes preset-studio-arrive{0%{opacity:0;clip-path:inset(0 0 0 100%);filter:blur(12px)}70%{opacity:1;filter:blur(1px)}100%{opacity:1;clip-path:inset(0);filter:blur(0)}}
-@media(prefers-reduced-motion:reduce){.preset-studio-inline{animation:none}}
+/* Dedicated /hyprland-themes editorial page — no modal or theme-building UI. */
+.hyprland-dedicated-page{
+  position:relative;
+  width:100%;
+  min-height:100svh;
+  padding:clamp(1.3rem,3.5vw,4.4rem) clamp(1rem,4vw,5rem) clamp(3rem,6vw,6rem);
+  background:
+    radial-gradient(ellipse 58% 30% at 68% 0%,color-mix(in srgb,var(--color-accent-primary) 12%,transparent),transparent 82%),
+    radial-gradient(ellipse 32% 32% at 0% 70%,color-mix(in srgb,var(--color-accent-red) 6%,transparent),transparent),
+    var(--color-bg);
+}
+.hyprland-dedicated-page::before{
+  content:"";
+  position:absolute;
+  pointer-events:none;
+  inset:0 0 auto;
+  height:450px;
+  background:linear-gradient(180deg,#00000024,transparent);
+}
+.preset-studio-inline{
+  position:relative;
+  max-width:1720px;
+  width:100%;
+  margin:0 auto;
+  color:var(--color-text);
+}
+.preset-studio-heading{
+  display:grid;
+  gap:clamp(1.35rem,3.6vw,3.5rem);
+  margin-bottom:clamp(2.15rem,4vw,4.5rem);
+}
+.preset-studio-topline{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:1rem;
+  padding-bottom:1.05rem;
+  border-bottom:1px solid color-mix(in srgb,var(--color-outline) 24%,transparent);
+}
+.preset-studio-overline{
+  font:700 .65rem ui-monospace,monospace;
+  letter-spacing:.17em;
+  color:var(--color-accent-yellow);
+}
+.preset-studio-index{color:var(--color-text-variant);font-weight:500}
+.preset-studio-exit{
+  display:inline-flex;
+  align-items:center;
+  gap:.65rem;
+  flex:none;
+  min-height:42px;
+  padding:.6rem .95rem;
+  border:1px solid color-mix(in srgb,var(--color-outline) 37%,transparent);
+  border-radius:999px;
+  background:color-mix(in srgb,var(--color-surface) 57%,transparent);
+  color:var(--color-text-variant);
+  font-size:.76rem;
+  font-weight:600;
+  cursor:pointer;
+  transition:border-color .2s,color .2s,background .2s,transform .2s;
+}
+.preset-studio-exit>span{font-size:1rem;color:var(--color-accent-yellow)}
+.preset-studio-exit:hover{
+  color:var(--color-text);
+  border-color:var(--color-accent-primary);
+  background:color-mix(in srgb,var(--color-accent-primary) 12%,var(--color-surface));
+  transform:translateX(-3px);
+}
+.preset-studio-hero-copy{max-width:1060px}
+.preset-studio-kicker{
+  display:flex;
+  align-items:center;
+  gap:.6rem;
+  color:var(--color-text-variant);
+  font-size:.76rem;
+  font-weight:600;
+  letter-spacing:.055em;
+}
+.preset-studio-glow-dot{
+  width:6px;height:6px;
+  border-radius:50%;
+  background:var(--color-accent-primary);
+  box-shadow:0 0 15px var(--color-accent-primary);
+}
+.preset-studio-heading h1{
+  margin:.85rem 0 1rem;
+  font:700 clamp(2.55rem,5.35vw,5.35rem)/1.055 var(--font-display);
+  letter-spacing:-.068em;
+  text-wrap:balance;
+}
+.preset-studio-heading h1 em{
+  font-style:normal;
+  background:linear-gradient(115deg,var(--color-accent-primary),var(--color-accent-yellow));
+  -webkit-background-clip:text;
+  background-clip:text;
+  color:transparent;
+}
+.preset-studio-hero-copy>p{
+  max-width:600px;
+  margin:0;
+  color:var(--color-text-variant);
+  font-size:clamp(.86rem,1.12vw,.98rem);
+  line-height:1.75;
+}
+/* Accent control is a quiet toolbar, not a second big feature card. */
+.preset-color-only{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:1.2rem 2rem;
+  margin-top:clamp(2rem,4vw,4rem);
+  padding:1.35rem 0;
+  border-top:1px solid color-mix(in srgb,var(--color-outline) 28%,transparent);
+  border-bottom:1px solid color-mix(in srgb,var(--color-outline) 16%,transparent);
+}
+.preset-color-copy{display:grid;gap:.35rem}
+.preset-color-eyebrow{
+  color:var(--color-accent-yellow);
+  font:700 .59rem ui-monospace,monospace;
+  letter-spacing:.16em;
+}
+.preset-color-copy strong{font:650 1.1rem var(--font-display)}
+.preset-color-copy p{
+  max-width:480px;
+  margin:0;
+  color:var(--color-text-variant);
+  font-size:.77rem;
+  line-height:1.65;
+}
+.preset-color-control{
+  display:flex;
+  align-items:center;
+  gap:.68rem;
+  flex-wrap:wrap;
+}
+.preset-color-control label{font-size:.73rem;font-weight:650;color:var(--color-text)}
+.preset-color-control input{
+  width:42px;
+  min-width:42px;
+  height:42px;
+  padding:4px;
+  border-radius:12px;
+  border:1px solid color-mix(in srgb,var(--color-outline) 55%,transparent);
+  background:var(--color-surface);
+  cursor:pointer;
+}
+.preset-color-control input::-webkit-color-swatch-wrapper{padding:0}
+.preset-color-control input::-webkit-color-swatch{border:0;border-radius:7px}
+.preset-color-control output{
+  color:var(--color-text-variant);
+  font:.72rem ui-monospace,monospace;
+  letter-spacing:.035em;
+}
+.preset-color-control button{
+  min-height:42px;
+  padding:.65rem .85rem;
+  border:1px solid color-mix(in srgb,var(--color-outline) 35%,transparent);
+  border-radius:11px;
+  background:transparent;
+  color:var(--color-text);
+  font-size:.72rem;
+  cursor:pointer;
+  transition:background .2s,border-color .2s;
+}
+.preset-color-control button:hover:not(:disabled){
+  border-color:var(--color-accent-primary);
+  background:color-mix(in srgb,var(--color-accent-primary) 10%,transparent);
+}
+.preset-color-control button:disabled{opacity:.38;cursor:default}
+.preset-studio-exit:focus-visible,
+.preset-color-control input:focus-visible,
+.preset-color-control button:focus-visible{
+  outline:2px solid var(--color-accent-yellow);
+  outline-offset:3px;
+}
+@media(max-width:730px){
+  .hyprland-dedicated-page{padding:1.15rem 1rem 3rem}
+  .preset-studio-heading{gap:1.75rem;margin-bottom:2rem}
+  .preset-studio-heading h1{font-size:clamp(2.4rem,8.1vw,3.6rem)}
+  .preset-studio-topline{gap:.5rem}
+  .preset-studio-overline{font-size:.56rem}
+  .preset-studio-exit{min-height:39px;padding:.55rem .75rem;font-size:.7rem}
+  .preset-color-only{align-items:start}
+  .preset-color-control{gap:.55rem}
+}
+@media(prefers-reduced-motion:reduce){
+  .preset-studio-exit,.preset-color-control button{transition:none}
+}

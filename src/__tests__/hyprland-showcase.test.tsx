@@ -46,7 +46,7 @@ describe("finished Hyprland gallery and dissolving transition",()=>{
   it("shows one fixed Changli reference and retains variants for other finished themes",()=>{
     render(<HyprlandShowcase selectedId="changli"/>);
     expect(screen.queryByRole("combobox",{name:"Outras composições prontas"})).not.toBeInTheDocument();
-    expect(screen.getByText(/Reprodução da referência/)).toBeInTheDocument();
+    expect(screen.getByText(/Composição de referência/)).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button",{name:"Hiyuki"}));
     const combo=screen.getByRole("combobox",{name:"Outras composições prontas"});
     expect(combo.querySelectorAll("option")).toHaveLength(3);
