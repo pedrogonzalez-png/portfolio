@@ -367,3 +367,107 @@
   .projects-area .carousel-controls button:not(:disabled):hover,
   .projects-area .abismo-live-actions button:hover { transform: none; }
 }
+
+
+/* Abismo: the selected glass card unfolds into its playable view and
+   returns to the same location; keep the real iframe/Phaser intact. */
+.projects-area .spine-stage.project-carousel {
+  transition: height 760ms cubic-bezier(.22, 1, .36, 1);
+}
+.projects-area .spine-stage.project-carousel.is-abismo-playing .arc-carousel .cinematic-panel {
+  visibility: visible;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 480ms ease, transform 720ms cubic-bezier(.22, 1, .36, 1);
+}
+.projects-area .spine-stage.project-carousel.is-abismo-closing .arc-carousel .cinematic-panel {
+  pointer-events: none;
+  animation: abismo-neighbors-return 620ms ease-out both;
+}
+@keyframes abismo-neighbors-return {
+  from { opacity: 0; }
+  to { opacity: .75; }
+}
+
+/* The opening transform starts at roughly the size of the old center card.
+   The stage itself expands at the same time, avoiding a hard layout jump. */
+.projects-area .spine-stage.project-carousel.is-abismo-playing .abismo-live-card {
+  animation: abismo-card-unfold 820ms cubic-bezier(.22, 1, .36, 1) both;
+  transform-origin: center;
+  will-change: transform, opacity;
+}
+.projects-area .spine-stage.project-carousel.is-abismo-closing .abismo-live-card {
+  animation: abismo-card-retreat 660ms cubic-bezier(.4, 0, .75, 1) both;
+  transform-origin: center;
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+@keyframes abismo-card-unfold {
+  0% { opacity: .4; transform: translate(-50%, -50%) scale(.46, .49); }
+  58% { opacity: 1; }
+  100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+@keyframes abismo-card-retreat {
+  0% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  74% { opacity: .85; }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(.46, .49); }
+}
+
+/* Top-level navigation for the game, replacing the duplicate bottom arrows. */
+.projects-area .abismo-live-header {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: clamp(.8rem, 2.5vw, 2.4rem);
+}
+.projects-area .abismo-live-back {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .65rem;
+  min-height: 43px;
+  padding: .55rem .9rem;
+  border: 1px solid color-mix(in srgb, var(--color-accent-yellow) 46%, transparent);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--color-surface-container) 32%, transparent);
+  color: var(--color-text);
+  font: 600 .79rem var(--font-body);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background .22s, border-color .22s, transform .22s;
+}
+.projects-area .abismo-live-back span {
+  color: var(--color-accent-yellow);
+  font-size: 1.25rem;
+  line-height: 1;
+  transition: transform .22s;
+}
+.projects-area .abismo-live-back:hover {
+  border-color: var(--color-accent-yellow);
+  background: color-mix(in srgb, var(--color-accent-primary) 16%, var(--color-surface));
+  transform: translateX(-2px);
+}
+.projects-area .abismo-live-back:hover span { transform: translateX(-3px); }
+.projects-area .abismo-live-brand { min-width: 0; }
+.projects-area .abismo-live-actions { justify-self: end; }
+@media (max-width: 670px) {
+  .projects-area .abismo-live-header {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: .45rem .6rem;
+  }
+  .projects-area .abismo-live-back { justify-self: start; min-height: 34px; padding: .4rem .7rem; font-size: .72rem; }
+  .projects-area .abismo-live-actions { grid-column: 2; grid-row: 1; }
+  .projects-area .abismo-live-brand { grid-column: 1 / -1; grid-row: 2; }
+  .projects-area .abismo-live-brand h3 { font-size: .92rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .projects-area .spine-stage.project-carousel { transition: none; }
+  .projects-area .spine-stage.project-carousel.is-abismo-playing .abismo-live-card,
+  .projects-area .spine-stage.project-carousel.is-abismo-closing .abismo-live-card,
+  .projects-area .spine-stage.project-carousel.is-abismo-closing .arc-carousel .cinematic-panel {
+    animation: none;
+    filter: none;
+  }
+  .projects-area .abismo-live-back,
+  .projects-area .abismo-live-back span { transition: none; }
+}

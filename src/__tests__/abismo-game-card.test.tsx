@@ -64,7 +64,19 @@ describe("Abismo embedded inside its own carousel card", () => {
     const close=vi.fn();
     render(<AbismoGameCard onClose={close}/>);
     await screen.findByTitle("Abismo — jogo Phaser integrado ao card");
-    fireEvent.click(screen.getByRole("button",{name:/Fechar jogo/}));
+    fireEvent.click(screen.getByRole("button",{name:"Voltar aos projetos"}));
     expect(close).toHaveBeenCalledOnce();
+  });
+
+  it("notifies parent when the return animation finishes", () => {
+    const complete = vi.fn();
+    render(<AbismoGameCard onClose={vi.fn()} closing onExitComplete={complete} />);
+    const card = screen.getByRole("region", { name: "Abismo — jogo integrado" });
+    fireEvent.animationEnd(screen.getByRole("button", { name: "Voltar aos projetos" }), {
+      animationName: "abismo-card-unfold",
+    });
+    expect(complete).not.toHaveBeenCalled();
+    fireEvent.animationEnd(card, { animationName: "abismo-card-retreat" });
+    expect(complete).toHaveBeenCalledOnce();
   });
 });

@@ -24,9 +24,19 @@ describe("three-panel carousel", () => {
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     expect(container.querySelector(".spine-stage.is-abismo-playing")).not.toBeNull();
     expect(screen.getByRole("region", { name: "Abismo — jogo integrado" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /Fechar jogo/ })).toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", { name: /Fechar jogo/ }));
-    expect(container.querySelector(".spine-stage.is-abismo-playing")).toBeNull();
+    expect(screen.getByRole("button", { name: "Voltar aos projetos" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Projeto anterior" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Próximo projeto" })).not.toBeInTheDocument();
+    expect(screen.queryByText("01 / 03")).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Voltar aos projetos" }));
+    expect(container.querySelector(".spine-stage.is-abismo-closing")).not.toBeNull();
+    expect(screen.getByRole("region", { name: "Abismo — jogo integrado" })).toBeInTheDocument();
+    fireEvent.animationEnd(screen.getByRole("region", { name: "Abismo — jogo integrado" }), {
+      animationName: "abismo-card-retreat",
+    });
+    expect(container.querySelector(".spine-stage.is-abismo-closing")).toBeNull();
+    expect(screen.getByRole("button", { name: "Projeto anterior" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Jogar Abismo no card" })).toBeInTheDocument();
   });
 
@@ -34,12 +44,16 @@ describe("three-panel carousel", () => {
     render(<ProjectPanel />);
     fireEvent.click(screen.getByRole("button", { name: "Jogar Abismo no card" }));
     const carousel = screen.getByRole("region", { name: "Carrossel de projetos" });
-    expect(screen.getByRole("button", { name: "Projeto anterior" })).toBeDisabled();
-    expect(screen.getByRole("button", { name: "Próximo projeto" })).toBeDisabled();
+    expect(screen.queryByRole("button", { name: "Projeto anterior" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Próximo projeto" })).not.toBeInTheDocument();
     fireEvent.keyDown(carousel, { key: "ArrowRight" });
     expect(screen.getByRole("region", { name: "Abismo — jogo integrado" })).toBeInTheDocument();
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     fireEvent.keyDown(window, { key: "Escape" });
+    expect(screen.getByRole("region", { name: "Abismo — jogo integrado" })).toBeInTheDocument();
+    fireEvent.animationEnd(screen.getByRole("region", { name: "Abismo — jogo integrado" }), {
+      animationName: "abismo-card-retreat",
+    });
     expect(screen.queryByRole("region", { name: "Abismo — jogo integrado" })).not.toBeInTheDocument();
   });
 
