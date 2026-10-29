@@ -44,14 +44,14 @@ describe("Hyprland as the viewer and Configurações as the editor", () => {
     expect(change).toHaveBeenCalledTimes(1);
   });
 
-  it("does not claim unpublished widget positions or invent private text", () => {
+  it("shows sanitized real widget positions without inventing private text", () => {
     render(<HyprlandShowcase themes={OFFICIAL_THEMES} selectedId="changli" onChoose={vi.fn()}/>);
-    expect(screen.getByText(/Posições reais do autor não publicadas/)).toBeInTheDocument();
-    expect(screen.getByText(/Organização personalizada salva|Nenhuma posição original disponível/)).toBeInTheDocument();
+    expect(screen.getByText(/Posições QML importadas disponíveis/)).toBeInTheDocument();
+    expect(screen.getByText(/Posições originais importadas/)).toBeInTheDocument();
     expect(screen.queryByLabelText("Importar posições do Quickshell")).not.toBeInTheDocument();
     expect(screen.getAllByText(/Conteúdo privado/).length).toBeGreaterThan(0);
-    expect(screen.getByText(/CPU — · RAM —/)).toBeInTheDocument();
-    expect(screen.getByText(/Clima · sem dados/)).toBeInTheDocument();
+    expect(screen.getAllByText(/CPU — · RAM —/).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Clima · sem dados/).length).toBeGreaterThan(0);
     expect(screen.queryByRole("button",{name:"Exportar snapshot público sem dados privados"}))
       .not.toBeInTheDocument();
   });
