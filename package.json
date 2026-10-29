@@ -51,6 +51,7 @@
     "lint": "eslint . --max-warnings 0",
     "test": "vitest run",
     "build": "tsc --noEmit && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "sync:abismo": "node scripts/sync-abismo.mjs"
   }
 }
