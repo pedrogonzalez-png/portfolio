@@ -213,3 +213,214 @@ export async function writeDesktopLayout(layout: StoredDesktopLayout, slot: Desk
     }
   });
 }
+
+
+/**
+ * M6: named, per-slot versions, saved as separate records in the EXISTING
+ * IndexedDB object store. No schema upgrade is required; the old "default"
+ * and "layout-2..4" records and their Blobs are never migrated or deleted.
+ * A restoration writes the restored layout and a safety checkpoint atomically.
+ */
+export interface DesktopLayoutVersion {
+  id: string;
+  name: string;
+  createdAt: number;
+}
+export const MAX_DESKTOP_VERSIONS = 5;
+const versionListKey = (slot: DesktopLayoutSlot) => "versions:" + slot;
+const versionKey = (slot: DesktopLayoutSlot, id: string) => "version:" + slot + ":" + id;
+
+function checkedVersionList(value: unknown): DesktopLayoutVersion[] {
+  if (value === undefined) return [];
+  if (!Array.isArray(value) || value.length > MAX_DESKTOP_VERSIONS) {
+    throw new Error("Histórico de versões inválido. Nenhum dado foi substituído.");
+  }
+  const list: DesktopLayoutVersion[] = [];
+  for (const item of value) {
+    if (!item || typeof item !== "object") throw new Error("Histórico de versões inválido.");
+    const record = item as Partial<DesktopLayoutVersion>;
+    if (typeof record.id !== "string" || !/^v-[a-z0-9-]{6,80}$/i.test(record.id) ||
+        typeof record.name !== "string" || typeof record.createdAt !== "number" ||
+        !Number.isFinite(record.createdAt) || record.createdAt <= 0) {
+      throw new Error("Metadados de versão inválidos. Nada foi sobrescrito.");
+    }
+    validateDesktopLayoutName(record.name);
+    list.push({ id: record.id, name: record.name, createdAt: record.createdAt });
+  }
+  if (new Set(list.map((item) => item.id)).size !== list.length) {
+    throw new Error("IDs de versão repetidos. Nenhum dado foi substituído.");
+  }
+  return list;
+}
+
+function newVersionId(): string {
+  const random = typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
+    ? crypto.randomUUID().replace(/[^a-z0-9-]/gi, "")
+    : Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2);
+  return "v-" + random;
+}
+
+export async function readDesktopVersions(slot: DesktopLayoutSlot): Promise<DesktopLayoutVersion[]> {
+  const key = ensureSlot(slot);
+  const db = await openDatabase();
+  return new Promise((resolve, reject) => {
+    let outcome: DesktopLayoutVersion[] = [];
+    let failed = false;
+    const fail = (cause: unknown) => {
+      if (failed) return;
+      failed = true;
+      db.close();
+      reject(cause instanceof Error ? cause : new Error("Falha ao ler versões do layout."));
+    };
+    try {
+      const tx = db.transaction(STORE, "readonly");
+      const request = tx.objectStore(STORE).get(versionListKey(key));
+      request.onsuccess = () => {
+        try { outcome = checkedVersionList(request.result); }
+        catch (cause) { fail(cause); }
+      };
+      tx.oncomplete = () => { db.close(); if (!failed) resolve(outcome); };
+      tx.onerror = () => fail(new Error("Falha ao acessar versões do layout."));
+      tx.onabort = () => fail(new Error("Leitura das versões interrompida."));
+    } catch (cause) { fail(cause); }
+  });
+}
+
+/** Save the last COMMITTED layout, not unsaved state in the React editor. */
+export async function createDesktopVersion(slot: DesktopLayoutSlot, name: string): Promise<DesktopLayoutVersion> {
+  const key = ensureSlot(slot);
+  const label = validateDesktopLayoutName(name);
+  const db = await openDatabase();
+  return new Promise((resolve, reject) => {
+    const record: DesktopLayoutVersion = { id: newVersionId(), name: label, createdAt: Date.now() };
+    let failed = false;
+    const fail = (cause: unknown) => {
+      if (failed) return;
+      failed = true;
+      reject(cause instanceof Error ? cause : new Error("Falha ao criar versão. Layout mantido."));
+    };
+    try {
+      const tx = db.transaction(STORE, "readwrite");
+      const store = tx.objectStore(STORE);
+      const listRequest = store.get(versionListKey(key));
+      const layoutRequest = store.get(key);
+      let list: DesktopLayoutVersion[] | null = null;
+      let layout: StoredDesktopLayout | null = null;
+      let ready = 0;
+      const write = () => {
+        if (++ready !== 2 || failed) return;
+        try {
+          if (!isStoredDesktopLayout(layout)) throw new Error("Salve a organização antes de criar uma versão.");
+          if (!list) throw new Error("Lista de versões inválida.");
+          if (list.length >= MAX_DESKTOP_VERSIONS) {
+            throw new Error("Limite de 5 versões atingido. Exclua uma versão antes de criar outra.");
+          }
+          store.put({ ...record, layout }, versionKey(key, record.id));
+          store.put([...list, record], versionListKey(key));
+        } catch (cause) { tx.abort(); fail(cause); }
+      };
+      listRequest.onsuccess = () => {
+        try { list = checkedVersionList(listRequest.result); write(); }
+        catch (cause) { tx.abort(); fail(cause); }
+      };
+      layoutRequest.onsuccess = () => { layout = layoutRequest.result as StoredDesktopLayout | null; write(); };
+      tx.oncomplete = () => { db.close(); if (!failed) resolve(record); };
+      tx.onerror = () => fail(new Error("IndexedDB não conseguiu gravar a versão (quota ou permissão)."));
+      tx.onabort = () => fail(new Error("Criação da versão interrompida; nada foi salvo."));
+    } catch (cause) { db.close(); fail(cause); }
+  }).finally(() => db.close());
+}
+
+/**
+ * Restore and FIRST capture the current committed layout as a new safety
+ * version, in the SAME IndexedDB transaction. If quota/validation fails,
+ * neither the checkpoint nor the active layout can change.
+ */
+export async function restoreDesktopVersion(slot: DesktopLayoutSlot, id: string): Promise<StoredDesktopLayout> {
+  const key = ensureSlot(slot);
+  if (!/^v-[a-z0-9-]{6,80}$/i.test(id)) throw new Error("ID de versão inválido.");
+  const db = await openDatabase();
+  return new Promise((resolve, reject) => {
+    let result: StoredDesktopLayout | null = null;
+    let failed = false;
+    const fail = (cause: unknown) => {
+      if (failed) return;
+      failed = true;
+      reject(cause instanceof Error ? cause : new Error("Falha ao restaurar. Layout anterior preservado."));
+    };
+    try {
+      const tx = db.transaction(STORE, "readwrite");
+      const store = tx.objectStore(STORE);
+      const listRequest = store.get(versionListKey(key));
+      const activeRequest = store.get(key);
+      const versionRequest = store.get(versionKey(key, id));
+      let list: DesktopLayoutVersion[] | null = null;
+      let active: StoredDesktopLayout | null = null;
+      let target: unknown;
+      let ready = 0;
+      const write = () => {
+        if (++ready !== 3 || failed) return;
+        try {
+          if (!list?.some((item) => item.id === id)) throw new Error("Versão não encontrada neste layout.");
+          const record = target as { layout?: unknown } | null;
+          if (!record || !isStoredDesktopLayout(record.layout)) {
+            throw new Error("Versão corrompida ou incompleta. Organização preservada.");
+          }
+          result = record.layout;
+          if (!isStoredDesktopLayout(active)) {
+            throw new Error("Organização atual indisponível. Restauração segura cancelada.");
+          }
+          if (list.length >= MAX_DESKTOP_VERSIONS) {
+            throw new Error("Para restaurar com segurança, exclua uma versão: são permitidas até 5.");
+          }
+          const backup: DesktopLayoutVersion = {
+            id: newVersionId(), name: "Antes de restaurar", createdAt: Date.now(),
+          };
+          store.put({ ...backup, layout: active }, versionKey(key, backup.id));
+          store.put([...list, backup], versionListKey(key));
+          store.put(result, key);
+        } catch (cause) { tx.abort(); fail(cause); }
+      };
+      listRequest.onsuccess = () => {
+        try { list = checkedVersionList(listRequest.result); write(); }
+        catch (cause) { tx.abort(); fail(cause); }
+      };
+      activeRequest.onsuccess = () => { active = activeRequest.result as StoredDesktopLayout | null; write(); };
+      versionRequest.onsuccess = () => { target = versionRequest.result; write(); };
+      tx.oncomplete = () => { db.close(); if (!failed && result) resolve(result); };
+      tx.onerror = () => fail(new Error("Restauração falhou no IndexedDB. Organização anterior preservada."));
+      tx.onabort = () => fail(new Error("Restauração cancelada; organização anterior preservada."));
+    } catch (cause) { db.close(); fail(cause); }
+  }).finally(() => db.close());
+}
+
+/** Delete only the chosen named snapshot, never the active layout. */
+export async function deleteDesktopVersion(slot: DesktopLayoutSlot, id: string): Promise<void> {
+  const key = ensureSlot(slot);
+  if (!/^v-[a-z0-9-]{6,80}$/i.test(id)) throw new Error("ID de versão inválido.");
+  const db = await openDatabase();
+  return new Promise((resolve, reject) => {
+    let failed = false;
+    const fail = (cause: unknown) => {
+      if (failed) return;
+      failed = true;
+      reject(cause instanceof Error ? cause : new Error("Falha ao excluir versão."));
+    };
+    try {
+      const tx = db.transaction(STORE, "readwrite");
+      const store = tx.objectStore(STORE);
+      const request = store.get(versionListKey(key));
+      request.onsuccess = () => {
+        try {
+          const list = checkedVersionList(request.result);
+          if (!list.some((item) => item.id === id)) throw new Error("Versão não encontrada.");
+          store.delete(versionKey(key, id));
+          store.put(list.filter((item) => item.id !== id), versionListKey(key));
+        } catch (cause) { tx.abort(); fail(cause); }
+      };
+      tx.oncomplete = () => { db.close(); if (!failed) resolve(); };
+      tx.onerror = () => fail(new Error("Falha no IndexedDB. Versão não excluída."));
+      tx.onabort = () => fail(new Error("Exclusão cancelada. Versão preservada."));
+    } catch (cause) { db.close(); fail(cause); }
+  }).finally(() => db.close());
+}
