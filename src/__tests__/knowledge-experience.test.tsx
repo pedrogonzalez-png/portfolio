@@ -46,6 +46,43 @@ describe("redesigned spatial knowledge experience", () => {
     expect(screen.getByRole("button", { name: /QML, ver conexões/ })).toBeInTheDocument();
   });
 
+  it("changes projects with wheel scrolling and releases the page at both endpoints", () => {
+    render(<TestHarness />);
+    const stage = screen.getByRole("region", { name: "Ambiente tridimensional de habilidades" });
+    vi.spyOn(stage, "getBoundingClientRect").mockReturnValue({
+      x: 0, y: 40, top: 40, left: 0, right: 1100, bottom: 700,
+      width: 1100, height: 660, toJSON: () => ({}),
+    } as DOMRect);
+    const clock = vi.spyOn(performance, "now");
+    let time = 1000;
+    clock.mockImplementation(() => time);
+    const wheel = (deltaY: number) => {
+      const event = new WheelEvent("wheel", { deltaY, cancelable: true, bubbles: true });
+      fireEvent(stage, event);
+      return event;
+    };
+
+    // At the first project, upwards wheel must scroll the document normally.
+    expect(wheel(-110).defaultPrevented).toBe(false);
+    expect(wheel(110).defaultPrevented).toBe(true);
+    expect(screen.getByRole("button", { name: "Destacar projeto: site-3D" })).toBeInTheDocument();
+
+    // Repeated touchpad events in the same gesture may not skip another project.
+    expect(wheel(100).defaultPrevented).toBe(true);
+    expect(screen.getByRole("button", { name: "Destacar projeto: site-3D" })).toBeInTheDocument();
+
+    time += 240;
+    expect(wheel(110).defaultPrevented).toBe(true);
+    expect(screen.getByRole("button", { name: "Destacar projeto: Hyprland-Themes" })).toBeInTheDocument();
+    // At the final project, natural page scrolling resumes.
+    expect(wheel(110).defaultPrevented).toBe(false);
+
+    time += 240;
+    expect(wheel(-110).defaultPrevented).toBe(true);
+    expect(screen.getByRole("button", { name: "Destacar projeto: site-3D" })).toBeInTheDocument();
+    clock.mockRestore();
+  });
+
   it("puts nodes in separate arcs without repeating positions", () => {
     const nodes = KNOWLEDGE_NODES.filter((node) => node.projects.includes("abismo"));
     const orbit = arrangeOrbitSkills(nodes);
