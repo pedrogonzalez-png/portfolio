@@ -167,12 +167,10 @@ export function ThemeStudio({ onClose }: { onClose: () => void }) {
           <button type="button" role="tab" aria-selected={studioTab === "settings"}
             onClick={() => setStudioTab("settings")}>Configurações</button>
         </div>
-        {studioTab === "hyprland" ? (
-          <div role="tabpanel" aria-label="Hyprland">
-            <HyprlandShowcase themes={availableThemes} selectedId={previewId} onChoose={choose}/>
-          </div>
-        ) : (
-          <div role="tabpanel" aria-label="Configurações">
+        <div role="tabpanel" aria-label="Hyprland" hidden={studioTab !== "hyprland"}>
+          <HyprlandShowcase themes={availableThemes} selectedId={previewId} onChoose={choose}/>
+        </div>
+        <div role="tabpanel" aria-label="Configurações" hidden={studioTab !== "settings"}>
         <h3 className="theme-studio-section-title">Temas oficiais <span>originais protegidos</span></h3>
         <div className="theme-studio-gallery" role="group" aria-label="Cinco temas oficiais">
           {availableThemes.filter((item) => item.kind === "official").map(renderOption)}
@@ -299,8 +297,7 @@ export function ThemeStudio({ onClose }: { onClose: () => void }) {
             </button>
           </div>
         </footer>
-          </div>
-        )}
+        </div>
       </div>
     </div>
   );
