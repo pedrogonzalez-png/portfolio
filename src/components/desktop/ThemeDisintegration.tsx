@@ -80,8 +80,10 @@ export function ThemeDisintegration({
   oldSecondary,
   newAccent,
   onFinished,
+  active = true,
 }: {
   children: ReactNode;
+  active?: boolean;
   oldAccent: string;
   oldSecondary: string;
   newAccent: string;
@@ -95,8 +97,10 @@ export function ThemeDisintegration({
   const colors = [oldAccent, oldSecondary, newAccent, "#f6d8b0"];
 
   return (
-    <div className="preset-disintegrating" aria-hidden="true" data-effect="particle-disintegration">
-      <svg className="preset-fracture-defs" width="0" height="0" aria-hidden="true"
+    <div className={"preset-disintegrating" + (active ? "" : " preset-disintegrating-idle")}
+      aria-hidden={active ? true : undefined}
+      data-effect={active ? "particle-disintegration" : undefined}>
+      {active && <svg className="preset-fracture-defs" width="0" height="0" aria-hidden="true"
         focusable="false">
         <defs>
           <mask id={maskId} maskUnits="objectBoundingBox" maskContentUnits="objectBoundingBox"
@@ -115,15 +119,15 @@ export function ThemeDisintegration({
             ))}
           </mask>
         </defs>
-      </svg>
+      </svg>}
       <div className="preset-fractured-desktop"
         style={{
-          maskImage: 'url("#' + maskId + '")',
-          WebkitMaskImage: 'url("#' + maskId + '")',
+          maskImage: active ? 'url("#' + maskId + '")' : undefined,
+          WebkitMaskImage: active ? 'url("#' + maskId + '")' : undefined,
         }}>
         {children}
       </div>
-      <div className="preset-fragment-cloud" aria-hidden="true">
+      {active && <div className="preset-fragment-cloud" aria-hidden="true">
         {SHARDS.map((shard,i) => (
           <span key={i} className="preset-fragment"
             style={{
@@ -137,13 +141,13 @@ export function ThemeDisintegration({
               "--frag-color": colors[shard.shade],
             } as CSSProperties} />
         ))}
-      </div>
-      <div className="preset-disintegration-lifetime"
+      </div>}
+      {active && <div className="preset-disintegration-lifetime"
         style={{ animationDuration: MASK_DURATION + "ms" }}
         onAnimationEnd={(event) => {
           if (event.target === event.currentTarget) onFinished();
         }}
-      />
+      />}
     </div>
   );
 }
