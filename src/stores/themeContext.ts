@@ -7,6 +7,8 @@ export interface ThemeContextValue {
   availableThemes: readonly Theme[];
   createCustomTheme: (baseId: string) => Theme;
   saveCustomTheme: (id: string, name: string, palette: ThemePalette) => Theme;
+  accentColor: string | null;
+  setAccentColor: (hex: string | null) => void;
 }
 
 export const ThemeContext = createContext<ThemeContextValue | null>(null);
