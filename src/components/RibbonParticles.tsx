@@ -12,7 +12,7 @@ import { useTheme } from "../stores/themeContext";
 
 // Partículas em torno das três fitas do FlowingLight, com cores individuais.
 // O mouse interage via contêiner, sem bloquear botões HTML nem o vidro.
-const PARTICLE_COUNT = 480;
+const PARTICLE_COUNT = 1100;
 
 const vertexShader = `
   attribute vec3 aColor;
@@ -27,7 +27,7 @@ const vertexShader = `
     vGlow = aGlow;
     vec4 viewPosition = modelViewMatrix * vec4(position, 1.0);
     gl_Position = projectionMatrix * viewPosition;
-    gl_PointSize = min(15.0, aSize * uDpr * (1.0 + aGlow * 0.68));
+    gl_PointSize = min(16.0, aSize * uDpr * (1.0 + aGlow * 0.52));
   }
 `;
 
@@ -41,9 +41,9 @@ const fragmentShader = `
     if (d > 1.0) discard;
 
     float core = 1.0 - smoothstep(0.08, 0.34, d);
-    float halo = pow(max(0.0, 1.0 - d), 2.15);
-    float opacity = (core * 0.52 + halo * 0.37) * (0.67 + vGlow * 0.35);
-    vec3 color = vColor * (0.86 + vGlow * 0.52);
+    float halo = pow(max(0.0, 1.0 - d), 2.35);
+    float opacity = (core * 0.48 + halo * 0.32) * (0.62 + vGlow * 0.35);
+    vec3 color = vColor * (0.85 + vGlow * 0.42);
     gl_FragColor = vec4(color, opacity);
   }
 `;
@@ -67,6 +67,7 @@ export default function RibbonParticles() {
     const glows = new Float32Array(PARTICLE_COUNT);
     const rest = new Float32Array(PARTICLE_COUNT * 3);
     const phases = new Float32Array(PARTICLE_COUNT);
+    const layers = new Float32Array(PARTICLE_COUNT);
 
     const palette = [
       theme.palette.accentYellow,
@@ -82,23 +83,25 @@ export default function RibbonParticles() {
       const band = i % 3;
       const t = noise(i * 13 + 7);
       const phase = band * 1.55;
-      const spread = (noise(i * 31 + 11) - 0.5) * viewport.height * 0.15;
+      const layer = noise(i * 67 + 17);
+      layers[i] = layer;
+      const spread = (noise(i * 31 + 11) - 0.5) * viewport.height * (0.11 + layer * 0.095);
 
       // Mesma curva matemática usada nas três fitas luminosas.
       const x = (t - 0.5) * viewport.width * 0.85
-        + (noise(i * 23 + 3) - 0.5) * viewport.width * 0.038;
+        + (noise(i * 23 + 3) - 0.5) * viewport.width * (0.025 + layer * 0.043);
       const y = Math.sin(t * Math.PI * (2.7 + band * 0.15) + phase)
         * viewport.height * (0.20 + band * 0.025)
         + (band - 1) * 0.53 + spread;
       const z = -3.8 + Math.sin(t * Math.PI * 2.2 + phase) * 0.7
-        + (noise(i * 17 + 19) - 0.5) * 1.3;
+        + (noise(i * 17 + 19) - 0.5) * (0.65 + layer * 1.15);
 
       const index = i * 3;
       rest[index] = positions[index] = x;
       rest[index + 1] = positions[index + 1] = y;
       rest[index + 2] = positions[index + 2] = z;
       phases[i] = noise(i * 53 + 29) * Math.PI * 2;
-      sizes[i] = 1.6 + noise(i * 37 + 23) * 3.2;
+      sizes[i] = 1.1 + layer * 2.7 + noise(i * 37 + 23) * 1.8;
 
       const chosen = palette[Math.floor(noise(i * 41 + 5) * palette.length)];
       const brightness = 0.70 + noise(i * 43 + 9) * 0.42;
@@ -117,7 +120,7 @@ export default function RibbonParticles() {
     geometry.setAttribute("aSize", new BufferAttribute(sizes, 1));
     geometry.setAttribute("aGlow", glowAttr);
 
-    return { geometry, positions, glows, rest, phases, positionAttr, glowAttr };
+    return { geometry, positions, glows, rest, phases, layers, positionAttr, glowAttr };
   }, [
     viewport.width,
     viewport.height,
@@ -157,36 +160,38 @@ export default function RibbonParticles() {
   }, [viewport.width, viewport.height]);
 
   useFrame(({ clock }, delta) => {
-    const { positions, rest, phases, glows, positionAttr, glowAttr } = particleData;
+    const { positions, rest, phases, layers, glows, positionAttr, glowAttr } = particleData;
     const time = clock.elapsedTime;
-    const ease = 1 - Math.exp(-Math.min(delta, 0.05) * 9);
-    const radius = Math.min(viewport.width, viewport.height) * 0.24;
-    const driftY = Math.sin(time * 0.26) * 0.12;
-    const angle = Math.sin(time * 0.12) * 0.036;
-    const cosA = Math.cos(angle);
-    const sinA = Math.sin(angle);
+    const ease = 1 - Math.exp(-Math.min(delta, 0.05) * 8.2);
+    const radius = Math.min(viewport.width, viewport.height) * 0.27;
 
     for (let i = 0; i < PARTICLE_COUNT; i += 1) {
       const index = i * 3;
       const phase = phases[i];
+      const layer = layers[i];
       const bx = rest[index];
+      const by = rest[index + 1];
       const bz = rest[index + 2];
-      let x = bx * cosA + bz * sinA + Math.sin(time * 0.6 + phase) * 0.05;
-      let y = rest[index + 1] + driftY + Math.cos(time * 0.72 + phase) * 0.065;
-      const z = -bx * sinA + bz * cosA;
-      let glow = 0.08 + 0.15 * (0.5 + Math.sin(time * 1.25 + phase) * 0.5);
+      const orbit = time * (0.42 + layer * 0.23) + phase;
+      let x = bx + Math.sin(orbit) * (0.045 + layer * 0.11)
+        + Math.sin(time * 0.72 + phase * 1.7) * 0.04;
+      let y = by + Math.cos(orbit * 0.92) * (0.045 + layer * 0.10)
+        + Math.sin(time * 0.29) * 0.12;
+      let z = bz + Math.sin(time * 0.47 + phase) * (0.07 + layer * 0.22);
+      let glow = 0.08 + 0.16 * (0.5 + Math.sin(time * 1.35 + phase) * 0.5);
 
       if (mouseActive.current) {
         const dx = x - mouse.current.x;
         const dy = y - mouse.current.y;
         const distance = Math.hypot(dx, dy);
         if (distance < radius) {
-          const influence = Math.pow(1 - distance / radius, 2);
+          const influence = Math.pow(1 - distance / radius, 2.15);
           const inv = 1 / Math.max(0.04, distance);
           // Repulsão + giro tangencial para movimento orgânico.
-          x += (dx * inv * 1.65 - dy * inv * 0.35) * influence;
-          y += (dy * inv * 1.65 + dx * inv * 0.35) * influence;
-          glow += influence * 1.55;
+          x += (dx * inv * 1.8 - dy * inv * 0.48) * influence;
+          y += (dy * inv * 1.8 + dx * inv * 0.48) * influence;
+          z += influence * 0.23;
+          glow += influence * 1.4;
         }
       }
 
