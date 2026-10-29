@@ -36,6 +36,9 @@ describe("M6 draggable user widgets",()=>{
       left:100,top:100,width:1000,height:420,
       right:1100,bottom:520,x:100,y:100,toJSON:()=>({}),
     });
+    fireEvent.dragStart(screen.getByRole("button",{name:"Adicionar calendar"}),{
+      dataTransfer:{setData:vi.fn(),effectAllowed:"copy"},
+    });
     fireEvent.drop(stage,{
       clientX:600,clientY:310,
       dataTransfer:{getData:(type:string)=>type==="application/x-hypr-widget"?"calendar":""},
@@ -51,9 +54,14 @@ describe("M6 draggable user widgets",()=>{
       left:0,top:0,width:1000,height:500,right:1000,bottom:500,x:0,y:0,toJSON:()=>({}),
     });
     const widget=screen.getByRole("group",{name:"Widget weather"});
-    fireEvent.pointerDown(widget,{button:0,pointerId:1,clientX:200,clientY:150});
-    fireEvent.pointerMove(widget,{pointerId:1,clientX:300,clientY:200});
-    fireEvent.pointerUp(widget,{pointerId:1,clientX:300,clientY:200});
+    const pointer=(type:string,clientX:number,clientY:number)=>{
+      const event=new MouseEvent(type,{bubbles:true,button:0,clientX,clientY});
+      Object.defineProperty(event,"pointerId",{value:1});
+      fireEvent(widget,event);
+    };
+    pointer("pointerdown",200,150);
+    pointer("pointermove",300,200);
+    pointer("pointerup",300,200);
     expect(loadVisitorWidgets("changli")?.[0].x).toBe(50);
     expect(loadVisitorWidgets("changli")?.[0].y).toBe(46);
     const width=loadVisitorWidgets("changli")?.[0].width??0;
