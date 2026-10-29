@@ -10,9 +10,11 @@ import type { ThemePalette } from "../stores/themes";
 import {
   DESKTOP_LAYOUT_SLOTS, defaultDesktopLayoutNames, readDesktopLayout, readDesktopLayoutNames,
   writeDesktopLayout, writeDesktopLayoutName,
+  createDesktopVersion, readDesktopVersions, restoreDesktopVersion, deleteDesktopVersion,
+  MAX_DESKTOP_VERSIONS,
 } from "../services/desktopPersistence";
 import type {
-  StoredDesktopLayout, DesktopScreenMode, DesktopLayoutSlot, DesktopLayoutNames,
+  StoredDesktopLayout, DesktopScreenMode, DesktopLayoutSlot, DesktopLayoutNames, DesktopLayoutVersion,
 } from "../services/desktopPersistence";
 import { BACKUP_EXTENSION, createDesktopBackup, parseDesktopBackup } from "../services/desktopBackup";
 import {
@@ -45,6 +47,10 @@ export function SimulatedDesktop({ palette, themeName }: {
   const [nameDraft, setNameDraft] = useState("Principal");
   const [pendingImport, setPendingImport] = useState<{ fileName: string; layout: StoredDesktopLayout } | null>(null);
   const [history, setHistory] = useState(emptyPositionHistory);
+  const [versionName, setVersionName] = useState("");
+  const [versions, setVersions] = useState<DesktopLayoutVersion[]>([]);
+  const [versionStatus, setVersionStatus] = useState("Carregando versões salvas...");
+  const [pendingVersion, setPendingVersion] = useState<{ id: string; action: "restore" | "delete" } | null>(null);
   const [storageLoading, setStorageLoading] = useState(true);
   const [storageStatus, setStorageStatus] = useState("Buscando organização salva no navegador...");
 
@@ -157,6 +163,79 @@ export function SimulatedDesktop({ palette, themeName }: {
     };
     // Restore only when the editor first opens. Explicit Restore handles subsequent reads.
   }, [applySnapshot]);
+
+  useEffect(() => {
+    let cancelled = false;
+    setPendingVersion(null);
+    setVersions([]);
+    setVersionStatus("Carregando versões da organização...");
+    void readDesktopVersions(activeSlot).then((items) => {
+      if (cancelled) return;
+      setVersions(items);
+      setVersionStatus(items.length
+        ? items.length + " versão(ões) disponível(is) nesta organização."
+        : "Nenhuma versão nomeada neste layout.");
+    }).catch((cause) => {
+      if (!cancelled) setVersionStatus(
+        cause instanceof Error ? cause.message : "Histórico de versões indisponível.",
+      );
+    });
+    return () => { cancelled = true; };
+  }, [activeSlot]);
+
+  const createVersion = async () => {
+    if (storageBusy || storageLoading) return;
+    if (editedRef.current || nameDraft !== layoutNames[activeSlot]) {
+      setVersionStatus("Salve a organização e seu nome antes de criar uma versão.");
+      return;
+    }
+    setStorageBusy(true);
+    try {
+      const created = await createDesktopVersion(activeSlot, versionName);
+      if (!aliveRef.current) return;
+      setVersions(await readDesktopVersions(activeSlot));
+      setVersionName("");
+      setVersionStatus("Versão " + created.name + " guardada neste navegador.");
+    } catch (cause) {
+      if (aliveRef.current) setVersionStatus(
+        cause instanceof Error ? cause.message : "Falha ao criar versão.",
+      );
+    } finally { if (aliveRef.current) setStorageBusy(false); }
+  };
+
+  const applyVersionAction = async () => {
+    if (!pendingVersion || storageBusy || storageLoading) return;
+    if (editedRef.current || nameDraft !== layoutNames[activeSlot]) {
+      setVersionStatus("Salve ou restaure suas alterações antes de usar uma versão.");
+      return;
+    }
+    setStorageBusy(true);
+    const selected = pendingVersion;
+    const slot = activeSlot;
+    const revision = revisionRef.current;
+    try {
+      if (selected.action === "restore") {
+        const layout = await restoreDesktopVersion(slot, selected.id);
+        if (!aliveRef.current) return;
+        if (revision !== revisionRef.current) {
+          setVersionStatus("Dados restaurados no navegador. Reabra a organização para visualizar.");
+        } else {
+          applySnapshot(layout);
+          setVersionStatus("Versão restaurada! O estado anterior foi guardado como versão de segurança.");
+        }
+      } else {
+        await deleteDesktopVersion(slot, selected.id);
+        if (!aliveRef.current) return;
+        setVersionStatus("Versão excluída. A organização atual foi preservada.");
+      }
+      setVersions(await readDesktopVersions(slot));
+      setPendingVersion(null);
+    } catch (cause) {
+      if (aliveRef.current) setVersionStatus(
+        cause instanceof Error ? cause.message : "Falha na operação. Organização preservada.",
+      );
+    } finally { if (aliveRef.current) setStorageBusy(false); }
+  };
 
   const saveOrganization = async () => {
     if (storageBusy || storageLoading) return;
@@ -333,6 +412,7 @@ export function SimulatedDesktop({ palette, themeName }: {
       setActiveSlot(slot);
       setNameDraft(layoutNames[slot]);
       setPendingImport(null);
+      setPendingVersion(null);
     } catch (cause) {
       if (aliveRef.current) setStorageStatus(
         cause instanceof Error ? cause.message : "Falha ao carregar outro layout.",
@@ -469,6 +549,51 @@ export function SimulatedDesktop({ palette, themeName }: {
         </button>
         <p role="status" aria-live="polite">{storageStatus}</p>
       </div>
+      <section className="theme-desktop-versions" aria-label="Versões nomeadas do layout">
+        <h4>Versões do layout</h4>
+        <p>Guarde marcos antes de experimentar mudanças. Até {MAX_DESKTOP_VERSIONS} versões por organização,
+          incluindo cópias de segurança criadas durante a restauração.</p>
+        <div className="theme-desktop-version-create">
+          <label htmlFor="desktop-version-name">Nome da nova versão</label>
+          <input id="desktop-version-name" type="text" maxLength={32}
+            value={versionName} disabled={storageLoading || storageBusy}
+            onChange={(event) => setVersionName(event.target.value)}
+            placeholder="Ex.: Layout Changli final" />
+          <button type="button" disabled={storageLoading || storageBusy || !versionName.trim()}
+            onClick={() => void createVersion()}>Criar versão do layout salvo</button>
+        </div>
+        <ul className="theme-desktop-version-list">
+          {versions.map((version) => (
+            <li key={version.id}>
+              <span><strong>{version.name}</strong>
+                <small>{new Date(version.createdAt).toLocaleString("pt-BR")}</small></span>
+              <button type="button" disabled={storageLoading || storageBusy}
+                onClick={() => setPendingVersion({ id: version.id, action: "restore" })}>
+                Restaurar
+              </button>
+              <button type="button" disabled={storageLoading || storageBusy}
+                onClick={() => setPendingVersion({ id: version.id, action: "delete" })}>
+                Excluir
+              </button>
+            </li>
+          ))}
+        </ul>
+        <p role="status" aria-live="polite">{versionStatus}</p>
+        {pendingVersion && (
+          <div className="theme-desktop-version-confirm" role="group" aria-label="Confirmar ação da versão">
+            <p>{pendingVersion.action === "restore"
+              ? "Restaurar substituirá o layout salvo. Uma versão de segurança do estado atual será criada primeiro."
+              : "Excluir removerá apenas esta versão histórica. O layout ativo não será apagado."}</p>
+            <button type="button" disabled={storageBusy}
+              onClick={() => void applyVersionAction()}>
+              {pendingVersion.action === "restore" ? "Confirmar restauração segura" : "Confirmar exclusão da versão"}
+            </button>
+            <button type="button" disabled={storageBusy} onClick={() => setPendingVersion(null)}>
+              Cancelar
+            </button>
+          </div>
+        )}
+      </section>
       <div className="theme-desktop-backup-tools" aria-label="Backup portátil do layout">
         <button type="button" disabled={storageLoading || storageBusy}
           onClick={() => void exportLayout()}>Exportar backup do layout</button>
