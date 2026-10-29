@@ -155,7 +155,7 @@ export function ThemeStudio({ onClose }: { onClose: () => void }) {
           <div>
             <p className="theme-studio-kicker">04 / COLOR ENGINE · HYPRLAND-THEMES</p>
             <h2 id="theme-studio-title">THEME <em>STUDIO.</em></h2>
-            <p id="theme-studio-description">Escolha uma paleta, crie sua cópia e experimente à vontade. Só o botão Aplicar muda o site.</p>
+            <p id="theme-studio-description">Explore o Hyprland e os temas publicados. Na aba Configurações, edite paletas, widgets e layouts.</p>
           </div>
           <button ref={closeRef} type="button" className="theme-studio-close"
             onClick={onClose} aria-label="Fechar Theme Studio">✕</button>
