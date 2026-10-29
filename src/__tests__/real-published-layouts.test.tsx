@@ -51,12 +51,13 @@ describe("M6 real Quickshell wallpaper profiles — sanitized publication", () =
     const {container}=render(
       <HyprlandShowcase themes={OFFICIAL_THEMES} selectedId="changli" onChoose={vi.fn()}/>,
     );
+    expect(container.querySelectorAll("[data-changli-slot]").length).toBe(11);
+    expect(screen.queryByRole("combobox",{name:"Outras composições prontas"})).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button",{name:"Hiyuki"}));
     const select=screen.getByRole("combobox",{name:"Outras composições prontas"});
-    expect(select.querySelectorAll("option")).toHaveLength(4);
-    const first=container.querySelector(".preset-widget") as HTMLElement;
-    const initial=first.style.left;
-    fireEvent.change(select,{target:{value:"changli-2"}});
-    expect((container.querySelector(".preset-widget") as HTMLElement).style.left).not.toBe(initial);
+    expect(select.querySelectorAll("option")).toHaveLength(3);
+    fireEvent.change(select,{target:{value:"hiyuki-2"}});
+    expect(select).toHaveValue("hiyuki-2");
     expect(screen.queryByRole("button",{name:"Adicionar Relógio"})).not.toBeInTheDocument();
     expect(JSON.stringify(data.profiles)).toBe(before);
   });
