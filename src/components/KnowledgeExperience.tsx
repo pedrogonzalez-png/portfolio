@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import type { KeyboardEvent as ReactKeyboardEvent } from "react";
 import { KNOWLEDGE_PROJECTS, type KnowledgeNode, type KnowledgeProjectId } from "../data/knowledge";
 import { PLACEHOLDER_PROJECTS } from "./PlaceholderCatalog";
@@ -33,6 +33,8 @@ const META: Record<KnowledgeProjectId, { index: string; eyebrow: string; descrip
   },
 };
 
+const PROJECT_IDS = KNOWLEDGE_PROJECTS.map(({ id }) => id);
+
 function getProject(id: KnowledgeProjectId) {
   return PLACEHOLDER_PROJECTS.find((project) => project.id === id);
 }
@@ -40,7 +42,7 @@ function getProject(id: KnowledgeProjectId) {
 export default function KnowledgeExperience({
   activeProject, visibleNodes, selection, onSelect, onProjectChange, onContextLost,
 }: Props) {
-  const projects = KNOWLEDGE_PROJECTS.map(({ id }) => id);
+  const projects = PROJECT_IDS;
   const stageRef = useRef<HTMLDivElement>(null);
   const wheelGesture = useRef({ lastAt: 0, delta: 0, consumed: false });
 
@@ -55,10 +57,10 @@ export default function KnowledgeExperience({
   const skillPositions = useMemo(() => arrangeOrbitSkills(related), [related]);
   const activeSkill = selection?.kind === "skill" && related.some((node) => node.id === selection.id)
     ? selection.id : null;
-  const navigate = (id: KnowledgeProjectId) => {
+  const navigate = useCallback((id: KnowledgeProjectId) => {
     onProjectChange(id);
     onSelect({ kind: "project", id });
-  };
+  }, [onProjectChange, onSelect]);
 
   // Native, non-passive wheel handler: React's delegated wheel listeners
   // can be passive, making preventDefault ineffective in Chromium.
@@ -108,7 +110,7 @@ export default function KnowledgeExperience({
 
     stage.addEventListener("wheel", handleWheel, { passive: false });
     return () => stage.removeEventListener("wheel", handleWheel);
-  }, [activeProject, onProjectChange, onSelect]);
+  }, [activeProject, navigate]);
 
   const onCarouselKeys = (event: ReactKeyboardEvent<HTMLDivElement>) => {
     if (event.target !== event.currentTarget) return;
