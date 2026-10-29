@@ -68,3 +68,9 @@ Conferir visualmente árvore, abas, Markdown, syntax highlighting e histórico n
 - Modal tem contenção de foco de Tab/Shift+Tab, proteção contra foco externo, Escape, restauração de foco e descrição para leitor de tela. Estado conciso em região `role=status`, sem anúncio verboso dos patches.
 - Erros transitórios do GitHub oferecem `Tentar comando novamente`; consulta de arquivos bloqueia resultados/erros antigos usando ID de requisição e identidade da allowlist, com retry somente para falhas temporárias.
 - Testes para foco, reconsulta após offline e descarte de erro obsoleto. Validação manual mobile e leitor de tela continua pendente; M3 `IN_PROGRESS`.
+
+## M3 — entrega incremental `grep` (29/10/2026)
+
+**IN_PROGRESS (sem aceite manual):** o comando `grep "termo" [pasta|arquivo]` agora pesquisa texto real em arquivos GitHub allowlisted usando `src/services/githubGrep.ts`, sem executar regex arbitrária, shell, nem acessar repositórios excluídos. Saída com linha/caminho/branch, aviso de cobertura parcial. Orçamento: 6 arquivos até 48 KiB e 24 ocorrências por busca.
+
+Arquivos: `src/components/Terminal.tsx`, `src/services/githubGrep.ts`, `src/__tests__/github-grep.test.ts` e `docs/06_GITHUB_TERMINAL_EDITOR.md`. Testes manuais, QA mobile e rate-limit real continuam **BLOCKED por validação externa**. A PR é empilhada na `feat/knowledge-tree`, sem tocar `main`, jogo ou site de personagens.
