@@ -148,7 +148,8 @@ export default function KnowledgeExperience({
         <span>UMA CONSTELAÇÃO DE PROJETOS REAIS</span>
       </div>
 
-      <div className="kspace-ui">
+      <div className="kspace-focus-flare" key={"flare-" + activeProject} aria-hidden="true" />
+      <div className="kspace-ui" key={"panels-" + activeProject}>
         {[{ id: previous, side: "left" }, { id: next, side: "right" }].map(({ id, side }) => {
           const project = getProject(id);
           if (!project) return null;
@@ -221,7 +222,22 @@ export default function KnowledgeExperience({
 
       <div className="kspace-footer">
         <span className="kspace-progress">{META[activeProject].index} <span>/ 03</span></span>
-        <span className="kspace-instruction">Role para alternar projetos · clique para explorar</span>
+        <div className="kspace-steps" role="group" aria-label="Selecionar projeto">
+          {PROJECT_IDS.map((id) => (
+            <button
+              type="button"
+              key={id}
+              className={"kspace-step" + (id === activeProject ? " is-current" : "")}
+              onClick={() => navigate(id)}
+              aria-label={"Ir para projeto: " + (getProject(id)?.title ?? id)}
+              aria-current={id === activeProject ? "step" : undefined}
+              title={getProject(id)?.title ?? id}
+            >
+              <span aria-hidden="true" />
+            </button>
+          ))}
+        </div>
+        <span className="kspace-instruction">Role para alternar · escolha um projeto</span>
         <div className="kspace-arrows" role="group" aria-label="Navegar entre projetos">
           <button type="button" onClick={() => navigate(previous)} aria-label="Projeto anterior">←</button>
           <button type="button" onClick={() => navigate(next)} aria-label="Próximo projeto">→</button>
