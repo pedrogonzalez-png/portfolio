@@ -29,12 +29,6 @@
 .preset-widget-image{display:grid;place-items:center;width:100%;height:100%;background:radial-gradient(circle at 50% 25%,color-mix(in srgb,var(--preset-glow) 27%,transparent),transparent 68%);color:var(--preset-glow);font-size:clamp(1.1rem,3vw,3rem)}
 .preset-widget-visualizer{display:flex;align-items:end;gap:3px;max-width:90%;height:30px}
 .preset-widget-visualizer i{width:4px;background:var(--preset-glow);border-radius:4px;opacity:.8}
-/* Outgoing old desktop is removed right-to-left, revealing the new one behind. */
-.preset-dissolve-out{position:absolute;inset:0;z-index:6;pointer-events:none;animation:preset-wipe 1020ms cubic-bezier(.25,.03,.65,.99) both;will-change:clip-path}
-@keyframes preset-wipe{0%{clip-path:inset(0 0 0 0)}25%{clip-path:inset(0 11% 0 0)}78%{clip-path:inset(0 79% 0 0)}100%{clip-path:inset(0 100% 0 0)}}
-.preset-dissolve-dust{position:absolute;inset:0;overflow:hidden;z-index:7;pointer-events:none}
-.preset-dissolve-dust span{position:absolute;top:var(--dust-top);left:var(--dust-left);width:var(--dust-size);height:var(--dust-size);background:var(--dust-color);box-shadow:0 0 13px var(--dust-color);opacity:0;border-radius:1px;transform:translate3d(0,0,0);animation:preset-dust-flight 410ms ease-out var(--dust-delay) both}
-@keyframes preset-dust-flight{0%{opacity:0;transform:translate3d(18px,0,0) scale(1.4)}25%{opacity:.95}100%{opacity:0;transform:translate3d(-38px,var(--dust-drift),0) scale(.25)}}
 .preset-gallery-foot{padding:.3rem 0 .9rem}
 .preset-gallery-foot strong{font:650 .9rem var(--font-display)}
 .preset-gallery-foot p{margin:.35rem 0 0}
