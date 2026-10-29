@@ -403,26 +403,14 @@
   will-change: transform, opacity;
 }
 @keyframes abismo-card-unfold {
-  0% {
-    opacity: .45;
-    transform: translate(-50%, -50%) scale(.46, .49);
-    filter: brightness(1.45) blur(3px);
-  }
-  53% { opacity: 1; filter: brightness(1.06) blur(0); }
-  100% {
-    opacity: 1;
-    transform: translate(-50%, -50%) scale(1);
-    filter: brightness(1) blur(0);
-  }
+  0% { opacity: .4; transform: translate(-50%, -50%) scale(.46, .49); }
+  58% { opacity: 1; }
+  100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
 }
 @keyframes abismo-card-retreat {
-  0% { opacity: 1; transform: translate(-50%, -50%) scale(1); filter: blur(0); }
-  75% { opacity: .8; filter: blur(1px); }
-  100% {
-    opacity: 0;
-    transform: translate(-50%, -50%) scale(.46, .49);
-    filter: blur(3px);
-  }
+  0% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  74% { opacity: .85; }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(.46, .49); }
 }
 
 /* Top-level navigation for the game, replacing the duplicate bottom arrows. */
