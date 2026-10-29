@@ -31,10 +31,10 @@ describe("finished Hyprland gallery and dissolving transition",()=>{
   });
   it("preserves published positions in read-only presentation, with no misleading private data",()=>{
     const {container}=render(<HyprlandShowcase selectedId="changli"/>);
-    const first=container.querySelector(".preset-widget") as HTMLElement;
+    const first=container.querySelector('[data-changli-slot="notes"]') as HTMLElement;
     expect(first.style.left).toMatch(/%/);
     expect(first.style.top).toMatch(/%/);
-    expect(container.querySelectorAll(".preset-widget").length).toBeGreaterThan(0);
+    expect(container.querySelectorAll("[data-changli-slot]").length).toBe(11);
     expect(screen.queryByText(/CPU —/)).not.toBeInTheDocument();
     expect(screen.queryByText(/Conteúdo privado/)).not.toBeInTheDocument();
   });
