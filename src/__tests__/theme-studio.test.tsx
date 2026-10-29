@@ -1,56 +1,59 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { fireEvent, render, screen, within } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { ThemeProvider } from "../stores/ThemeProvider";
 import { useTheme } from "../stores/themeContext";
 import { OFFICIAL_THEMES, THEME_STORAGE_KEY } from "../stores/themes";
 import { ThemeStudio } from "../components/ThemeStudio";
 
-beforeEach(() => window.localStorage.clear());
-afterEach(() => { window.localStorage.clear(); vi.restoreAllMocks(); });
+beforeEach(()=>localStorage.clear());
+afterEach(()=>{localStorage.clear();vi.restoreAllMocks();});
 
-function Probe() {
-  const { theme, setTheme } = useTheme();
-  return (
-    <>
-      <span data-testid="active-theme">{theme.name}</span>
-      <button type="button" onClick={() => setTheme("invalid-theme")}>Tema inválido</button>
-      <button type="button" onClick={() => setTheme("hiyuki")}>Trocar Hiyuki</button>
-    </>
-  );
+function Probe(){
+  const {theme,accentColor}=useTheme();
+  return <span data-testid="theme-probe">{theme.name+"|"+(accentColor??"default")}</span>;
 }
-describe("M4 official palettes", () => {
-  it("uses five real original schemes with immutable palettes", () => {
-    expect(OFFICIAL_THEMES.map((t) => t.name)).toEqual(["Changli","Hiyuki","Emilia","Furina","Hotline Miami"]);
-    expect(OFFICIAL_THEMES.map((t) => t.palette.accentPrimary))
-      .toEqual(["#C96A42","#C96A85","#B787FF","#9dc7ff","#f10d6e"]);
-    expect(OFFICIAL_THEMES.every((t) => Object.isFrozen(t.palette))).toBe(true);
+describe("preset-only theme experience",()=>{
+  it("preserves the five official palettes unchanged",()=>{
+    expect(OFFICIAL_THEMES.map(t=>t.name)).toEqual([
+      "Changli","Hiyuki","Emilia","Furina","Hotline Miami",
+    ]);
+    expect(OFFICIAL_THEMES.map(t=>t.palette.accentPrimary)).toEqual([
+      "#C96A42","#C96A85","#B787FF","#9dc7ff","#f10d6e",
+    ]);
+    expect(OFFICIAL_THEMES.every(t=>Object.isFrozen(t.palette))).toBe(true);
   });
-  it("applies globally, remembers theme and ignores unsupported IDs", () => {
-    render(<ThemeProvider><Probe /></ThemeProvider>);
-    fireEvent.click(screen.getByRole("button", { name: "Trocar Hiyuki" }));
-    expect(screen.getByTestId("active-theme")).toHaveTextContent("Hiyuki");
-    expect(document.documentElement.style.getPropertyValue("--color-accent-primary")).toBe("#C96A85");
+  it("changes the selected official theme directly and persists the selection",()=>{
+    render(<ThemeProvider><Probe/><ThemeStudio onClose={()=>{}}/></ThemeProvider>);
+    fireEvent.click(screen.getByRole("button",{name:"Hiyuki"}));
+    expect(screen.getByTestId("theme-probe")).toHaveTextContent("Hiyuki|default");
     expect(localStorage.getItem(THEME_STORAGE_KEY)).toBe("hiyuki");
-    fireEvent.click(screen.getByRole("button", { name: "Tema inválido" }));
-    expect(screen.getByTestId("active-theme")).toHaveTextContent("Hiyuki");
+    expect(screen.getByRole("region",{name:"Exposição dos temas Hyprland"})).toBeInTheDocument();
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
-  it("loads saved ID and falls back to Changli for corrupt data", () => {
-    localStorage.setItem(THEME_STORAGE_KEY, "furina");
-    const { unmount } = render(<ThemeProvider><Probe /></ThemeProvider>);
-    expect(screen.getByTestId("active-theme")).toHaveTextContent("Furina");
-    unmount();
-    localStorage.setItem(THEME_STORAGE_KEY, "tampered");
-    render(<ThemeProvider><Probe /></ThemeProvider>);
-    expect(screen.getByTestId("active-theme")).toHaveTextContent("Changli");
+  it("lets visitors change ONLY accent color and restore the preset original",()=>{
+    const base=OFFICIAL_THEMES[0].palette.accentPrimary;
+    render(<ThemeProvider><Probe/><ThemeStudio onClose={()=>{}}/></ThemeProvider>);
+    fireEvent.change(screen.getByLabelText("Cor de destaque"),{target:{value:"#1358ba"}});
+    expect(document.documentElement.style.getPropertyValue("--color-accent-primary")).toBe("#1358ba");
+    expect(screen.getByTestId("theme-probe")).toHaveTextContent("Changli|#1358ba");
+    expect(localStorage.getItem("portfolio.theme.accent.v1")).toBe("#1358ba");
+    fireEvent.click(screen.getByRole("button",{name:"Restaurar cor original"}));
+    expect(document.documentElement.style.getPropertyValue("--color-accent-primary")).toBe(base);
+    expect(localStorage.getItem("portfolio.theme.accent.v1")).toBeNull();
   });
-  it("keeps preview isolated until visitor clicks Apply", () => {
-    render(<ThemeProvider><Probe /><ThemeStudio onClose={() => {}} /></ThemeProvider>);
-    fireEvent.click(screen.getByRole("tab", { name: "Configurações" }));
-    fireEvent.click(within(screen.getByRole("group", { name: "Cinco temas oficiais" }))
-      .getByRole("button", { name: /Hiyuki/ }));
-    expect(screen.getByTestId("active-theme")).toHaveTextContent("Changli");
-    expect(localStorage.getItem(THEME_STORAGE_KEY)).toBe("changli");
-    fireEvent.click(screen.getByRole("button", { name: "Aplicar Hiyuki" }));
-    expect(screen.getByTestId("active-theme")).toHaveTextContent("Hiyuki");
+  it("offers no builder, clone, named versions, movable widgets, or custom scheme controls",()=>{
+    render(<ThemeProvider><ThemeStudio onClose={()=>{}}/></ThemeProvider>);
+    for(const name of ["Duplicar Changli","Abrir desktop ampliado","Criar versão do layout salvo",
+      "Adicionar Relógio","Salvar alterações"]){
+      expect(screen.queryByRole("button",{name})).not.toBeInTheDocument();
+    }
+    expect(screen.queryByLabelText("Importar posições do Quickshell")).not.toBeInTheDocument();
+    expect(screen.queryByRole("textbox",{name:"Nome do meu tema"})).not.toBeInTheDocument();
+  });
+  it("closes the inline section through the back control",()=>{
+    const close=vi.fn();
+    render(<ThemeProvider><ThemeStudio onClose={close}/></ThemeProvider>);
+    fireEvent.click(screen.getByRole("button",{name:/Voltar aos projetos/}));
+    expect(close).toHaveBeenCalledOnce();
   });
 });
