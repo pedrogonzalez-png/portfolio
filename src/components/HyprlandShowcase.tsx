@@ -96,39 +96,40 @@ export function HyprlandShowcase({
   return (
     <div className="preset-theme-gallery" aria-label="Galeria de temas Hyprland prontos">
       <div className="preset-gallery-intro">
-        <div>
-          <span className="preset-eyebrow">HYPRLAND / COLEÇÃO ORIGINAL</span>
-          <h3>Temas que já <em>existem.</em></h3>
-          <p>Explore as composições prontas do autor. Os widgets são parte da obra, não podem ser movidos ou recriados.</p>
-        </div>
-        <span className="preset-gallery-status">{approvedThemes.length} TEMAS OFICIAIS</span>
+        <span className="preset-eyebrow"><span aria-hidden="true">01</span> / ESCOLHA SEU UNIVERSO</span>
+        <span className="preset-gallery-status">{approvedThemes.length.toString().padStart(2,"0")} TEMAS ORIGINAIS</span>
       </div>
 
       <nav className="preset-theme-choices" aria-label="Escolher tema pronto">
         {approvedThemes.map(t=><button type="button" key={t.id}
           aria-pressed={theme.id===t.id} onClick={()=>switchTo(t.id)}
           style={{"--preset-swatch":t.palette.accentPrimary} as CSSProperties}>
-          <i aria-hidden="true"/><span>{t.name}</span>
+          <i aria-hidden="true"/><span>{t.name}</span><span className="preset-theme-choice-mark" aria-hidden="true">↗</span>
         </button>)}
       </nav>
 
       <div className="preset-view-toolbar">
-        <span className="preset-theme-label"><i aria-hidden="true"/> {theme.name} / {theme.id==="changli"?"Reprodução da referência":chosen?.label??"Composição original"}</span>
+        <span className="preset-theme-label"><i aria-hidden="true"/>
+          <strong>{theme.name}</strong><span className="preset-theme-divider" aria-hidden="true">/</span>
+          <span>{theme.id==="changli"?"Composição de referência":chosen?.label??"Composição original"}</span>
+        </span>
         <div role="group" aria-label="Proporção da prévia">
           <button type="button" aria-pressed={format==="ultrawide"} onClick={()=>setFormat("ultrawide")}>21:9</button>
           <button type="button" aria-pressed={format==="standard"} onClick={()=>setFormat("standard")}>16:9</button>
         </div>
       </div>
 
-      <div className={"preset-stage preset-stage-"+format+(theme.id==="changli"?" preset-stage-changli":"")} aria-label={"Desktop pronto de "+theme.name}>
+      <div className={"preset-stage preset-stage-"+format+(theme.id==="changli"?" preset-stage-changli":"")}
+        style={{"--stage-accent":accentColor??theme.palette.accentPrimary} as CSSProperties}
+        aria-label={"Desktop pronto de "+theme.name}>
         <ProfileDesktop view={current} active accent={accentColor}/>
 
       </div>
 
       <div className="preset-gallery-foot">
         <div>
-          <strong>{theme.name} — {theme.id==="changli"?"Desktop codificado com todos os painéis da captura":current.widgets.length+" widgets habilitados"}</strong>
-          <p>Posições originais provenientes do Quickshell. Imagens privadas e dados do sistema não são reproduzidos.</p>
+          <strong>{theme.name} <span aria-hidden="true">·</span> {theme.id==="changli"?"Desktop de referência":current.widgets.length+" widgets da composição original"}</strong>
+          <p>Prévia em código, baseada nas configurações do Quickshell. Imagens e vídeos serão adicionados depois.</p>
         </div>
         {variants.length>1&&theme.id!=="changli"&&(
           <div className="preset-variant-controls">
