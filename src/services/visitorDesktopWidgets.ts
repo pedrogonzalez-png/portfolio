@@ -19,7 +19,7 @@ export function validVisitorWidgets(value: unknown): value is VisitorWidget[] {
     if (typeof p.id !== "string" || !/^widget-[\w-]{3,80}$/.test(p.id) || ids.has(p.id) ||
         typeof p.kind !== "string" || !known.has(p.kind) ||
         ![p.x,p.y,p.width,p.height].every(finite) ||
-        p.x! < 0 || p.x! > 100 || p.y! < 0 || p.y! > 100 ||
+        p.x! < -10 || p.x! > 110 || p.y! < -10 || p.y! > 110 ||
         p.width! < 4 || p.width! > 40 || p.height! < 6 || p.height! > 55) return false;
     ids.add(p.id);
   }
@@ -53,7 +53,7 @@ export function createVisitorWidget(kind: WidgetKind,x=42,y=39): VisitorWidget {
 export function fromSourceWidgets(widgets: WidgetPlacement[]|undefined): VisitorWidget[] {
   return (widgets??[]).slice(0,MAX_VISITOR_WIDGETS).map((item,i)=>({
     ...item,id:"widget-imported-"+i,
-    x:clamp(item.x,0,90),y:clamp(item.y,0,90),
+    x:clamp(item.x,-10,110),y:clamp(item.y,-10,110),
     width:clamp(item.width,4,40),height:clamp(item.height,6,55),
   }));
 }
