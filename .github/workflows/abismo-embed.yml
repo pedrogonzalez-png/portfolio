@@ -1,0 +1,42 @@
+name: Abismo embed smoke test
+
+on:
+  push:
+    paths:
+      - "scripts/sync-abismo.mjs"
+      - "src/components/AbismoGameCard.tsx"
+      - ".github/workflows/abismo-embed.yml"
+  pull_request:
+    paths:
+      - "scripts/sync-abismo.mjs"
+      - "src/components/AbismoGameCard.tsx"
+      - ".github/workflows/abismo-embed.yml"
+  workflow_dispatch:
+
+jobs:
+  verify-original-phaser-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - name: Install portfolio dependencies
+        run: npm ci
+      - name: Build original pinned Abismo source into /abismo/
+        run: npm run sync:abismo
+      - name: Verify real bundle and ready marker
+        run: |
+          test -f public/abismo/ready.json
+          test -f public/abismo/index.html
+          test -d public/abismo/assets
+          grep -q '/abismo/assets/' public/abismo/index.html
+          node -e 'const fs=require("node:fs"); const m=JSON.parse(fs.readFileSync("public/abismo/ready.json")); if(m.build!=="abismo" || m.base!=="/abismo/")process.exit(1)'
+      - name: Build portfolio including playable game
+        run: npm run build
+      - name: Verify game was included in deployment output
+        run: |
+          test -f dist/abismo/index.html
+          test -f dist/abismo/ready.json
+          test -d dist/abismo/assets
