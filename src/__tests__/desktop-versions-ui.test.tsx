@@ -57,7 +57,7 @@ describe("M6 Theme Studio named version UI", () => {
     fireEvent.change(screen.getByLabelText("Nome da nova versão"), {
       target: { value: "Minha organização Changli" },
     });
-    fireEvent.click(screen.getByRole("button", { name: "Adicionar relógio digital" }));
+    fireEvent.click(screen.getByRole("button", { name: "Remover relógio" }));
     fireEvent.click(screen.getByRole("button", { name: "Criar versão do layout salvo" }));
     await screen.findByText(/Salve a organização e seu nome antes/);
     expect(store.createDesktopVersion).not.toHaveBeenCalled();
