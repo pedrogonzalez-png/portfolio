@@ -57,23 +57,28 @@ describe("three-panel carousel", () => {
     expect(screen.queryByRole("region", { name: "Abismo — jogo integrado" })).not.toBeInTheDocument();
   });
 
-  it("rotates roles with navigation controls, and opens only the centered project", () => {
-    render(<ProjectPanel />);
+  it("rotates the carousel then opens site-3D inside its own card", () => {
+    const { container } = render(<ProjectPanel />);
     fireEvent.click(screen.getByRole("button", { name: "Próximo projeto" }));
-
-    const centered = screen.getByRole("button", { name: /Abrir detalhes de site-3D/ });
+    const centered = screen.getByRole("button", { name: "Explorar site-3D no card" });
     expect(centered).toHaveAttribute("data-position", "center");
-    expect(screen.getByRole("button", { name: /Trazer Abismo para o centro/ })).toHaveAttribute("data-position", "left");
-    expect(screen.getByRole("button", { name: /Trazer Hyprland-Themes para o centro/ })).toHaveAttribute("data-position", "right");
+    expect(screen.getByRole("button", { name: /Trazer Abismo para o centro/ }))
+      .toHaveAttribute("data-position", "left");
 
     fireEvent.click(centered);
-    expect(screen.getByRole("dialog")).toBeInTheDocument();
-    expect(screen.getByText(/Sem demonstração publicada/)).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /Ver código no GitHub/ }))
-      .toHaveAttribute("href", "https://github.com/pedrogonzalez-png/site-3D");
-    fireEvent.click(screen.getByRole("button", { name: "Fechar projeto" }));
+    expect(container.querySelector(".spine-stage.is-site3d-playing")).not.toBeNull();
+    expect(screen.getByRole("region", { name: "Site 3D — experiência integrada" })).toBeInTheDocument();
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
-    expect(centered).toHaveFocus();
+    expect(screen.queryByRole("button", { name: "Projeto anterior" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Próximo projeto" })).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Voltar aos projetos" }));
+    expect(container.querySelector(".spine-stage.is-site3d-closing")).not.toBeNull();
+    fireEvent.animationEnd(screen.getByRole("region", { name: "Site 3D — experiência integrada" }), {
+      animationName: "abismo-card-retreat",
+    });
+    expect(container.querySelector(".spine-stage.is-site3d-closing")).toBeNull();
+    expect(screen.getByRole("button", { name: "Explorar site-3D no card" })).toHaveFocus();
   });
 
   it("brings a side project to the center instead of opening its modal", () => {
@@ -95,8 +100,8 @@ describe("three-panel carousel", () => {
     expect(openStudio).toHaveBeenCalledTimes(1);
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Projeto anterior" }));
-    fireEvent.click(screen.getByRole("button", { name: /Abrir detalhes de site-3D/ }));
-    expect(screen.getByRole("dialog")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Explorar site-3D no card" }));
+    expect(screen.getByRole("region", { name: "Site 3D — experiência integrada" })).toBeInTheDocument();
   });
 
   it("responds to wheel input while centered in view and releases scrolling at the final project", () => {
@@ -108,7 +113,7 @@ describe("three-panel carousel", () => {
     });
     const first = fireEvent.wheel(carousel, { deltaY: 110, deltaMode: 0, cancelable: true });
     expect(first).toBe(false); // preventDefault when changing project
-    expect(screen.getByRole("button", { name: /Abrir detalhes de site-3D/ }))
+    expect(screen.getByRole("button", { name: /Explorar site-3D no card/ }))
       .toHaveAttribute("data-position", "center");
   });
 
@@ -116,7 +121,7 @@ describe("three-panel carousel", () => {
     render(<ProjectPanel />);
     const carousel = screen.getByRole("region", { name: "Carrossel de projetos" });
     fireEvent.keyDown(carousel, { key: "ArrowRight" });
-    expect(screen.getByRole("button", { name: /Abrir detalhes de site-3D/ }))
+    expect(screen.getByRole("button", { name: /Explorar site-3D no card/ }))
       .toHaveAttribute("data-position", "center");
     fireEvent.keyDown(carousel, { key: "ArrowLeft" });
     expect(screen.getByRole("button", { name: /Jogar Abismo no card/ }))
