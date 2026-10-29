@@ -1,0 +1,165 @@
+/* Abismo runs in the CENTER PROJECT CARD, not in a modal or separate page. */
+.spine-stage.project-carousel.is-abismo-playing {
+  height:clamp(580px,68vw,840px);
+  max-width:1480px;
+}
+.spine-stage.project-carousel.is-abismo-playing .arc-carousel .cinematic-panel{
+  opacity:0;
+  visibility:hidden;
+  pointer-events:none;
+}
+.spine-stage.project-carousel.is-abismo-playing .spine-world{
+  opacity:.27;
+}
+.spine-stage.project-carousel.is-abismo-playing .arc-carousel{
+  transform-style:flat;
+}
+.abismo-live-card{
+  position:absolute;
+  left:50%;
+  top:50%;
+  z-index:8;
+  width:min(96%,1160px);
+  transform:translate(-50%,-50%);
+  display:flex;
+  flex-direction:column;
+  pointer-events:auto;
+  overflow:hidden;
+  border-radius:18px;
+  border:1px solid color-mix(in srgb,var(--color-accent-yellow) 52%,#45372f);
+  background:linear-gradient(155deg,#211617f7,#0d0d14 68%);
+  box-shadow:0 38px 115px #000c,0 0 65px #dc7c3020,inset 0 1px #fff2e517;
+  color:var(--color-text);
+  animation:abismo-card-open 460ms cubic-bezier(.18,.76,.2,1) both;
+}
+@keyframes abismo-card-open{
+  from{opacity:0;transform:translate(-50%,-49%) scale(.95);filter:blur(6px)}
+  to{opacity:1;transform:translate(-50%,-50%) scale(1);filter:blur(0)}
+}
+.abismo-live-header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  flex-wrap:wrap;
+  gap:.75rem;
+  padding:.9rem 1.15rem;
+  border-bottom:1px solid #e8b77a23;
+}
+.abismo-live-brand{
+  display:grid;
+  gap:.22rem;
+}
+.abismo-live-kicker{
+  font:700 .57rem ui-monospace,monospace;
+  letter-spacing:.18em;
+  color:var(--color-accent-yellow);
+}
+.abismo-live-brand h3{
+  margin:0;
+  font:700 clamp(1rem,1.4vw,1.35rem)/1.1 var(--font-display);
+  letter-spacing:.08em;
+}
+.abismo-live-brand h3 span{
+  font:600 .55rem ui-monospace,monospace;
+  letter-spacing:.12em;
+  color:var(--color-text-variant);
+}
+.abismo-live-actions{
+  display:flex;
+  align-items:center;
+  gap:.5rem;
+}
+.abismo-live-actions button,.abismo-live-fallback button{
+  min-height:36px;
+  padding:.5rem .85rem;
+  border:1px solid #d6a37a55;
+  border-radius:9px;
+  background:#ffffff0a;
+  color:var(--color-text);
+  cursor:pointer;
+  font-size:.73rem;
+  transition:border-color .2s,background .2s;
+}
+.abismo-live-actions button:hover,.abismo-live-fallback button:hover{
+  border-color:var(--color-accent-yellow);
+  background:#ffffff16;
+}
+.abismo-live-close span{
+  margin-left:.65rem;
+  font-size:1rem;
+  color:var(--color-accent-yellow);
+}
+.abismo-live-viewport{
+  aspect-ratio:16 / 9;
+  position:relative;
+  overflow:hidden;
+  background:#050507;
+  width:100%;
+}
+.abismo-live-viewport iframe{
+  display:block;
+  width:100%;
+  height:100%;
+  border:0;
+  background:#050507;
+}
+.abismo-live-fallback{
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  gap:.7rem;
+  height:100%;
+  padding:2rem;
+  text-align:center;
+  background:
+    radial-gradient(ellipse 40% 60% at 50% 50%,#bd67301c,transparent 85%),
+    linear-gradient(145deg,#101018,#20151c 60%,#110c13);
+}
+.abismo-live-symbol{
+  font-size:clamp(3rem,8vw,6rem);
+  color:var(--color-accent-primary);
+  text-shadow:0 0 45px #e7823a82;
+}
+.abismo-live-fallback strong{
+  font:650 clamp(.95rem,1.8vw,1.45rem) var(--font-display);
+}
+.abismo-live-fallback p{
+  max-width:480px;
+  color:var(--color-text-variant);
+  font-size:.8rem;
+  line-height:1.7;
+  margin:0 0 .45rem;
+}
+.abismo-live-footer{
+  display:flex;
+  justify-content:space-between;
+  flex-wrap:wrap;
+  align-items:center;
+  gap:.4rem 1.3rem;
+  padding:.7rem 1.1rem;
+  border-top:1px solid #e8b77a19;
+  color:var(--color-text-variant);
+  font-size:.63rem;
+}
+.abismo-live-footer span:first-child{
+  color:var(--color-accent-yellow);
+  font:650 .59rem ui-monospace,monospace;
+  letter-spacing:.09em;
+}
+@media(max-width:730px){
+  .spine-stage.project-carousel.is-abismo-playing{
+    height:clamp(360px,79vw,660px);
+  }
+  .abismo-live-card{width:min(99%,710px);border-radius:12px}
+  .abismo-live-header{padding:.58rem .7rem}
+  .abismo-live-brand h3 span{display:none}
+  .abismo-live-actions button{min-height:32px;padding:.42rem .55rem;font-size:.64rem}
+  .abismo-live-footer{padding:.5rem .65rem}
+  .abismo-live-footer span:last-child{display:none}
+  .abismo-live-fallback{padding:.8rem}
+  .abismo-live-fallback p{font-size:.66rem}
+}
+@media(prefers-reduced-motion:reduce){
+  .abismo-live-card{animation:none}
+}
