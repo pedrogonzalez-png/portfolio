@@ -15,7 +15,7 @@ import { useTheme } from "../stores/themeContext";
 const PARTICLE_COUNT = 480;
 
 const vertexShader = `
-  attribute vec3 color;
+  attribute vec3 aColor;
   attribute float aSize;
   attribute float aGlow;
   uniform float uDpr;
@@ -23,7 +23,7 @@ const vertexShader = `
   varying float vGlow;
 
   void main() {
-    vColor = color;
+    vColor = aColor;
     vGlow = aGlow;
     vec4 viewPosition = modelViewMatrix * vec4(position, 1.0);
     gl_Position = projectionMatrix * viewPosition;
@@ -113,7 +113,7 @@ export default function RibbonParticles() {
     positionAttr.setUsage(DynamicDrawUsage);
     glowAttr.setUsage(DynamicDrawUsage);
     geometry.setAttribute("position", positionAttr);
-    geometry.setAttribute("color", new BufferAttribute(colors, 3));
+    geometry.setAttribute("aColor", new BufferAttribute(colors, 3));
     geometry.setAttribute("aSize", new BufferAttribute(sizes, 1));
     geometry.setAttribute("aGlow", glowAttr);
 
@@ -198,7 +198,7 @@ export default function RibbonParticles() {
 
     positionAttr.needsUpdate = true;
     glowAttr.needsUpdate = true;
-  });
+  }, -2);
 
   const uniforms = useMemo(() => ({
     uDpr: { value: gl.getPixelRatio() },
