@@ -50,7 +50,16 @@ describe("preset-only theme experience",()=>{
     expect(screen.queryByLabelText("Importar posições do Quickshell")).not.toBeInTheDocument();
     expect(screen.queryByRole("textbox",{name:"Nome do meu tema"})).not.toBeInTheDocument();
   });
-  it("closes the inline section through the back control",()=>{
+  it("presents one clear exhibition headline and a compact, accent-only control",()=>{
+    const {container}=render(<ThemeProvider><ThemeStudio onClose={()=>{}}/></ThemeProvider>);
+    expect(screen.getByRole("heading",{name:/Seu desktop, outros universos/})).toBeInTheDocument();
+    expect(container.querySelectorAll(".preset-studio-heading h2")).toHaveLength(1);
+    expect(container.querySelectorAll(".preset-gallery-intro h3")).toHaveLength(0);
+    expect(container.querySelector(".preset-studio-topline .preset-studio-exit")).not.toBeNull();
+    expect(container.querySelector(".preset-color-only .preset-color-control")).not.toBeNull();
+    expect(container.querySelectorAll(".preset-theme-choices button")).toHaveLength(5);
+  });
+  it("returns to projects through the top navigation",()=>{
     const close=vi.fn();
     render(<ThemeProvider><ThemeStudio onClose={close}/></ThemeProvider>);
     fireEvent.click(screen.getByRole("button",{name:/Voltar aos projetos/}));
