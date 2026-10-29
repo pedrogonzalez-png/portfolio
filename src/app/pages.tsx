@@ -8,6 +8,7 @@ import { KnowledgeTree } from "../components/KnowledgeTree";
 import { ThemeDisintegration } from "../components/desktop/ThemeDisintegration";
 import { OFFICIAL_THEMES } from "../stores/themes";
 import "../styles/hyprland-entry-transition.css";
+import "../styles/cinematic-polish.css";
 
 const Terminal = lazy(() => import("../components/Terminal").then((module) => ({ default: module.Terminal })));
 const ThemeStudio = lazy(() => import("../components/ThemeStudio").then((module) => ({ default: module.ThemeStudio })));
