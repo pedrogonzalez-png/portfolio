@@ -132,3 +132,9 @@ Implementação original no `src/components/KnowledgeWorld.tsx`:
 - Refração em resolução controlada com teto de 1400 × 900 pixels no FBO, DPR máximo de 1,5 no canvas e cena desligada fora de vista; mobile e movimento reduzido continuam na alternativa leve.
 - A experiência é de autoria original, **inspirada pela linguagem visual**, não uma reconstrução literal ou equivalência ao pipeline Hydra/WebGL proprietário da referência.
 - **QA visual pendente** no navegador do proprietário: visibilidade das fitas através do vidro, color fringing nas bordas, nitidez do título e FPS. Build automatizado não comprova essas propriedades de renderização.
+
+## Fluxo do Hyprland-Themes — substituir a janela por transição em cena
+
+A entrada no projeto Hyprland-Themes **não abre modal/card frontal**: expande uma exposição inline abaixo do carrossel de projetos, com rolagem suave até ela. A própria cena faz uma revelação cinematográfica. Na navegação pelos temas finalizados, o desktop anterior desaparece **da direita para a esquerda** por recorte de máscara e partículas de cores diferentes, enquanto o próximo já está visível por baixo. Efeito reduzido/desativado com `prefers-reduced-motion`.
+
+Não usar essa experiência como editor de temas ou widgets; o visitante só pode trocar entre os cinco presets e alterar uma cor de destaque global. Temas e layouts originais ficam readonly. A reprodução HTML/CSS é apenas prévia; nenhum acesso ao compositor Arch real.
