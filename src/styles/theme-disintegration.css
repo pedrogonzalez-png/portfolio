@@ -30,6 +30,13 @@
   /* SVG luminance mask: white cells show the previous scene. */
   mask-mode:luminance;
   will-change:mask-image;
+  /* Graceful fallback for browsers that do not repaint animated SVG masks:
+     the old scene still fades out rather than snapping off at the end. */
+  animation:preset-fractured-fallback 1850ms linear both;
+}
+@keyframes preset-fractured-fallback{
+  0%,65%{opacity:1}
+  100%{opacity:0}
 }
 .preset-fracture-cell{
   opacity:1;
