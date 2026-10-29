@@ -1,0 +1,173 @@
+/* Real source media with a lightweight HTML/CSS interpretation of end4-pC:
+   personal wallpaper and colors are exact from GitHub; a browser does not run QML. */
+.real-desktop-preview {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  color: var(--real-desktop-text);
+  background: var(--real-desktop-surface);
+  isolation: isolate;
+  overflow: hidden;
+  pointer-events: none;
+}
+.real-desktop-wallpaper,
+.real-desktop-wallpaper-fallback {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  inset: 0;
+  object-fit: cover;
+  object-position: center;
+}
+.real-desktop-wallpaper-fallback {
+  background: radial-gradient(ellipse at 65% 35%,
+    var(--real-desktop-accent), var(--real-desktop-surface) 57%,
+    var(--real-desktop-panel));
+  opacity: .63;
+}
+.real-desktop-dim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(8,6,12,.3), transparent 25%,
+    transparent 66%, rgba(8,6,12,.46));
+  z-index: 1;
+}
+.real-desktop-topbar {
+  z-index: 3;
+  position: absolute;
+  top: 2.7%;
+  left: 1.1%;
+  right: 1.1%;
+  height: clamp(24px, 7%, 42px);
+  background: color-mix(in srgb, var(--real-desktop-surface) 75%, transparent);
+  border: 1px solid color-mix(in srgb,var(--real-desktop-border) 54%, transparent);
+  border-radius: 13px;
+  display: flex;
+  align-items: center;
+  padding: 0 clamp(10px, 1.6vw, 23px);
+  gap: clamp(8px, 1.4vw, 20px);
+  box-shadow: 0 5px 19px rgba(0,0,0,.22);
+  backdrop-filter: blur(18px) saturate(1.25);
+  -webkit-backdrop-filter: blur(18px) saturate(1.25);
+  font: 600 clamp(.55rem, .83vw, .75rem)/1.1 var(--font-body);
+  letter-spacing: .045em;
+}
+.real-desktop-brand {
+  color: var(--real-desktop-gold);
+  font-size: 1.25em;
+  text-shadow: 0 0 10px color-mix(in srgb,var(--real-desktop-gold) 40%,transparent);
+}
+.real-desktop-active { white-space: nowrap; opacity: .94; }
+.real-desktop-workspaces {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin: 0 auto;
+}
+.real-desktop-workspaces span {
+  display: grid;
+  place-items: center;
+  min-width: 23px;
+  height: 20px;
+  border-radius: 8px;
+  color: var(--real-desktop-muted);
+}
+.real-desktop-workspaces .is-active {
+  background: var(--real-desktop-accent);
+  color: var(--real-desktop-surface);
+  box-shadow: 0 0 16px color-mix(in srgb,var(--real-desktop-accent) 34%,transparent);
+}
+.real-desktop-theme {
+  color: var(--real-desktop-gold);
+  font-weight: 750;
+  letter-spacing: .12em;
+}
+.real-desktop-time { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.real-desktop-dock {
+  z-index: 3;
+  position: absolute;
+  left: 50%;
+  bottom: 2.6%;
+  transform: translateX(-50%);
+  min-height: 43px;
+  padding: 5px 9px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: clamp(4px, .75vw, 11px);
+  border-radius: 18px;
+  background: color-mix(in srgb,var(--real-desktop-surface) 79%,transparent);
+  border: 1px solid color-mix(in srgb,var(--real-desktop-border) 48%,transparent);
+  box-shadow: 0 8px 28px #06060967;
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+.real-desktop-dock span {
+  display: grid;
+  place-items: center;
+  width: clamp(25px, 3.3vw, 38px);
+  height: clamp(25px, 3.3vw, 38px);
+  border-radius: 12px;
+  background: color-mix(in srgb,var(--real-desktop-panel) 82%,transparent);
+  border: 1px solid color-mix(in srgb,var(--real-desktop-border) 25%,transparent);
+  color: var(--real-desktop-text);
+  font-size: clamp(.86rem, 1.65vw, 1.2rem);
+}
+.real-desktop-dock span:nth-child(1) {
+  color: var(--real-desktop-gold);
+}
+.real-desktop-video-toggle {
+  position: absolute;
+  z-index: 5;
+  bottom: 5.5%;
+  right: 2%;
+  pointer-events: auto;
+  padding: .55rem .75rem;
+  border: 1px solid color-mix(in srgb,var(--real-desktop-border) 65%,transparent);
+  border-radius: 100px;
+  color: var(--real-desktop-text);
+  background: color-mix(in srgb,var(--real-desktop-surface) 85%,transparent);
+  cursor: pointer;
+  backdrop-filter: blur(12px);
+  font: 650 clamp(.56rem, .7vw, .72rem) var(--font-body);
+}
+.real-desktop-video-toggle:hover,
+.real-desktop-video-toggle:focus-visible {
+  border-color: var(--real-desktop-gold);
+  outline-offset: 3px;
+}
+.real-desktop-no-wallpaper,
+.real-desktop-wallpaper-error {
+  position: absolute;
+  left: 50%;
+  top: 45%;
+  width: min(80%, 46ch);
+  transform: translate(-50%,-50%);
+  padding: .9rem 1.2rem;
+  border-radius: 12px;
+  background: color-mix(in srgb,var(--real-desktop-surface) 90%,transparent);
+  color: var(--real-desktop-text);
+  z-index: 2;
+  text-align: center;
+  font-size: .83rem;
+  line-height: 1.5;
+}
+.real-desktop-video-error {
+  position: absolute;
+  right: 2%;
+  bottom: 20%;
+  max-width: 230px;
+  z-index: 5;
+  background: var(--real-desktop-surface);
+  padding: .35rem;
+  font-size: .7rem;
+}
+@media (max-width: 700px) {
+  .real-desktop-topbar { gap: 6px; padding: 0 10px; }
+  .real-desktop-active, .real-desktop-theme { display: none; }
+  .real-desktop-dock { bottom: 3%; }
+  .real-desktop-video-toggle { padding: .35rem; right: 1.5%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .real-desktop-preview video { display: none; }
+}
