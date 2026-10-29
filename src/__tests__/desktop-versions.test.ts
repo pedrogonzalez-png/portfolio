@@ -38,7 +38,7 @@ const makeDb = () => ({
   objectStoreNames: { contains: () => true },
   createObjectStore: vi.fn(),
   close: vi.fn(),
-  transaction: (_name: string, _mode: string) => {
+  transaction: () => {
     let aborted = false;
     let finished = false;
     const working = new Map(records);
