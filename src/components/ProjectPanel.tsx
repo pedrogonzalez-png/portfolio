@@ -213,7 +213,7 @@ export function ProjectPanel({ onOpenThemeStudio }: { onOpenThemeStudio?: () => 
             const relative = (index - activeIndex + projects.length) % projects.length;
             const position = relative === 0 ? "center" : relative === 1 ? "right" : "left";
             if (abismoOpen && project.id === "abismo" && position === "center") {
-              return <AbismoGameCard key={project.id} onClose={closeAbismo} onExitComplete={finishCloseAbismo}/>;
+              return <AbismoGameCard key={project.id} onClose={closeAbismo} closing={abismoClosing} onExitComplete={finishCloseAbismo}/>;
             }
             return (
               <button
