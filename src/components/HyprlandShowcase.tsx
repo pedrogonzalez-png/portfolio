@@ -62,11 +62,12 @@ function readLocal(): SanitizedDesktopLayouts | null {
 }
 
 export function HyprlandShowcase({
-  themes, onChoose, selectedId,
+  themes, onChoose, selectedId, active = true,
 }: {
   themes: readonly Theme[];
   selectedId: string;
   onChoose: (theme: Theme) => void;
+  active?: boolean;
 }) {
   const [selected, setSelected] = useState(selectedId);
   const [localProfiles, setLocalProfiles] = useState<SanitizedDesktopLayouts | null>(readLocal);
@@ -157,7 +158,7 @@ export function HyprlandShowcase({
 
       <div className="hypr-desktop-scroll">
         <div className={"hypr-desktop-stage hypr-desktop-" + previewFormat}>
-          <RealDesktopPreview palette={palette} themeName={themeName} animationEnabled />
+          <RealDesktopPreview palette={palette} themeName={themeName} animationEnabled={active} />
           {hasLayout && (
             <div className="hypr-widget-position-layer" aria-label="Posições importadas do Quickshell">
               {activeLayout.widgets.map((widget: WidgetPlacement, i) => (
