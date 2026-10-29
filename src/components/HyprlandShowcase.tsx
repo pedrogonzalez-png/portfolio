@@ -1,16 +1,15 @@
 import { useEffect, useMemo, useState } from "react";
-import type { ChangeEvent, CSSProperties } from "react";
+import type { CSSProperties } from "react";
 import { RealDesktopPreview } from "./desktop/RealDesktopPreview";
 import { OFFICIAL_THEMES, type Theme, type ThemePalette } from "../stores/themes";
 import published from "../data/published-widget-layouts.json";
 import {
-  sanitizeQuickshellProfiles, validatePublishedLayouts,
-  WIDGET_KINDS, type WidgetKind, type SanitizedDesktopLayouts,
-  type WidgetPlacement,
+  validatePublishedLayouts, WIDGET_KINDS, type WidgetKind,
+  type SanitizedDesktopLayouts, type WidgetPlacement,
 } from "../services/quickshellLayoutImport";
+import { readLocalWidgetLayouts, WIDGET_LAYOUT_CHANGED } from "./WidgetLayoutSettings";
 import "../styles/hyprland-showcase.css";
 
-const LOCAL_POSITIONS_KEY = "portfolio.hyprland.sanitized.layout.v1";
 const WIDGET_NAMES: Record<WidgetKind, string> = {
   clock: "Relógio", weather: "Clima", calendar: "Calendário",
   worldClock: "Fuso horário", media: "Reprodutor", visualizer: "Visualizador",
@@ -52,15 +51,6 @@ function WidgetFace({ kind }: { kind: WidgetKind }) {
   );
 }
 
-function readLocal(): SanitizedDesktopLayouts | null {
-  try {
-    const stored = window.localStorage.getItem(LOCAL_POSITIONS_KEY);
-    return stored ? validatePublishedLayouts(JSON.parse(stored)) : null;
-  } catch {
-    return null;
-  }
-}
-
 export function HyprlandShowcase({
   themes, onChoose, selectedId, active = true,
 }: {
@@ -71,9 +61,13 @@ export function HyprlandShowcase({
 }) {
   const [selected, setSelected] = useState(selectedId);
   useEffect(() => { setSelected(selectedId); }, [selectedId]);
-  const [localProfiles, setLocalProfiles] = useState<SanitizedDesktopLayouts | null>(readLocal);
-  const [message, setMessage] = useState("");
+  const [localProfiles, setLocalProfiles] = useState<SanitizedDesktopLayouts | null>(readLocalWidgetLayouts);
   const [previewFormat, setPreviewFormat] = useState<"ultrawide"|"standard">("ultrawide");
+  useEffect(() => {
+    const refresh = () => setLocalProfiles(readLocalWidgetLayouts());
+    window.addEventListener(WIDGET_LAYOUT_CHANGED, refresh);
+    return () => window.removeEventListener(WIDGET_LAYOUT_CHANGED, refresh);
+  }, []);
 
   const theme = themes.find((t) => t.id === selected) ?? OFFICIAL_THEMES[0];
   const hsin = selected === "hsin";
@@ -85,40 +79,6 @@ export function HyprlandShowcase({
     publishedProfiles.profiles.find((p) => p.themeId === profileId) ?? null;
   const hasLayout = activeLayout !== null;
   const kindLabels = WIDGET_KINDS.map((k) => WIDGET_NAMES[k]);
-
-  const importLayouts = async (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.currentTarget.files?.[0];
-    event.currentTarget.value = "";
-    if (!file) return;
-    try {
-      if (!file.name.endsWith(".json") || file.size > 1024*1024) {
-        throw new Error("Selecione um JSON do Quickshell com até 1 MB.");
-      }
-      const parsed: unknown = JSON.parse(await file.text());
-      const sanitized = sanitizeQuickshellProfiles(parsed);
-      // Retains ONLY widget types and numeric positions — never wallpaper
-      // file paths, notes, custom text or private card images.
-      window.localStorage.setItem(LOCAL_POSITIONS_KEY, JSON.stringify(sanitized));
-      setLocalProfiles(sanitized);
-      setMessage(sanitized.profiles.length + " perfil(is) importado(s) somente neste navegador. Os dados privados não foram salvos.");
-    } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Arquivo inválido.");
-    }
-  };
-
-  const exportClean = () => {
-    if (!localProfiles) return;
-    const blob = new Blob([JSON.stringify(localProfiles, null, 2)], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const anchor = document.createElement("a");
-    anchor.href = url;
-    anchor.download = "widget-layouts-publico.json";
-    document.body.appendChild(anchor);
-    anchor.click();
-    anchor.remove();
-    window.setTimeout(() => URL.revokeObjectURL(url), 3000);
-    setMessage("Snapshot público gerado sem caminhos privados ou conteúdo de widgets. Para os visitantes verem as posições, publique esse JSON no GitHub.");
-  };
 
   return (
     <section className="hypr-showcase" aria-label="Hyprland — temas e widgets do autor">
@@ -176,7 +136,7 @@ export function HyprlandShowcase({
           )}
           {!hasLayout && <div className="hypr-no-layout">
             <span>Desktop e tema do GitHub</span>
-            <small>Importe o arquivo de layouts para exibir as posições exatas dos widgets.</small>
+            <small>Importe as posições reais em Configurações para ver o layout dos widgets.</small>
           </div>}
         </div>
       </div>
@@ -199,24 +159,9 @@ export function HyprlandShowcase({
         <p className="hypr-widget-count">O serviço <code>WallpaperLayouts.qml</code> reconhece {kindLabels.length} tipos/slots de widgets, incluindo seis cards de imagem.</p>
       </section>
 
-      <div className="hypr-layout-import">
-        <div>
-          <strong>Mostrar as posições reais do seu Arch</strong>
-          <p>Selecione <code>~/.config/quickshell/end4-pC/wallpaper_widget_layouts.json</code>.
-            O navegador lê o arquivo localmente e guarda somente coordenadas e tipos de widgets;
-            caminhos, imagens, textos e notas são descartados.</p>
-        </div>
-        <label>Importar posições do Quickshell
-          <input type="file" accept=".json,application/json" aria-label="Importar posições do Quickshell"
-            onChange={(event) => void importLayouts(event)} />
-        </label>
-        {localProfiles && <button type="button" onClick={exportClean}>
-          Exportar snapshot público sem dados privados
-        </button>}
-        {message && <p role="status">{message}</p>}
-        <small>O arquivo local não é enviado ao GitHub automaticamente. Para todos os visitantes verem seu layout,
-          é necessário adicionar o snapshot higienizado ao repositório.</small>
-      </div>
+      <p className="hypr-source-warning">Quer mostrar suas posições reais?
+        Importe o arquivo `wallpaper_widget_layouts.json` na aba <strong>Configurações</strong>.
+        O desktop usa os dados sanitizados automaticamente, sem acessar seu PC ao vivo.</p>
     </section>
   );
 }
