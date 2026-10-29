@@ -103,6 +103,7 @@ export function ProjectPanel({ onOpenThemeStudio }: { onOpenThemeStudio?: () => 
   const [selected, setSelected] = useState<Project | null>(null);
   const [showDemo, setShowDemo] = useState(false);
   const [abismoOpen, setAbismoOpen] = useState(false);
+  const [abismoClosing, setAbismoClosing] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
   const activeRef = useRef(0);
   const stageRef = useRef<HTMLDivElement>(null);
@@ -157,22 +158,36 @@ export function ProjectPanel({ onOpenThemeStudio }: { onOpenThemeStudio?: () => 
     };
   }, [selected]);
 
+  const finishCloseAbismo = () => {
+    setAbismoOpen(false);
+    setAbismoClosing(false);
+    window.requestAnimationFrame(() => {
+      document.querySelector<HTMLButtonElement>('[data-project-id="abismo"]')?.focus();
+    });
+  };
+
+  // Retain the playable panel until its closing animation has completed.
+  // In reduced-motion mode close immediately without waiting for animationend.
+  const closeAbismo = () => {
+    if (abismoClosing) return;
+    if (window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches) {
+      finishCloseAbismo();
+    } else {
+      setAbismoClosing(true);
+    }
+  };
+
   useEffect(() => {
     if (!abismoOpen) return;
     const onEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setAbismoOpen(false);
+      // Fullscreen escape should leave the game open.
+      if (event.key === "Escape" && !document.fullscreenElement) {
+        closeAbismo();
+      }
     };
     window.addEventListener("keydown", onEscape);
     return () => window.removeEventListener("keydown", onEscape);
-  }, [abismoOpen]);
-
-  const closeAbismo = () => {
-    setAbismoOpen(false);
-    window.requestAnimationFrame(() => {
-      const card = document.querySelector<HTMLButtonElement>('[data-project-id="abismo"]');
-      card?.focus();
-    });
-  };
+  }, [abismoOpen, abismoClosing]);
 
   const close = () => {
     setShowDemo(false);
@@ -183,7 +198,7 @@ export function ProjectPanel({ onOpenThemeStudio }: { onOpenThemeStudio?: () => 
     <>
       <div
         id="spine-stage"
-        className={"spine-stage project-carousel" + (abismoOpen ? " is-abismo-playing" : "")}
+        className={"spine-stage project-carousel" + (abismoOpen ? (abismoClosing ? " is-abismo-closing" : " is-abismo-playing") : "")}
         ref={stageRef}
         role="region"
         aria-roledescription="carrossel"
@@ -198,7 +213,7 @@ export function ProjectPanel({ onOpenThemeStudio }: { onOpenThemeStudio?: () => 
             const relative = (index - activeIndex + projects.length) % projects.length;
             const position = relative === 0 ? "center" : relative === 1 ? "right" : "left";
             if (abismoOpen && project.id === "abismo" && position === "center") {
-              return <AbismoGameCard key={project.id} onClose={closeAbismo}/>;
+              return <AbismoGameCard key={project.id} onClose={closeAbismo} onExitComplete={finishCloseAbismo}/>;
             }
             return (
               <button
@@ -216,6 +231,7 @@ export function ProjectPanel({ onOpenThemeStudio }: { onOpenThemeStudio?: () => 
                   } else if (project.id === "hyprland-themes" && onOpenThemeStudio) {
                     onOpenThemeStudio();
                   } else if (project.id === "abismo") {
+                    setAbismoClosing(false);
                     setAbismoOpen(true);
                   } else {
                     trigger.current = event.currentTarget;
@@ -252,15 +268,19 @@ export function ProjectPanel({ onOpenThemeStudio }: { onOpenThemeStudio?: () => 
           })}
         </div>
       </div>
-      <div className="carousel-controls" aria-label="Navegação dos projetos">
-        <button type="button" aria-label="Projeto anterior" onClick={() => activate(activeIndex - 1)} disabled={abismoOpen || activeIndex === 0}>←</button>
-        <div className="carousel-progress" role="status" aria-live="polite">
-          <span>{String(activeIndex + 1).padStart(2, "0")} / {String(projects.length).padStart(2, "0")}</span>
-          <strong>{projects[activeIndex]?.title}</strong>
-        </div>
-        <button type="button" aria-label="Próximo projeto" onClick={() => activate(activeIndex + 1)} disabled={abismoOpen || activeIndex === projects.length - 1}>→</button>
-      </div>
-      <p className="carousel-instructions">{abismoOpen ? "Abismo em execução · Clique na área do jogo para usar os controles. Feche o jogo para alternar projetos." : "Use a rodinha do mouse sobre os painéis ou as setas para alternar projetos."}</p>
+      {!abismoOpen && (
+        <>
+          <div className="carousel-controls" aria-label="Navegação dos projetos">
+            <button type="button" aria-label="Projeto anterior" onClick={() => activate(activeIndex - 1)} disabled={activeIndex === 0}>←</button>
+            <div className="carousel-progress" role="status" aria-live="polite">
+              <span>{String(activeIndex + 1).padStart(2, "0")} / {String(projects.length).padStart(2, "0")}</span>
+              <strong>{projects[activeIndex]?.title}</strong>
+            </div>
+            <button type="button" aria-label="Próximo projeto" onClick={() => activate(activeIndex + 1)} disabled={activeIndex === projects.length - 1}>→</button>
+          </div>
+          <p className="carousel-instructions">Use a rodinha do mouse sobre os painéis ou as setas para alternar projetos.</p>
+        </>
+      )}
       <p className="projects-disclaimer">
         Três projetos selecionados · Abismo pode ser jogado no card após instalar a build local
       </p>
