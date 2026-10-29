@@ -1,0 +1,110 @@
+/*
+ * True fragment disintegration, NOT a linear clip-path wipe.
+ * The old scene is visible through hundreds of animated individual SVG
+ * mask cells. Randomized delays create holes, then detach irregular shards.
+ * The new scene is present underneath from the very first frame.
+ */
+.preset-disintegrating{
+  position:absolute;
+  inset:0;
+  z-index:6;
+  pointer-events:none;
+  overflow:hidden;
+  isolation:isolate;
+}
+.preset-fracture-defs{
+  position:absolute;
+  width:0;
+  height:0;
+  overflow:hidden;
+  pointer-events:none;
+}
+.preset-fractured-desktop{
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  -webkit-mask-repeat:no-repeat;
+  mask-repeat:no-repeat;
+  -webkit-mask-size:100% 100%;
+  mask-size:100% 100%;
+  /* SVG luminance mask: white cells show the previous scene. */
+  mask-mode:luminance;
+  will-change:mask-image;
+  /* Graceful fallback for browsers that do not repaint animated SVG masks:
+     the old scene still fades out rather than snapping off at the end. */
+  animation:preset-fractured-fallback 1850ms linear both;
+}
+@keyframes preset-fractured-fallback{
+  0%,65%{opacity:1}
+  100%{opacity:0}
+}
+.preset-fracture-cell{
+  opacity:1;
+  animation-name:preset-cell-crumble;
+  animation-timing-function:steps(3,end);
+  animation-fill-mode:both;
+  /* Unique duration and delay are assigned per cell in React. */
+}
+@keyframes preset-cell-crumble{
+  0%{opacity:1}
+  22%{opacity:.88}
+  42%{opacity:.68}
+  74%{opacity:.3}
+  100%{opacity:0}
+}
+.preset-fragment-cloud{
+  position:absolute;
+  inset:0;
+  overflow:hidden;
+  pointer-events:none;
+  z-index:7;
+}
+.preset-fragment{
+  position:absolute;
+  left:var(--frag-x);
+  top:var(--frag-y);
+  width:var(--frag-size);
+  height:calc(var(--frag-size)*.76);
+  background:linear-gradient(137deg,#fff4da6e,var(--frag-color) 35%,#10080a9c);
+  border:1px solid color-mix(in srgb,var(--frag-color) 72%,#ffebc4);
+  opacity:0;
+  clip-path:polygon(6% 12%,91% 0,100% 66%,51% 98%,0 73%);
+  box-shadow:0 0 9px var(--frag-color);
+  will-change:transform,opacity;
+  animation:preset-fragment-detach 610ms cubic-bezier(.16,.41,.35,1) var(--frag-delay) both;
+}
+.preset-fragment:nth-child(3n){
+  clip-path:polygon(29% 0,95% 21%,77% 100%,0 82%);
+  border-radius:1px;
+}
+.preset-fragment:nth-child(5n){
+  clip-path:polygon(0 18%,70% 0,100% 73%,23% 100%);
+  filter:blur(.5px);
+}
+@keyframes preset-fragment-detach{
+  0%{opacity:0;transform:translate3d(0,0,0) rotate(0) scale(.72)}
+  12%{opacity:.95;transform:translate3d(-4px,1px,0) rotate(12deg) scale(1.06)}
+  40%{opacity:.85}
+  100%{
+    opacity:0;
+    transform:translate3d(var(--frag-dx),var(--frag-dy),0) rotate(var(--frag-rot)) scale(.08);
+  }
+}
+/* Handles completion without a timer, even if the user changes themes again. */
+.preset-disintegration-lifetime{
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  visibility:hidden;
+  animation:preset-disintegration-complete linear forwards;
+}
+@keyframes preset-disintegration-complete{
+  from{opacity:1}
+  to{opacity:0}
+}
+@media (prefers-reduced-motion: reduce){
+  .preset-disintegrating{display:none}
+  .preset-fracture-cell,.preset-fragment,.preset-disintegration-lifetime{
+    animation:none!important;
+  }
+}

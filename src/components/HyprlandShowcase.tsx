@@ -3,6 +3,7 @@ import type { CSSProperties } from "react";
 import { OFFICIAL_THEMES, type Theme, type ThemePalette } from "../stores/themes";
 import { RealDesktopPreview } from "./desktop/RealDesktopPreview";
 import { ChangliDesktop } from "./desktop/ChangliDesktop";
+import { ThemeDisintegration } from "./desktop/ThemeDisintegration";
 import { validatePublishedLayouts, type WidgetPlacement, type WidgetKind } from "../services/quickshellLayoutImport";
 import published from "../data/published-widget-layouts.json";
 import "../styles/preset-theme-gallery.css";
@@ -57,14 +58,6 @@ function ProfileDesktop({ view, active, accent }: { view:View; active:boolean; a
     </div>
   );
 }
-
-const DUST = Array.from({length:90},(_,i)=>({
-  top: ((i*73+29)%94)+"%",
-  left: (98-(i%15)*6.6)+"%",
-  delay: ((i%15)*50+((i*13)%67))+"ms",
-  size: (2+(i%5)*1.15)+"px",
-  drift: ((i*19%75)-39)+"px",
-}));
 
 export function HyprlandShowcase({
   themes = OFFICIAL_THEMES, selectedId = "changli", onChoose, accentColor = null,
@@ -136,22 +129,14 @@ export function HyprlandShowcase({
       <div className={"preset-stage preset-stage-"+format+(theme.id==="changli"?" preset-stage-changli":"")} aria-label={"Desktop pronto de "+theme.name}>
         <ProfileDesktop view={current} active accent={accentColor}/>
         {outgoing&&(
-          <div key={outgoing.id+":"+outgoing.variant} className="preset-dissolve-out"
-            aria-hidden="true" onAnimationEnd={(e)=>{
-              if(e.target===e.currentTarget)setOutgoing(null);
-            }}>
+          <ThemeDisintegration
+            key={outgoing.id+":"+outgoing.variant}
+            oldAccent={outgoing.palette.accentPrimary}
+            oldSecondary={outgoing.palette.accentYellow}
+            newAccent={current.palette.accentPrimary}
+            onFinished={()=>setOutgoing(null)}>
             <ProfileDesktop view={outgoing} active={false} accent={accentColor}/>
-          </div>
-        )}
-        {outgoing&&(
-          <div className="preset-dissolve-dust" aria-hidden="true">
-            {DUST.map((d,i)=><span key={i} style={{
-              "--dust-top":d.top,"--dust-left":d.left,"--dust-delay":d.delay,
-              "--dust-size":d.size,"--dust-drift":d.drift,
-              "--dust-color":i%3===0?outgoing.palette.accentPrimary:i%3===1?
-                outgoing.palette.accentYellow:current.palette.accentPrimary,
-            } as CSSProperties}/>)}
-          </div>
+          </ThemeDisintegration>
         )}
       </div>
 
