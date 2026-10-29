@@ -50,7 +50,7 @@ export async function searchRepoText(repoId: string, pattern: string, root = "")
   const approved = resolveRepo(repoId);
   if (!approved) throw new Error("Repositório não autorizado. Use repos para ver os permitidos.");
   const needle = pattern.trim();
-  if (needle.length < 2 || needle.length > 80 || /[\x00-\x1f\x7f]/.test(needle)) {
+  if (needle.length < 2 || needle.length > 80 || Array.from(needle).some((character) => character.charCodeAt(0) < 32 || character.charCodeAt(0) === 127)) {
     throw new Error("Busca inválida. Use texto literal de 2 a 80 caracteres.");
   }
   const path = normalizeRepoPath("", root || ".");
