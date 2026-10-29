@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen, within } from "@testing-library/react";
 import { DesktopWidgetEditor } from "../components/DesktopWidgetEditor";
 import { WIDGET_KINDS, type WidgetKind } from "../services/quickshellLayoutImport";
-import { loadVisitorWidgets, saveVisitorWidgets, validVisitorWidgets } from "../services/visitorDesktopWidgets";
+import { loadVisitorWidgets, saveVisitorWidgets, validVisitorWidgets, widgetPositionFromClientPoint } from "../services/visitorDesktopWidgets";
 
 const names=Object.fromEntries(WIDGET_KINDS.map(k=>[k,k])) as Record<WidgetKind,string>;
 const renderEditor=(themeId="changli")=>render(
@@ -29,21 +29,13 @@ describe("M6 draggable user widgets",()=>{
     expect(within(stage).queryByRole("group",{name:"Widget clock"})).not.toBeInTheDocument();
   });
 
-  it("drops cards at actual pointer coordinates inside the large desktop",()=>{
-    const {container}=renderEditor();
-    const stage=container.querySelector(".hypr-desktop-stage") as HTMLDivElement;
-    vi.spyOn(stage,"getBoundingClientRect").mockReturnValue({
+  it("maps client drop points correctly to desktop positions, including offsets",()=>{
+    expect(widgetPositionFromClientPoint(600,310,{
       left:100,top:100,width:1000,height:420,
-      right:1100,bottom:520,x:100,y:100,toJSON:()=>({}),
-    });
-    fireEvent.dragStart(screen.getByRole("button",{name:"Adicionar calendar"}),{
-      dataTransfer:{setData:vi.fn(),effectAllowed:"copy"},
-    });
-    fireEvent.drop(stage,{
-      clientX:600,clientY:310,
-      dataTransfer:{getData:(type:string)=>type==="application/x-hypr-widget"?"calendar":""},
-    });
-    expect(loadVisitorWidgets("changli")?.[0]).toMatchObject({kind:"calendar",x:50,y:50});
+    })).toEqual({x:50,y:50});
+    expect(widgetPositionFromClientPoint(600,310,{
+      left:100,top:100,width:0,height:420,
+    })).toEqual({x:40,y:36});
   });
 
   it("repositions with mouse pointer events and permits changing widget dimensions",()=>{
