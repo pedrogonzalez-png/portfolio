@@ -26,12 +26,11 @@ describe("retired custom theme workflow",()=>{
     expect(document.documentElement.dataset.theme).toBe("changli");
     expect(screen.getByRole("button",{name:"Hiyuki"})).toBeInTheDocument();
   });
-  it("color changes are independent of the chosen official theme and never create a custom copy",()=>{
+  it("lets visitors view only original themes with no color or custom-theme editor",()=>{
     render(<ThemeProvider><ThemeStudio onClose={()=>{}}/></ThemeProvider>);
-    fireEvent.change(screen.getByLabelText("Cor de destaque"),{target:{value:"#3355aa"}});
+    expect(screen.queryByLabelText("Cor de destaque")).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole("button",{name:"Emilia"}));
     expect(document.documentElement.dataset.theme).toBe("emilia");
-    expect(document.documentElement.style.getPropertyValue("--color-accent-primary")).toBe("#3355aa");
     expect(readCustomThemes()).toEqual([]);
   });
 });

@@ -50,3 +50,6 @@ dist/
 
 # Generated at build time (not source-controlled)
 public/github-index.json
+
+# Built Abismo Phaser files are generated locally by npm run sync:abismo
+/public/abismo/

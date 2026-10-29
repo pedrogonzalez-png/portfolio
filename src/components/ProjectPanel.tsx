@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { KeyboardEvent as ReactKeyboardEvent, PointerEvent as ReactPointerEvent } from "react";
 import { PLACEHOLDER_PROJECTS, type Project } from "./PlaceholderCatalog";
 import { EmbeddedDemo } from "./EmbeddedDemo";
+import { AbismoGameCard } from "./AbismoGameCard";
 import { SpineWorld } from "./SpineWorld";
 import { ProjectArtwork } from "./ProjectArtwork";
 import "../styles/project-cards.css";
@@ -101,6 +102,7 @@ function useCarouselWheel(
 export function ProjectPanel({ onOpenThemeStudio }: { onOpenThemeStudio?: () => void } = {}) {
   const [selected, setSelected] = useState<Project | null>(null);
   const [showDemo, setShowDemo] = useState(false);
+  const [abismoOpen, setAbismoOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
   const activeRef = useRef(0);
   const stageRef = useRef<HTMLDivElement>(null);
@@ -117,10 +119,10 @@ export function ProjectPanel({ onOpenThemeStudio }: { onOpenThemeStudio?: () => 
     setActiveIndex(next);
   }, [projects.length]);
 
-  useCarouselWheel(stageRef, activeRef, projects.length, activate, selected !== null);
+  useCarouselWheel(stageRef, activeRef, projects.length, activate, selected !== null || abismoOpen);
 
   const onCarouselKeyDown = (event: ReactKeyboardEvent<HTMLDivElement>) => {
-    if (selected || event.altKey || event.ctrlKey || event.metaKey) return;
+    if (selected || abismoOpen || event.altKey || event.ctrlKey || event.metaKey) return;
     if (event.key === "ArrowRight" || event.key === "ArrowDown") {
       event.preventDefault();
       activate(activeRef.current + 1);
@@ -155,6 +157,23 @@ export function ProjectPanel({ onOpenThemeStudio }: { onOpenThemeStudio?: () => 
     };
   }, [selected]);
 
+  useEffect(() => {
+    if (!abismoOpen) return;
+    const onEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setAbismoOpen(false);
+    };
+    window.addEventListener("keydown", onEscape);
+    return () => window.removeEventListener("keydown", onEscape);
+  }, [abismoOpen]);
+
+  const closeAbismo = () => {
+    setAbismoOpen(false);
+    window.requestAnimationFrame(() => {
+      const card = document.querySelector<HTMLButtonElement>('[data-project-id="abismo"]');
+      card?.focus();
+    });
+  };
+
   const close = () => {
     setShowDemo(false);
     setSelected(null);
@@ -164,7 +183,7 @@ export function ProjectPanel({ onOpenThemeStudio }: { onOpenThemeStudio?: () => 
     <>
       <div
         id="spine-stage"
-        className="spine-stage project-carousel"
+        className={"spine-stage project-carousel" + (abismoOpen ? " is-abismo-playing" : "")}
         ref={stageRef}
         role="region"
         aria-roledescription="carrossel"
@@ -178,11 +197,15 @@ export function ProjectPanel({ onOpenThemeStudio }: { onOpenThemeStudio?: () => 
             const meta = PANEL_META[project.id] ?? { category: "PROJECT / DEVELOPMENT", headline: project.title };
             const relative = (index - activeIndex + projects.length) % projects.length;
             const position = relative === 0 ? "center" : relative === 1 ? "right" : "left";
+            if (abismoOpen && project.id === "abismo" && position === "center") {
+              return <AbismoGameCard key={project.id} onClose={closeAbismo}/>;
+            }
             return (
               <button
                 key={project.id}
                 className={"project-card orbit-card cinematic-panel cinematic-panel-" + index + " carousel-" + position}
                 data-position={position}
+                data-project-id={project.id}
                 aria-current={position === "center" ? "true" : undefined}
                 type="button"
                 onPointerMove={handlePanelMove}
@@ -192,6 +215,8 @@ export function ProjectPanel({ onOpenThemeStudio }: { onOpenThemeStudio?: () => 
                     activate(index);
                   } else if (project.id === "hyprland-themes" && onOpenThemeStudio) {
                     onOpenThemeStudio();
+                  } else if (project.id === "abismo") {
+                    setAbismoOpen(true);
                   } else {
                     trigger.current = event.currentTarget;
                     setSelected(project);
@@ -200,6 +225,7 @@ export function ProjectPanel({ onOpenThemeStudio }: { onOpenThemeStudio?: () => 
                 aria-label={index === activeIndex
                   ? (project.id === "hyprland-themes" && onOpenThemeStudio
                       ? "Abrir página de " + project.title
+                      : project.id === "abismo" ? "Jogar Abismo no card"
                       : "Abrir detalhes de " + project.title)
                   : "Trazer " + project.title + " para o centro"}
               >
@@ -236,7 +262,7 @@ export function ProjectPanel({ onOpenThemeStudio }: { onOpenThemeStudio?: () => 
       </div>
       <p className="carousel-instructions">Use a rodinha do mouse sobre os painéis ou as setas para alternar projetos.</p>
       <p className="projects-disclaimer">
-        Três projetos autorizados · As artes são conceituais; nenhuma demonstração foi publicada
+        Três projetos selecionados · Abismo pode ser jogado no card após instalar a build local
       </p>
       {selected && (
         <div className="modal-backdrop" onMouseDown={(event) => {
