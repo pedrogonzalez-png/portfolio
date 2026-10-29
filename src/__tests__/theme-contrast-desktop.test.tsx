@@ -16,7 +16,9 @@ function ActiveTheme() {
 }
 
 function startStudio() {
-  return render(<ThemeProvider><ActiveTheme/><ThemeStudio onClose={() => {}} /></ThemeProvider>);
+  const result = render(<ThemeProvider><ActiveTheme/><ThemeStudio onClose={() => {}} /></ThemeProvider>);
+  fireEvent.click(screen.getByRole("tab", { name: "Configurações" }));
+  return result;
 }
 
 describe("WCAG color contrast math and preview", () => {
