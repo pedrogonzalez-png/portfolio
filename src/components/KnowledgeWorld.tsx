@@ -4,6 +4,7 @@ import { RoundedBox, useFBO } from "@react-three/drei";
 import { AdditiveBlending, BufferAttribute, BufferGeometry, CatmullRomCurve3, Color, DoubleSide, Vector2, Vector3 } from "three";
 import type { Group, ShaderMaterial } from "three";
 import { useTheme } from "../stores/themeContext";
+import RibbonParticles from "./RibbonParticles";
 import type { KnowledgeProjectId } from "../data/knowledge";
 
 export type KnowledgeSelection =
@@ -363,6 +364,7 @@ export default function KnowledgeWorld(props: KnowledgeWorldProps) {
       <Backdrop />
       <AmbientRings />
       <FlowingLight />
+      <RibbonParticles />
       <OpticalDust />
       <SharedGlass skillPositions={props.skillPositions} activeSkill={props.activeSkill} />
     </Canvas>
