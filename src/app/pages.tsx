@@ -57,7 +57,20 @@ function HomePage() {
             <h2>Um universo de <em>possibilidades.</em></h2>
             <p>Projetos do catálogo autorizado, ainda em desenvolvimento. Abra um painel para conhecer os detalhes.</p>
           </div>
-          <ProjectPanel onOpenThemeStudio={openStudio} />
+          <ProjectPanel onOpenThemeStudio={() => {
+            openStudio();
+            window.requestAnimationFrame(() => {
+              document.getElementById("theme-studio")?.scrollIntoView({
+                behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
+                  ? "auto" : "smooth", block: "start",
+              });
+            });
+          }} />
+          {studioOpen && (
+            <Suspense fallback={<p role="status">Carregando coleção de temas...</p>}>
+              <ThemeStudio onClose={closeStudio} />
+            </Suspense>
+          )}
         </section>
 
         <section id="habilidades" className="knowledge-area" aria-label="Habilidades e conhecimentos">
@@ -82,11 +95,6 @@ function HomePage() {
       {terminalOpen && (
         <Suspense fallback={<div role="status">Carregando terminal...</div>}>
           <Terminal onClose={closeTerminal} />
-        </Suspense>
-      )}
-      {studioOpen && (
-        <Suspense fallback={<div role="status">Carregando Theme Studio...</div>}>
-          <ThemeStudio onClose={closeStudio} />
         </Suspense>
       )}
       <footer className="site-footer">
