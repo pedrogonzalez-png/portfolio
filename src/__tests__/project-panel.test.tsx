@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 
 vi.mock("../components/SpineWorld", () => ({ SpineWorld: () => null }));
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { ProjectPanel } from "../components/ProjectPanel";
 import { TopMenu } from "../components/TopMenu";
 import { ThemeProvider } from "../stores/ThemeProvider";
@@ -57,7 +57,7 @@ describe("three-panel carousel", () => {
     expect(screen.queryByRole("region", { name: "Abismo — jogo integrado" })).not.toBeInTheDocument();
   });
 
-  it("rotates the carousel then opens site-3D inside its own card", () => {
+  it("rotates the carousel then opens site-3D inside its own card", async () => {
     const { container } = render(<ProjectPanel />);
     fireEvent.click(screen.getByRole("button", { name: "Próximo projeto" }));
     const centered = screen.getByRole("button", { name: "Explorar site-3D no card" });
@@ -78,7 +78,7 @@ describe("three-panel carousel", () => {
       animationName: "abismo-card-retreat",
     });
     expect(container.querySelector(".spine-stage.is-site3d-closing")).toBeNull();
-    expect(screen.getByRole("button", { name: "Explorar site-3D no card" })).toHaveFocus();
+    await waitFor(() => expect(screen.getByRole("button", { name: "Explorar site-3D no card" })).toHaveFocus());
   });
 
   it("brings a side project to the center instead of opening its modal", () => {
