@@ -45,7 +45,7 @@ describe("Hyprland as the viewer and Configurações as the editor", () => {
   it("does not claim unpublished widget positions or invent private text", () => {
     render(<HyprlandShowcase themes={OFFICIAL_THEMES} selectedId="changli" onChoose={vi.fn()}/>);
     expect(screen.getByText(/Posições reais não publicadas/)).toBeInTheDocument();
-    expect(screen.getByText(/Importe o arquivo de layouts/)).toBeInTheDocument();
+    expect(screen.getByText(/Importe as posições reais em Configurações/)).toBeInTheDocument();
     expect(screen.queryByLabelText("Importar posições do Quickshell")).not.toBeInTheDocument();
     expect(screen.getAllByText(/Conteúdo privado/).length).toBeGreaterThan(0);
     expect(screen.getByText(/CPU — · RAM —/)).toBeInTheDocument();
