@@ -9,6 +9,13 @@ import {
   storeAppliedTheme, updateCustomTheme, writeCustomThemes,
 } from "../services/customThemes";
 
+const ACCENT_STORAGE = "portfolio.theme.accent.v1";
+const validAccent = (hex: string) => /^#[0-9a-f]{6}$/i.test(hex);
+function readAccent(): string | null {
+  try { const v = localStorage.getItem(ACCENT_STORAGE); return v && validAccent(v) ? v : null; }
+  catch { return null; }
+}
+
 function initialTheme(customThemes: readonly Theme[]): Theme {
   try {
     const savedId = localStorage.getItem(THEME_STORAGE_KEY) ?? DEFAULT_THEME_ID;
@@ -19,6 +26,7 @@ function initialTheme(customThemes: readonly Theme[]): Theme {
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [customThemes, setCustomThemes] = useState<Theme[]>(readCustomThemes);
   const [theme, setAppliedTheme] = useState<Theme>(() => initialTheme(customThemes));
+  const [accentColor, setAccent] = useState<string | null>(readAccent);
   const availableThemes = useMemo(
     () => [...OFFICIAL_THEMES, ...customThemes], [customThemes]);
 
@@ -28,10 +36,13 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     for (const token of Object.keys(THEME_CSS_TOKENS) as (keyof ThemePalette)[]) {
       root.style.setProperty(THEME_CSS_TOKENS[token], theme.palette[token]);
     }
+    root.style.setProperty(THEME_CSS_TOKENS.accentPrimary, accentColor ?? theme.palette.accentPrimary);
+    try { if (accentColor) localStorage.setItem(ACCENT_STORAGE, accentColor);
+      else localStorage.removeItem(ACCENT_STORAGE); } catch { /* optional preference */ }
     try { localStorage.setItem(THEME_STORAGE_KEY, theme.id); }
     catch { /* Private mode: UI remains functional for this session. */ }
     storeAppliedTheme(theme);
-  }, [theme]);
+  }, [theme, accentColor]);
 
   const setTheme = useCallback((id: string) => {
     const next = officialTheme(id) ?? customThemes.find((candidate) => candidate.id === id);
@@ -59,9 +70,13 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     return updated;
   }, [customThemes]);
 
+  const setAccentColor = useCallback((hex: string | null) => {
+    if (hex === null || validAccent(hex)) setAccent(hex);
+  }, []);
+
   const value = useMemo<ThemeContextValue>(
-    () => ({ theme, setTheme, availableThemes, createCustomTheme, saveCustomTheme }),
-    [theme, setTheme, availableThemes, createCustomTheme, saveCustomTheme],
+    () => ({ theme, setTheme, availableThemes, createCustomTheme, saveCustomTheme, accentColor, setAccentColor }),
+    [theme, setTheme, availableThemes, createCustomTheme, saveCustomTheme, accentColor, setAccentColor],
   );
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 }
