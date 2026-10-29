@@ -17,7 +17,9 @@ function Probe() {
   return <span data-testid="active-theme">{theme.id + "|" + theme.palette.accentPrimary}</span>;
 }
 function openStudio() {
-  return render(<ThemeProvider><Probe /><ThemeStudio onClose={() => {}} /></ThemeProvider>);
+  const result = render(<ThemeProvider><Probe /><ThemeStudio onClose={() => {}} /></ThemeProvider>);
+  fireEvent.click(screen.getByRole("tab", { name: "Configurações" }));
+  return result;
 }
 function officialOption(name: string) {
   return within(screen.getByRole("group", { name: "Cinco temas oficiais" }))
