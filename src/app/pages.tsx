@@ -1,5 +1,5 @@
 import { lazy, Suspense, useCallback, useEffect, useState } from "react";
-import { Route, Routes } from "react-router-dom";
+import { Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import { TopMenu } from "../components/TopMenu";
 import { ProjectPanel } from "../components/ProjectPanel";
 import SceneIntegration from "../components/SceneIntegration";
@@ -10,11 +10,17 @@ const ThemeStudio = lazy(() => import("../components/ThemeStudio").then((module)
 
 function HomePage() {
   const [terminalOpen, setTerminalOpen] = useState(false);
-  const [studioOpen, setStudioOpen] = useState(false);
   const openTerminal = useCallback(() => setTerminalOpen(true), []);
   const closeTerminal = useCallback(() => setTerminalOpen(false), []);
-  const openStudio = useCallback(() => setStudioOpen(true), []);
-  const closeStudio = useCallback(() => setStudioOpen(false), []);
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    if (location.hash !== "#projetos") return;
+    const frame = window.requestAnimationFrame(() =>
+      document.getElementById("projetos")?.scrollIntoView({ behavior: "instant", block: "start" }));
+    return () => window.cancelAnimationFrame(frame);
+  }, [location.hash]);
 
   useEffect(() => {
     const shortcut = (event: KeyboardEvent) => {
@@ -57,20 +63,7 @@ function HomePage() {
             <h2>Um universo de <em>possibilidades.</em></h2>
             <p>Projetos do catálogo autorizado, ainda em desenvolvimento. Abra um painel para conhecer os detalhes.</p>
           </div>
-          <ProjectPanel onOpenThemeStudio={() => {
-            openStudio();
-            window.requestAnimationFrame(() => {
-              document.getElementById("theme-studio")?.scrollIntoView({
-                behavior: window.matchMedia?.("(prefers-reduced-motion: reduce)").matches
-                  ? "auto" : "smooth", block: "start",
-              });
-            });
-          }} />
-          {studioOpen && (
-            <Suspense fallback={<p role="status">Carregando coleção de temas...</p>}>
-              <ThemeStudio onClose={closeStudio} />
-            </Suspense>
-          )}
+          <ProjectPanel onOpenThemeStudio={() => navigate("/hyprland-themes")} />
         </section>
 
         <section id="habilidades" className="knowledge-area" aria-label="Habilidades e conhecimentos">
@@ -106,6 +99,28 @@ function HomePage() {
   );
 }
 
+function HyprlandThemesPage() {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    // A dedicated page should always open from its beginning, including after
+    // coming from a scrolled project carousel. The exit link returns to Projects.
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+  }, []);
+
+  return (
+    <main className="hyprland-dedicated-page">
+      <Suspense fallback={<p role="status">Carregando exposição Hyprland-Themes...</p>}>
+        <ThemeStudio onClose={() => navigate("/#projetos")} />
+      </Suspense>
+    </main>
+  );
+}
+
 export default function Pages() {
-  return <Routes><Route path="/" element={<HomePage />} /></Routes>;
+  return <Routes>
+    <Route path="/" element={<HomePage />} />
+    <Route path="/hyprland-themes" element={<HyprlandThemesPage />} />
+  </Routes>;
 }
