@@ -6,13 +6,32 @@ import {
   BufferGeometry,
   Color,
   DynamicDrawUsage,
-  Vector2,
 } from "three";
 import { useTheme } from "../stores/themeContext";
+import { advanceParticles, type ParticleState } from "../scenes/particlePhysics";
 
 // Partículas em torno das três fitas do FlowingLight, com cores individuais.
 // O mouse interage via contêiner, sem bloquear botões HTML nem o vidro.
 const PARTICLE_COUNT = 1100;
+
+type PointerState = {
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  lastTime: number;
+  movedAt: number;
+  lastBurstAt: number;
+  burstStarted: number;
+  burstX: number;
+  burstY: number;
+  nearParticle: boolean;
+  idleFired: boolean;
+  inside: boolean;
+};
+
+// Same pointer gesture rules as ParticleName (Scene3D.tsx).
+// Uses the very same damped spring/burst solver as the hero title.
 
 const vertexShader = `
   attribute vec3 aColor;
@@ -56,9 +75,15 @@ const noise = (n: number) => {
 
 export default function RibbonParticles() {
   const { theme } = useTheme();
-  const { viewport, gl } = useThree();
-  const mouse = useRef(new Vector2());
-  const mouseActive = useRef(false);
+  const { viewport, gl, size } = useThree();
+  const scale = size.width / viewport.width;
+  const pointer = useRef<PointerState>({
+    x: 100000, y: 100000, vx: 0, vy: 0,
+    lastTime: 0, movedAt: 0, lastBurstAt: -100000,
+    burstStarted: -100000, burstX: 100000, burstY: 100000,
+    nearParticle: false, idleFired: false, inside: false,
+  });
+  const time = useRef(0);
 
   const particleData = useMemo(() => {
     const positions = new Float32Array(PARTICLE_COUNT * 3);
@@ -68,6 +93,11 @@ export default function RibbonParticles() {
     const rest = new Float32Array(PARTICLE_COUNT * 3);
     const phases = new Float32Array(PARTICLE_COUNT);
     const layers = new Float32Array(PARTICLE_COUNT);
+    const seeds = new Float32Array(PARTICLE_COUNT);
+    const springPositions = new Float32Array(PARTICLE_COUNT * 3);
+    const targets = new Float32Array(PARTICLE_COUNT * 3);
+    const velocities = new Float32Array(PARTICLE_COUNT * 3);
+    const energy = new Float32Array(PARTICLE_COUNT);
 
     const palette = [
       theme.palette.accentYellow,
@@ -85,6 +115,7 @@ export default function RibbonParticles() {
       const phase = band * 1.55;
       const layer = noise(i * 67 + 17);
       layers[i] = layer;
+      seeds[i] = noise(i * 53 + 29);
       const spread = (noise(i * 31 + 11) - 0.5) * viewport.height * (0.11 + layer * 0.095);
 
       // Mesma curva matemática usada nas três fitas luminosas.
@@ -100,7 +131,10 @@ export default function RibbonParticles() {
       rest[index] = positions[index] = x;
       rest[index + 1] = positions[index + 1] = y;
       rest[index + 2] = positions[index + 2] = z;
-      phases[i] = noise(i * 53 + 29) * Math.PI * 2;
+      phases[i] = seeds[i] * Math.PI * 2;
+      springPositions[index] = targets[index] = x * scale;
+      springPositions[index + 1] = targets[index + 1] = y * scale;
+      springPositions[index + 2] = targets[index + 2] = z * scale;
       sizes[i] = 1.1 + layer * 2.7 + noise(i * 37 + 23) * 1.8;
 
       const chosen = palette[Math.floor(noise(i * 41 + 5) * palette.length)];
@@ -120,10 +154,19 @@ export default function RibbonParticles() {
     geometry.setAttribute("aSize", new BufferAttribute(sizes, 1));
     geometry.setAttribute("aGlow", glowAttr);
 
-    return { geometry, positions, glows, rest, phases, layers, positionAttr, glowAttr };
+    const state: ParticleState = {
+      positions: springPositions,
+      velocities,
+      targets,
+      seeds,
+      energy,
+      count: PARTICLE_COUNT,
+    };
+    return { geometry, positions, glows, rest, phases, layers, positionAttr, glowAttr, state };
   }, [
     viewport.width,
     viewport.height,
+    scale,
     theme.palette.accentYellow,
     theme.palette.accentRed,
     theme.palette.accentPrimary,
@@ -131,76 +174,168 @@ export default function RibbonParticles() {
 
   useEffect(() => () => particleData.geometry.dispose(), [particleData]);
 
-  // O canvas está com pointer-events:none. Eventos no contêiner permitem
-  // reação ao mouse mesmo ao passar em cima de botões e áreas de vidro.
+  // Same interaction as the author name: localized burst when the cursor
+  // crosses the particle field, a single idle pulse, then spring reassembly.
+  // Events are on the stage (canvas pointer-events:none), so HTML controls work.
   useEffect(() => {
     const stage = document.getElementById("knowledge-spatial-stage");
     if (!stage) return;
 
     const onMove = (event: PointerEvent) => {
       if (event.pointerType !== "mouse" && event.pointerType !== "pen") return;
-      const rect = stage.getBoundingClientRect();
-      if (!rect.width || !rect.height) return;
-      mouse.current.set(
-        ((event.clientX - rect.left) / rect.width - 0.5) * viewport.width,
-        (0.5 - (event.clientY - rect.top) / rect.height) * viewport.height,
-      );
-      mouseActive.current = true;
-    };
-    const onLeave = () => { mouseActive.current = false; };
+      const bounds = stage.getBoundingClientRect();
+      if (!bounds.width || !bounds.height) return;
+      const x = event.clientX - bounds.left - bounds.width / 2;
+      const y = bounds.height / 2 - (event.clientY - bounds.top);
+      const p = pointer.current;
+      const now = performance.now();
+      const deltaMs = Math.max(4, now - p.lastTime);
+      const moved = Math.hypot(x - p.x, y - p.y);
+      if (p.lastTime && moved > 1.8) {
+        p.vx = Math.max(-1700, Math.min(1700, (x - p.x) * 1000 / deltaMs));
+        p.vy = Math.max(-1700, Math.min(1700, (y - p.y) * 1000 / deltaMs));
+      } else {
+        p.vx = 0;
+        p.vy = 0;
+      }
 
+      // Test ORIGINAL rest/target positions, never scattered positions.
+      // Reusing the title's near-letter logic makes interactions local.
+      let nearParticle = false;
+      const targets = particleData.state.targets;
+      for (let i = 0; i < PARTICLE_COUNT; i += 1) {
+        const j = i * 3;
+        const dx = targets[j] - x;
+        const dy = targets[j + 1] - y;
+        if (dx * dx + dy * dy < 1300) {
+          nearParticle = true;
+          break;
+        }
+      }
+
+      const traveled = Math.hypot(x - p.burstX, y - p.burstY);
+      if (nearParticle && now - p.lastBurstAt > 320
+        && (!p.nearParticle || traveled > 78)) {
+        p.burstStarted = now;
+        p.burstX = x;
+        p.burstY = y;
+        p.lastBurstAt = now;
+        p.idleFired = false;
+      }
+      if (moved > 4) {
+        p.movedAt = now;
+        p.idleFired = false;
+      }
+      p.x = x;
+      p.y = y;
+      p.lastTime = now;
+      p.inside = true;
+      p.nearParticle = nearParticle;
+    };
+
+    const onDown = (event: PointerEvent) => {
+      if (event.pointerType !== "mouse" && event.pointerType !== "pen") return;
+      const bounds = stage.getBoundingClientRect();
+      const x = event.clientX - bounds.left - bounds.width / 2;
+      const y = bounds.height / 2 - (event.clientY - bounds.top);
+      if (x < -bounds.width / 2 || x > bounds.width / 2
+        || y < -bounds.height / 2 || y > bounds.height / 2) return;
+      const p = pointer.current;
+      p.burstX = x;
+      p.burstY = y;
+      p.burstStarted = performance.now();
+      p.lastBurstAt = p.burstStarted;
+      p.idleFired = true;
+    };
+    const onLeave = () => {
+      const p = pointer.current;
+      p.inside = false;
+      p.nearParticle = false;
+      p.vx = 0;
+      p.vy = 0;
+    };
     stage.addEventListener("pointermove", onMove, { passive: true });
+    stage.addEventListener("pointerdown", onDown);
     stage.addEventListener("pointerleave", onLeave);
     window.addEventListener("blur", onLeave);
     return () => {
       stage.removeEventListener("pointermove", onMove);
+      stage.removeEventListener("pointerdown", onDown);
       stage.removeEventListener("pointerleave", onLeave);
       window.removeEventListener("blur", onLeave);
     };
-  }, [viewport.width, viewport.height]);
+  }, [particleData]);
 
-  useFrame(({ clock }, delta) => {
-    const { positions, rest, phases, layers, glows, positionAttr, glowAttr } = particleData;
-    const time = clock.elapsedTime;
-    const ease = 1 - Math.exp(-Math.min(delta, 0.05) * 8.2);
-    const radius = Math.min(viewport.width, viewport.height) * 0.27;
+  // Use the EXACT SAME spring physics as the hero name (advanceParticles).
+  // Only the REST targets drift with the ambient ribbon animation.
+  // Updates run before SharedGlass samples the scene into the FBO (-1).
+  useFrame((_, delta) => {
+    const { positions, rest, phases, layers, glows, positionAttr, glowAttr, state } = particleData;
+    const dt = Math.min(0.04, delta);
+    if (dt <= 0) return;
+    time.current += dt;
+    const now = performance.now();
+    const p = pointer.current;
 
-    for (let i = 0; i < PARTICLE_COUNT; i += 1) {
-      const index = i * 3;
-      const phase = phases[i];
-      const layer = layers[i];
-      const bx = rest[index];
-      const by = rest[index + 1];
-      const bz = rest[index + 2];
-      const orbit = time * (0.42 + layer * 0.23) + phase;
-      let x = bx + Math.sin(orbit) * (0.045 + layer * 0.11)
-        + Math.sin(time * 0.72 + phase * 1.7) * 0.04;
-      let y = by + Math.cos(orbit * 0.92) * (0.045 + layer * 0.10)
-        + Math.sin(time * 0.29) * 0.12;
-      let z = bz + Math.sin(time * 0.47 + phase) * (0.07 + layer * 0.22);
-      let glow = 0.08 + 0.16 * (0.5 + Math.sin(time * 1.35 + phase) * 0.5);
-
-      if (mouseActive.current) {
-        const dx = x - mouse.current.x;
-        const dy = y - mouse.current.y;
-        const distance = Math.hypot(dx, dy);
-        if (distance < radius) {
-          const influence = Math.pow(1 - distance / radius, 2.15);
-          const inv = 1 / Math.max(0.04, distance);
-          // Repulsão + giro tangencial para movimento orgânico.
-          x += (dx * inv * 1.8 - dy * inv * 0.48) * influence;
-          y += (dy * inv * 1.8 + dx * inv * 0.48) * influence;
-          z += influence * 0.23;
-          glow += influence * 1.4;
-        }
-      }
-
-      positions[index] += (x - positions[index]) * ease;
-      positions[index + 1] += (y - positions[index + 1]) * ease;
-      positions[index + 2] += (z - positions[index + 2]) * ease;
-      glows[i] += (glow - glows[i]) * ease;
+    // Identical idle trigger used in ParticleName.
+    if (p.inside && p.nearParticle && !p.idleFired
+      && now - p.movedAt > 950 && now - p.lastBurstAt > 900) {
+      p.burstStarted = now;
+      p.burstX = p.x;
+      p.burstY = p.y;
+      p.lastBurstAt = now;
+      p.idleFired = true;
     }
 
+    const timeSinceMove = now - p.lastTime;
+    const damping = Math.exp(-7 * dt);
+    p.vx *= damping;
+    p.vy *= damping;
+    if (timeSinceMove > 300) {
+      p.vx = 0;
+      p.vy = 0;
+    }
+
+    for (let i = 0; i < PARTICLE_COUNT; i += 1) {
+      const k = i * 3;
+      const phase = phases[i];
+      const layer = layers[i];
+      const orbit = time.current * (0.42 + layer * 0.23) + phase;
+      state.targets[k] = scale * (
+        rest[k] + Math.sin(orbit) * (0.045 + layer * 0.11)
+        + Math.sin(time.current * 0.72 + phase * 1.7) * 0.04
+      );
+      state.targets[k + 1] = scale * (
+        rest[k + 1] + Math.cos(orbit * 0.92) * (0.045 + layer * 0.10)
+        + Math.sin(time.current * 0.29) * 0.12
+      );
+      state.targets[k + 2] = scale * (
+        rest[k + 2] + Math.sin(time.current * 0.47 + phase) * (0.07 + layer * 0.22)
+      );
+    }
+
+    advanceParticles(state, {
+      dt,
+      time: time.current,
+      burstAge: (now - p.burstStarted) / 1000,
+      burstX: p.burstX,
+      burstY: p.burstY,
+      width: size.width,
+      pointerX: p.x,
+      pointerY: p.y,
+      pointerVX: p.vx,
+      pointerVY: p.vy,
+      pointerActive: p.nearParticle && timeSinceMove < 180,
+    });
+
+    for (let i = 0; i < PARTICLE_COUNT; i += 1) {
+      const k = i * 3;
+      positions[k] = state.positions[k] / scale;
+      positions[k + 1] = state.positions[k + 1] / scale;
+      positions[k + 2] = state.positions[k + 2] / scale;
+      glows[i] = Math.min(1.35, state.energy[i] * 1.15
+        + 0.08 * (0.5 + Math.sin(time.current * 1.25 + phases[i]) * 0.5));
+    }
     positionAttr.needsUpdate = true;
     glowAttr.needsUpdate = true;
   }, -2);
