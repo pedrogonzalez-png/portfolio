@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { ChangeEvent, CSSProperties } from "react";
 import { RealDesktopPreview } from "./desktop/RealDesktopPreview";
 import { OFFICIAL_THEMES, type Theme, type ThemePalette } from "../stores/themes";
@@ -70,6 +70,7 @@ export function HyprlandShowcase({
   active?: boolean;
 }) {
   const [selected, setSelected] = useState(selectedId);
+  useEffect(() => { setSelected(selectedId); }, [selectedId]);
   const [localProfiles, setLocalProfiles] = useState<SanitizedDesktopLayouts | null>(readLocal);
   const [message, setMessage] = useState("");
   const [previewFormat, setPreviewFormat] = useState<"ultrawide"|"standard">("ultrawide");
