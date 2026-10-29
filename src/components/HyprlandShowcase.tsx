@@ -126,7 +126,7 @@ export function HyprlandShowcase({
       </nav>
 
       <div className="preset-view-toolbar">
-        <span className="preset-theme-label"><i aria-hidden="true"/> {theme.name} / {chosen?.label??"Composição original"}</span>
+        <span className="preset-theme-label"><i aria-hidden="true"/> {theme.name} / {theme.id==="changli"?"Reprodução da referência":chosen?.label??"Composição original"}</span>
         <div role="group" aria-label="Proporção da prévia">
           <button type="button" aria-pressed={format==="ultrawide"} onClick={()=>setFormat("ultrawide")}>21:9</button>
           <button type="button" aria-pressed={format==="standard"} onClick={()=>setFormat("standard")}>16:9</button>
@@ -157,10 +157,10 @@ export function HyprlandShowcase({
 
       <div className="preset-gallery-foot">
         <div>
-          <strong>{theme.name} — {current.widgets.length} widgets habilitados</strong>
+          <strong>{theme.name} — {theme.id==="changli"?"Desktop codificado com todos os painéis da captura":current.widgets.length+" widgets habilitados"}</strong>
           <p>Posições originais provenientes do Quickshell. Imagens privadas e dados do sistema não são reproduzidos.</p>
         </div>
-        {variants.length>1&&(
+        {variants.length>1&&theme.id!=="changli"&&(
           <div className="preset-variant-controls">
             <label htmlFor="preset-variant-select">Outras composições prontas</label>
             <select id="preset-variant-select" value={current.variant}
