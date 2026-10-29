@@ -13,7 +13,8 @@
 import { mkdtemp, mkdir, rm, cp, writeFile, readFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
+import { URL, fileURLToPath } from "node:url";
+import process from "node:process";
 import { execFileSync } from "node:child_process";
 
 const ROOT = resolve(fileURLToPath(new URL("..", import.meta.url)));
