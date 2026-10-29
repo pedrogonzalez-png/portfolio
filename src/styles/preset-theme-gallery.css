@@ -45,3 +45,12 @@
 .preset-theme-choices button:focus-visible,.preset-view-toolbar button:focus-visible,.preset-variant-controls select:focus-visible{outline:2px solid var(--color-accent-yellow);outline-offset:3px}
 @media(max-width:740px){.preset-gallery-intro{display:block}.preset-gallery-status{display:block;margin-top:.6rem}.preset-stage-ultrawide{min-height:250px}.preset-widget{border-radius:5px}.preset-widget small{font-size:.42rem}.preset-theme-choices{gap:.4rem}.preset-theme-choices button{padding:.7rem .9rem;min-height:40px}}
 @media(prefers-reduced-motion:reduce){.preset-dissolve-out,.preset-dissolve-dust span{animation:none;display:none}.preset-theme-choices button{transition:none}}
+
+/* Changli's design uses the screenshot proportions (1914x862) so that every
+   original left/right widget retains its intended relative position. */
+.preset-stage-changli.preset-stage-ultrawide{aspect-ratio:1914/862;min-height:340px}
+.preset-stage-changli.preset-stage-standard{aspect-ratio:16/9}
+.preset-stage-changli .preset-desktop-scene{isolation:isolate}
+@media(max-width:760px){
+  .preset-stage-changli.preset-stage-ultrawide{min-height:240px}
+}
