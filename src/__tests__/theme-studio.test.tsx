@@ -30,16 +30,11 @@ describe("preset-only theme experience",()=>{
     expect(screen.getByRole("region",{name:"Exposição dos temas Hyprland"})).toBeInTheDocument();
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
-  it("lets visitors change ONLY accent color and restore the preset original",()=>{
-    const base=OFFICIAL_THEMES[0].palette.accentPrimary;
-    render(<ThemeProvider><Probe/><ThemeStudio onClose={()=>{}}/></ThemeProvider>);
-    fireEvent.change(screen.getByLabelText("Cor de destaque"),{target:{value:"#1358ba"}});
-    expect(document.documentElement.style.getPropertyValue("--color-accent-primary")).toBe("#1358ba");
-    expect(screen.getByTestId("theme-probe")).toHaveTextContent("Changli|#1358ba");
-    expect(localStorage.getItem("portfolio.theme.accent.v1")).toBe("#1358ba");
-    fireEvent.click(screen.getByRole("button",{name:"Restaurar cor original"}));
-    expect(document.documentElement.style.getPropertyValue("--color-accent-primary")).toBe(base);
-    expect(localStorage.getItem("portfolio.theme.accent.v1")).toBeNull();
+  it("removes the entire color customization strip from the Hyprland page",()=>{
+    const {container}=render(<ThemeProvider><ThemeStudio onClose={()=>{}}/></ThemeProvider>);
+    expect(container.querySelector(".preset-color-only")).toBeNull();
+    expect(screen.queryByLabelText("Cor de destaque")).not.toBeInTheDocument();
+    expect(screen.queryByRole("button",{name:"Restaurar cor original"})).not.toBeInTheDocument();
   });
   it("offers no builder, clone, named versions, movable widgets, or custom scheme controls",()=>{
     render(<ThemeProvider><ThemeStudio onClose={()=>{}}/></ThemeProvider>);
@@ -50,13 +45,13 @@ describe("preset-only theme experience",()=>{
     expect(screen.queryByLabelText("Importar posições do Quickshell")).not.toBeInTheDocument();
     expect(screen.queryByRole("textbox",{name:"Nome do meu tema"})).not.toBeInTheDocument();
   });
-  it("presents one clear exhibition headline and a compact, accent-only control",()=>{
+  it("presents one clear exhibition headline without a color customization strip",()=>{
     const {container}=render(<ThemeProvider><ThemeStudio onClose={()=>{}}/></ThemeProvider>);
     expect(screen.getByRole("heading",{name:/Seu desktop, outros universos/})).toBeInTheDocument();
     expect(container.querySelectorAll(".preset-studio-heading h1")).toHaveLength(1);
     expect(container.querySelectorAll(".preset-gallery-intro h3")).toHaveLength(0);
     expect(container.querySelector(".preset-studio-topline .preset-studio-exit")).not.toBeNull();
-    expect(container.querySelector(".preset-color-only .preset-color-control")).not.toBeNull();
+    expect(container.querySelector(".preset-color-only")).toBeNull();
     expect(container.querySelectorAll(".preset-theme-choices button")).toHaveLength(5);
   });
   it("returns to projects through the top navigation",()=>{
