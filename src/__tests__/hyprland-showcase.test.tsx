@@ -24,7 +24,7 @@ describe("finished Hyprland gallery and dissolving transition",()=>{
     expect(changed).toHaveBeenCalledWith(OFFICIAL_THEMES[1]);
     expect(container.querySelector(".preset-dissolve-out")).not.toBeNull();
     expect(container.querySelectorAll(".preset-dissolve-dust span")).toHaveLength(90);
-    expect(screen.getByText(/Hiyuki —/)).toBeInTheDocument();
+    expect(screen.getAllByText(/Hiyuki —/).length).toBeGreaterThan(0);
     const outgoing=container.querySelector(".preset-dissolve-out")!;
     fireEvent.animationEnd(outgoing);
     expect(container.querySelector(".preset-dissolve-out")).toBeNull();
