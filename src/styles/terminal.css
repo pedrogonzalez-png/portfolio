@@ -1,0 +1,347 @@
+.terminal-backdrop {
+  position: fixed; inset: 0; z-index: 600;
+  display: grid; place-items: center; padding: clamp(.5rem,2vw,2rem);
+  background: rgba(6,3,7,.87); backdrop-filter: blur(16px);
+}
+.terminal-dialog {
+  width: min(1280px,100%); height: min(820px,91svh);
+  display: flex; flex-direction: column; min-height: 350px; overflow: hidden;
+  border: 1px solid rgba(227,179,122,.4); border-radius: 17px;
+  background: linear-gradient(145deg,#211318,#110c12);
+  box-shadow: 0 40px 140px rgba(0,0,0,.8), 0 0 90px rgba(201,106,66,.12);
+}
+.terminal-header {
+  flex: 0 0 auto; display:flex; justify-content:space-between; align-items:center;
+  gap: 1rem; padding:.8rem 1rem; background:rgba(224,144,110,.075);
+  border-bottom: 1px solid rgba(227,179,122,.25);
+}
+.terminal-header > div {display:flex; align-items:center; flex-wrap:wrap; gap:.7rem;}
+.terminal-header strong {font: 700 .8rem var(--font-display); color:var(--color-text); letter-spacing:.14em;}
+.terminal-dot { width:10px;height:10px;border-radius:50%;background:var(--color-accent-primary);box-shadow:0 0 14px var(--color-accent-primary);}
+.terminal-readonly {font:600 .61rem var(--font-body);letter-spacing:.12em;color:var(--color-outline);}
+.terminal-header button,.terminal-filebar button {
+  color:var(--color-text);background:transparent;border:1px solid rgba(227,179,122,.22);
+  border-radius:8px;cursor:pointer;min-width:35px;min-height:35px;
+}
+.terminal-workspace {flex:1;min-height:0;display:grid;grid-template-columns:1fr;}
+.terminal-workspace--split {grid-template-columns: minmax(280px, .86fr) minmax(0,1.14fr);}
+.terminal-shell {display:flex; flex-direction:column;min-width:0; min-height:0;}
+.terminal-transcript {flex:1;overflow-y:auto; padding:1.3rem; min-height:0; font: .8rem/1.65 ui-monospace, "Cascadia Code", monospace;}
+.terminal-line {margin:0 0 .85rem;}
+.terminal-command {color:var(--color-accent-yellow);overflow-wrap:anywhere;}
+.terminal-output,.terminal-error {
+  margin:.3rem 0 0;white-space:pre-wrap;overflow-wrap:anywhere;
+  font:inherit;
+}
+.terminal-output {color:#ddc5b9;}
+.terminal-error {color:#ff9d9e;}
+.terminal-prompt {
+  display:flex;align-items:center;gap:.6rem;padding:.8rem 1rem;
+  border-top:1px solid rgba(227,179,122,.17);background:#1b1118;
+}
+.terminal-prompt label {white-space:nowrap;color:var(--color-accent-yellow);font: .78rem ui-monospace,monospace;}
+.terminal-prompt input {flex:1;min-width:0;padding:.6rem;background:transparent;border:0;color:#fff2e6;outline-offset:2px;font: .83rem ui-monospace,monospace;}
+.terminal-prompt button,.terminal-quick button {
+  border:1px solid rgba(227,179,122,.28);border-radius:8px;
+  color:var(--color-text);background:rgba(201,106,66,.12);
+  padding:.58rem .8rem;cursor:pointer;font-size:.76rem;
+}
+.terminal-prompt button:disabled,.terminal-quick button:disabled {opacity:.45;cursor:default;}
+.terminal-quick {display:flex;flex-wrap:wrap;gap:.4rem;padding:.6rem 1rem 1rem;}
+.terminal-editor {min-width:0;min-height:0;border-left:1px solid rgba(227,179,122,.2);display:flex;flex-direction:column;}
+.terminal-filebar {padding:.75rem 1rem;display:flex;gap:.7rem;align-items:center;border-bottom:1px solid rgba(227,179,122,.18);}
+.terminal-filebar strong {flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font:.8rem ui-monospace,monospace;}
+.terminal-filebar a {font-size:.7rem;white-space:nowrap;text-decoration:none;color:var(--color-accent-yellow);}
+.terminal-filesource {padding:0 1rem;font-size:.71rem;color:var(--color-outline);}
+.terminal-codewrap {flex:1;min-height:0;overflow:auto;margin:0 .8rem .8rem;}
+.terminal-codewrap .cm-editor {height:100%;min-height:300px;max-height:100%;overflow:auto;}
+.terminal-codewrap .cm-scroller {overflow:auto;}
+.site-terminal-button {padding:.47rem .8rem;border:1px solid rgba(227,179,122,.3);border-radius:999px;color:var(--color-accent-yellow);background:rgba(201,106,66,.07);cursor:pointer;font-size:.79rem;}
+.site-terminal-button:hover {background:rgba(201,106,66,.2);}
+@media(max-width:760px) {
+  .terminal-workspace--split{grid-template-columns:1fr;grid-template-rows:minmax(260px,1fr) minmax(230px,1fr);}
+  .terminal-editor {border-left:0;border-top:1px solid rgba(227,179,122,.2);}
+  .terminal-header{padding:.6rem;}
+  .terminal-readonly {font-size:.52rem;}
+  .terminal-quick {padding:.45rem;}
+  .terminal-transcript {padding:.7rem;}
+  .terminal-filebar{padding:.5rem;}
+  .terminal-codewrap .cm-editor{min-height:200px;}
+  .site-nav{display:none;}
+}
+
+
+/* M3 Explorer — terminal remains fully independent from the WebGL scene. */
+.terminal-workspace--split {grid-template-columns: minmax(260px,.72fr) minmax(0,1.45fr);}
+.terminal-explorer {
+  display:flex;flex-direction:column;min-width:0;min-height:0;overflow:hidden;
+  border-left:1px solid rgba(227,179,122,.25);
+  background:linear-gradient(180deg,rgba(32,20,31,.93),rgba(21,13,24,.96));
+}
+.explorer-toolbar {
+  padding:.6rem .8rem;display:flex;align-items:center;justify-content:space-between;gap:.5rem;
+  border-bottom:1px solid rgba(227,179,122,.22);background:rgba(227,179,122,.04);
+}
+.explorer-repo {display:flex;flex-direction:column;min-width:0;gap:.18rem;}
+.explorer-repo strong {
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font:.79rem ui-monospace,monospace;
+  color:var(--color-text);
+}
+.explorer-repo span {color:var(--color-outline);font:.67rem ui-monospace,monospace;}
+.explorer-modes {display:flex;gap:.25rem;flex-shrink:0;}
+.explorer-modes button {
+  border:1px solid transparent;border-radius:8px;color:var(--color-text-variant);
+  background:transparent;cursor:pointer;padding:.42rem .65rem;font-size:.7rem;
+}
+.explorer-modes button[aria-pressed="true"]{
+  border-color:rgba(227,179,122,.34);color:var(--color-accent-yellow);background:rgba(227,179,122,.12);
+}
+.explorer-layout {display:grid;grid-template-columns:minmax(150px,31%) minmax(0,1fr);flex:1;min-height:0;}
+.explorer-sidebar {overflow:auto;min-width:0;border-right:1px solid rgba(227,179,122,.2);padding:.7rem .4rem .9rem .7rem;}
+.explorer-sidebar > label {display:block;color:var(--color-outline);font:.58rem var(--font-body);letter-spacing:.12em;margin-bottom:.45rem;}
+.explorer-sidebar > input {
+  width:100%;background:rgba(10,7,15,.6);color:var(--color-text);border-radius:6px;
+  padding:.5rem .65rem;border:1px solid rgba(227,179,122,.25);font-size:.73rem;
+}
+.explorer-tree {margin-top:.6rem;font:.73rem/1.5 ui-monospace,monospace;}
+.explorer-tree-list,.explorer-search-results,.explorer-commits {list-style:none;padding:0;margin:0;}
+.explorer-tree-list .explorer-tree-list {padding-left:.6rem;border-left:1px solid rgba(227,179,122,.1);margin-left:.4rem;}
+.explorer-tree-item,.explorer-search-results button{
+  display:flex;align-items:center;gap:.25rem;text-align:left;padding:.25rem .2rem;
+  border:0;color:var(--color-text-variant);background:transparent;font:inherit;
+  cursor:pointer;width:100%;min-width:0;overflow-wrap:anywhere;
+}
+.explorer-tree-item span:last-child {min-width:0;overflow-wrap:anywhere;}
+.explorer-tree-item:hover,.explorer-tree-item.is-active,.explorer-search-results button:hover {
+  color:var(--color-accent-yellow);background:rgba(227,179,122,.1);
+}
+.explorer-help {color:var(--color-outline);font-size:.71rem;line-height:1.6;margin:.7rem 0;}
+.explorer-editor {display:flex;flex-direction:column;min-height:0;min-width:0;overflow:hidden;}
+.explorer-tabs {display:flex;align-items:stretch;gap:2px;overflow:auto;min-height:39px;flex-shrink:0;background:rgba(11,7,15,.6);border-bottom:1px solid rgba(227,179,122,.19);}
+.explorer-tab {display:flex;align-items:center;gap:.1rem;max-width:185px;border-right:1px solid rgba(227,179,122,.1);background:rgba(255,255,255,.03);}
+.explorer-tab.active {background:rgba(201,106,66,.19);border-top:2px solid var(--color-accent-yellow);}
+.explorer-tab button {border:0;color:var(--color-text-variant);background:transparent;cursor:pointer;font:.69rem ui-monospace,monospace;padding:.62rem .45rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.explorer-tab.active button {color:var(--color-text);}
+.explorer-tab button:last-child {font-size:1rem;padding:.4rem .6rem;}
+.explorer-file-meta {display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem;padding:.6rem .8rem;}
+.explorer-breadcrumbs {color:var(--color-text);font-size:.7rem;overflow-wrap:anywhere;}
+.explorer-breadcrumbs b {color:var(--color-outline);font-weight:400;}
+.explorer-file-actions {display:flex;align-items:center;gap:.4rem;flex-wrap:wrap;}
+.explorer-file-actions button,.explorer-file-actions a{
+  cursor:pointer;color:var(--color-accent-yellow);border:1px solid rgba(227,179,122,.2);
+  background:rgba(227,179,122,.05);text-decoration:none;font-size:.62rem;border-radius:6px;padding:.3rem .45rem;
+}
+.explorer-source {color:var(--color-outline);font:.62rem ui-monospace,monospace;padding:0 .8rem;margin:0 0 .5rem;overflow-wrap:anywhere;}
+.explorer-editor .terminal-codewrap {display:flex;flex-direction:column;min-height:0;flex:1;}
+.terminal-codemirror{flex:1;min-height:0;overflow:auto;border:1px solid rgba(227,179,122,.17);border-radius:8px;}
+.terminal-codemirror .cm-editor{height:100%;min-height:0;}
+.explorer-empty {margin:auto;max-width:340px;padding:2rem;color:var(--color-text-variant);text-align:center;line-height:1.7;}
+.explorer-empty strong{color:var(--color-accent-yellow);}
+.explorer-empty code{color:var(--color-accent-yellow);}
+.explorer-message {padding:0 .8rem;}
+.explorer-timeline {flex:1;min-height:0;overflow:auto;padding:1rem;font-size:.78rem;}
+.explorer-panel-title {display:flex;justify-content:space-between;gap:.6rem;color:var(--color-accent-yellow);font-weight:700;letter-spacing:.08em;}
+.explorer-panel-title span{color:var(--color-outline);font-weight:400;letter-spacing:0;}
+.explorer-commits {display:flex;flex-direction:column;gap:.45rem;margin:.6rem 0;}
+.explorer-commits button {
+  display:flex;flex-direction:column;align-items:flex-start;gap:.22rem;text-align:left;width:100%;
+  background:rgba(227,179,122,.045);color:var(--color-text);border:1px solid rgba(227,179,122,.17);
+  border-radius:8px;padding:.67rem;cursor:pointer;overflow-wrap:anywhere;
+}
+.explorer-commits button:hover {background:rgba(227,179,122,.13);border-color:rgba(227,179,122,.4);}
+.explorer-commits code {font-size:.69rem;color:var(--color-accent-yellow);}
+.explorer-commits small {color:var(--color-outline);}
+.explorer-pagination {display:flex;gap:1rem;justify-content:center;align-items:center;padding:1rem 0;}
+.explorer-pagination button {border:1px solid rgba(227,179,122,.3);background:rgba(227,179,122,.08);color:var(--color-text);border-radius:7px;padding:.42rem .75rem;cursor:pointer;}
+.explorer-pagination button:disabled {opacity:.35;cursor:default;}
+.explorer-commit-detail {border:1px solid rgba(227,179,122,.18);background:#130c14;border-radius:10px;margin-top:.7rem;}
+.explorer-commit-detail pre {max-height:350px;overflow:auto;padding:1rem;white-space:pre-wrap;overflow-wrap:anywhere;font: .7rem/1.5 ui-monospace,monospace;}
+@media(max-width:980px){
+  .terminal-workspace--split {grid-template-columns:minmax(210px,.8fr) minmax(0,1fr);}
+  .explorer-layout{grid-template-columns:minmax(125px,36%) minmax(0,1fr);}
+  .explorer-file-actions{gap:.2rem;}
+}
+@media(max-width:760px){
+  .terminal-workspace--split {display:flex;flex-direction:column;overflow-y:auto;}
+  .terminal-workspace--split .terminal-shell {flex:none;min-height:290px;height:42vh;}
+  .terminal-explorer {flex:none;min-height:410px;height:65vh;border-left:0;border-top:1px solid rgba(227,179,122,.25);}
+  .explorer-toolbar {flex-wrap:wrap;}
+  .explorer-layout {grid-template-columns:minmax(110px,34%) minmax(0,1fr);}
+}
+@media(max-width:440px){
+  .explorer-layout{grid-template-columns:minmax(93px,33%) minmax(0,1fr);}
+  .explorer-sidebar{padding:.4rem .2rem;}
+  .explorer-tree-item,.explorer-search-results button{font-size:.65rem;}
+  .explorer-file-actions button{font-size:.55rem;}
+}
+
+.safe-markdown {
+  flex:1;overflow-y:auto;padding:1rem 1.2rem 2rem;
+  border:1px solid rgba(227,179,122,.18);
+  border-radius:8px;
+  background:rgba(15,9,19,.82);
+  color:var(--color-text-variant);
+  line-height:1.8;
+  overflow-wrap:anywhere;
+}
+.safe-markdown h2,.safe-markdown h3,.safe-markdown h4 {
+  font-family:var(--font-display);font-weight:600;color:var(--color-text);line-height:1.25;
+  margin:1.5rem 0 .6rem;
+}
+.safe-markdown h2:first-child {margin-top:0;}
+.safe-markdown h2{font-size:1.4rem;}
+.safe-markdown h3{font-size:1.1rem;}
+.safe-markdown p{margin:.45rem 0;}
+.safe-markdown .md-bullet{padding-left:1.1rem;text-indent:-.95rem;}
+.safe-markdown .md-bullet span{color:var(--color-accent-primary);}
+.safe-markdown blockquote{border-left:3px solid var(--color-accent-primary);padding:.5rem 1rem;margin:1rem 0;background:rgba(227,179,122,.06);}
+.safe-markdown pre{
+  padding:1rem;background:#100a11;border:1px solid rgba(227,179,122,.18);border-radius:7px;
+  color:var(--color-text);overflow-x:auto;white-space:pre;
+}
+.safe-markdown code{font:.85em ui-monospace,monospace;color:var(--color-accent-yellow);}
+.safe-markdown figure{margin:1rem 0;}
+.safe-markdown figcaption{font-size:.68rem;color:var(--color-outline);text-transform:uppercase;letter-spacing:.1em;}
+.safe-markdown hr{border:0;border-top:1px solid rgba(227,179,122,.2);margin:1rem 0;}
+
+/* M3 verified commit graph and provisional milestones */
+.git-mode-switch{display:flex;gap:.55rem;margin:1rem 0;}
+.git-mode-switch button{border:1px solid rgba(227,179,122,.24);border-radius:8px;background:rgba(227,179,122,.04);color:var(--color-text-variant);padding:.55rem .75rem;cursor:pointer;}
+.git-mode-switch button[aria-pressed="true"]{border-color:var(--color-accent-yellow);color:var(--color-accent-yellow);background:rgba(227,179,122,.13);}
+.git-history-visual{display:grid;grid-template-columns:62px minmax(0,1fr);align-items:start;}
+.git-graph{display:block;width:62px;overflow:visible;}
+.git-edge{fill:none;stroke:#e3b37a;stroke-width:2.2;opacity:.75;}
+.git-edge-merge{stroke:#b79bd8;stroke-dasharray:5 3;}
+.git-graph-node{fill:#1b1019;stroke:#e3b37a;stroke-width:2;}
+.git-graph-node-core{fill:#ffdcac;}
+.git-history-visual .explorer-commits{margin:0;gap:0;}
+.git-history-visual .explorer-commits li{height:88px;min-height:88px;display:flex;align-items:stretch;}
+.git-history-visual .explorer-commits button{height:83px;gap:.15rem;padding:.4rem .7rem;overflow:hidden;}
+.git-history-visual .explorer-commits button span{overflow:hidden;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;}
+.git-history-visual .explorer-commits button small{font-size:.57rem;}
+.git-milestones{list-style:none;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr));gap:.8rem;padding:0;margin:1rem 0;}
+.git-milestones li{border:1px solid rgba(227,179,122,.25);border-radius:12px;padding:.9rem;background:rgba(104,46,66,.13);}
+.git-milestones strong{display:block;color:var(--color-text);margin:.4rem 0;font-family:var(--font-display);}
+.git-milestones p{color:var(--color-text-variant);font-size:.72rem;line-height:1.6;}
+.git-milestone-type{font-size:.58rem;letter-spacing:.16em;text-transform:uppercase;color:var(--color-accent-yellow);}
+.git-milestone-actions{display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;margin-top:.7rem;}
+.git-milestone-actions button,.git-milestone-actions a{background:rgba(227,179,122,.06);color:var(--color-accent-yellow);border:1px solid rgba(227,179,122,.27);border-radius:7px;padding:.45rem .6rem;font-size:.65rem;cursor:pointer;text-decoration:none;}
+.git-milestone-actions button:disabled{opacity:.45;}
+.explorer-commit-detail .terminal-filebar a{font-size:.67rem;color:var(--color-accent-yellow);text-decoration:none;}
+
+/* Two-way Git command integration: structured, non-executable diff patches. */
+.git-diff-viewer { margin-top:1rem;border:1px solid rgba(227,179,122,.28);border-radius:13px;overflow:hidden;background:#120b14;}
+.git-diff-heading {display:flex;justify-content:space-between;gap:.75rem;flex-wrap:wrap;align-items:center;padding:.85rem 1rem;border-bottom:1px solid rgba(227,179,122,.24);}
+.git-diff-title {display:flex;flex-direction:column;gap:.3rem;min-width:0;overflow-wrap:anywhere;}
+.git-diff-title strong{font:600 .85rem/1.4 var(--font-display);color:var(--color-text);}
+.git-diff-title code{font:.65rem ui-monospace,monospace;color:var(--color-outline);overflow-wrap:anywhere;}
+.git-diff-eyebrow{color:var(--color-accent-yellow);font-size:.58rem;letter-spacing:.13em;}
+.git-diff-actions{display:flex;align-items:center;gap:.55rem;}
+.git-diff-actions button,.git-diff-actions a{background:rgba(227,179,122,.07);border:1px solid rgba(227,179,122,.24);border-radius:7px;color:var(--color-accent-yellow);padding:.4rem .55rem;cursor:pointer;font-size:.7rem;text-decoration:none;}
+.git-stat-add{color:#8edcb0;}
+.git-stat-remove{color:#ed9999;}
+.git-diff-caption{font-size:.69rem;color:var(--color-outline);padding:.5rem 1rem;margin:0;}
+.git-diff-layout{display:grid;grid-template-columns:minmax(140px,34%) minmax(0,1fr);min-height:180px;max-height:440px;}
+.git-diff-files{border-right:1px solid rgba(227,179,122,.2);overflow:auto;padding:.35rem;}
+.git-diff-files button{display:flex;flex-direction:column;gap:.28rem;width:100%;padding:.55rem;border:0;border-radius:6px;background:transparent;color:var(--color-text-variant);text-align:left;cursor:pointer;}
+.git-diff-files button:is(:hover,.is-selected){background:rgba(227,179,122,.13);color:var(--color-text);}
+.git-file-name{font:.68rem/1.5 ui-monospace,monospace;overflow-wrap:anywhere;}
+.git-file-summary{display:flex;gap:.5rem;font-size:.59rem;color:var(--color-outline);}
+.git-diff-patch{min-width:0;overflow:auto;}
+.git-diff-filename{position:sticky;top:0;background:#241520;color:var(--color-text);padding:.6rem .85rem;font:.7rem ui-monospace,monospace;overflow-wrap:anywhere;}
+.git-patch-code{margin:0;font:.69rem/1.6 ui-monospace,monospace;white-space:pre;overflow:auto;}
+.git-patch-line{display:flex;width:max-content;min-width:100%;padding-right:1rem;}
+.git-patch-line code{white-space:pre;}
+.git-patch-add{background:rgba(59,160,92,.18);color:#a4edb6;}
+.git-patch-remove{background:rgba(209,79,91,.17);color:#f2a9a9;}
+.git-patch-hunk{background:rgba(103,110,205,.18);color:#b8c5fa;}
+.git-patch-context{color:#ceb9b8;}
+.git-line-number{display:inline-block;min-width:3rem;padding:0 .6rem;margin-right:.65rem;text-align:right;border-right:1px solid rgba(227,179,122,.1);user-select:none;color:var(--color-outline);}
+@media(max-width:720px){.git-diff-layout{grid-template-columns:1fr;grid-template-rows:minmax(84px,130px) minmax(140px,1fr);max-height:480px;}.git-diff-files{border-right:0;border-bottom:1px solid rgba(227,179,122,.2);}.git-diff-heading{padding:.65rem;}.git-patch-code{font-size:.64rem;}}
+
+
+/* Mobile: one usable pane at a time, not two cramped vertically stacked panes. */
+.terminal-explorer-viewport { display:flex; flex-direction:column; min-width:0; min-height:0; overflow:hidden; }
+.terminal-explorer-viewport > .terminal-explorer { flex:1; min-height:0; }
+.terminal-mobile-tabs { display:none; }
+.explorer-keyboard-hint { margin:.5rem 0 .3rem; color:var(--color-outline); font-size:.65rem; line-height:1.5; }
+.explorer-tree-item:focus-visible,.explorer-search-results button:focus-visible,
+.explorer-tabs button:focus-visible,.explorer-modes button:focus-visible,
+.git-mode-switch button:focus-visible,.terminal-mobile-tabs button:focus-visible {
+  outline:2px solid var(--color-accent-yellow); outline-offset:2px;
+  background:rgba(227,179,122,.18);color:var(--color-text);
+}
+@media (max-width:760px) {
+  .terminal-backdrop { padding:0; place-items:stretch; }
+  .terminal-dialog {
+    width:100%; height:100dvh; max-height:100dvh; min-height:0;
+    border-radius:0; border:0;
+  }
+  .terminal-mobile-tabs {
+    display:grid; grid-template-columns:1fr 1fr; flex:0 0 auto;
+    padding:.4rem .65rem; gap:.5rem;
+    background:#1b1118; border-bottom:1px solid rgba(227,179,122,.25);
+  }
+  .terminal-mobile-tabs button {
+    min-height:44px; border:1px solid rgba(227,179,122,.25);
+    border-radius:8px; color:var(--color-text-variant);
+    background:rgba(255,255,255,.03); cursor:pointer; font-size:.84rem;
+  }
+  .terminal-mobile-tabs button[aria-selected="true"] {
+    background:rgba(201,106,66,.25); color:var(--color-accent-yellow);
+    border-color:rgba(227,179,122,.7);
+  }
+  .terminal-workspace--split { display:flex; flex-direction:column; overflow:hidden; min-height:0; }
+  .terminal-workspace--split .terminal-shell {
+    flex:1 1 auto; min-height:0; height:auto; overflow:hidden;
+  }
+  .terminal-workspace--split .terminal-explorer-viewport {
+    flex:1 1 auto; min-height:0; height:auto; overflow:hidden;
+  }
+  .terminal-workspace--split[data-mobile-view="console"] .terminal-explorer-viewport { display:none; }
+  .terminal-workspace--split[data-mobile-view="explorer"] .terminal-shell { display:none; }
+  .terminal-explorer {min-height:0;height:auto;flex:1;}
+  .terminal-transcript{min-height:0;overscroll-behavior:contain;}
+  .explorer-tree,.terminal-codewrap {overscroll-behavior:contain;}
+  .explorer-toolbar{flex:0 0 auto;}
+  .explorer-layout{min-height:0;flex:1;}
+  .terminal-quick{flex:0 0 auto;max-height:105px;overflow:auto;}
+}
+@media (prefers-reduced-motion:reduce) {
+  .terminal-dialog,.terminal-mobile-tabs button { transition:none; }
+}
+
+/* M3: compact assistive announcements and retry controls. */
+.terminal-assistive-status{
+  position:absolute; width:1px; height:1px; margin:-1px; padding:0;
+  overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0;
+}
+.terminal-retry{
+  display:flex;align-items:center;justify-content:space-between;gap:.5rem;
+  flex-wrap:wrap;padding:.5rem 1rem;color:#ffb6af;
+  border-top:1px solid rgba(227,179,122,.14);font-size:.72rem;
+}
+.terminal-retry button,.explorer-load-error button{
+  border:1px solid rgba(227,179,122,.55);border-radius:7px;
+  background:rgba(201,106,66,.15);color:var(--color-accent-yellow);
+  padding:.45rem .7rem;cursor:pointer;font-size:.72rem;
+}
+.terminal-retry button:focus-visible,.explorer-load-error button:focus-visible{
+  outline:2px solid var(--color-accent-yellow);outline-offset:3px;
+}
+.explorer-load-error{
+  display:flex;align-items:center;flex-wrap:wrap;justify-content:space-between;
+  gap:.45rem;padding:.45rem .75rem;color:#ffb6af;
+  border-bottom:1px solid rgba(227,179,122,.22);font-size:.72rem;
+}
+.explorer-load-error p{margin:0;}
+
+/* M4: Kitty terminal and Git interface inherit official global palette. */
+.terminal-dialog{background:linear-gradient(145deg,var(--color-surface-container),var(--color-bg));border-color:color-mix(in srgb,var(--color-outline) 65%,transparent)}
+.terminal-header,.terminal-prompt,.terminal-mobile-tabs{background:var(--color-surface);border-color:color-mix(in srgb,var(--color-outline) 35%,transparent)}
+.terminal-explorer,.explorer-timeline{background:linear-gradient(180deg,var(--color-surface-container),var(--color-bg))}
+.terminal-command,.terminal-prompt label,.explorer-tab.active button{color:var(--color-accent-yellow)}
+.terminal-output,.terminal-header strong,.explorer-repo strong{color:var(--color-text)}
+.explorer-tab.active{background:color-mix(in srgb,var(--color-accent-primary) 18%,transparent)}
+.git-diff-viewer,.git-diff-patch,.git-graph-node{background:var(--color-bg)}
+.git-diff-filename,.explorer-tabs{background:var(--color-surface-container)}

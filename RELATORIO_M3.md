@@ -1,55 +1,76 @@
-# RELATÓRIO M3 — FINAL (Terminal + GitHub + CodeMirror)
-# Data: 2026-10-27
-# Status: CONCLUÍDO (autorização contínua — sem interrupção)
+# RELATÓRIO M3 — Revisão técnica (28/10/2026)
 
-## Arquivos alterados/criados
+## Situação: IN_PROGRESS — terminal e GitHub reais integrados; M3 completo ainda não aprovado
 
-- `src/components/Terminal.tsx` (novo)
-- `src/components/CodeMirror.tsx` (novo)
-- `src/app/pages.tsx` (alterado — integra `Terminal` + `ProjectSelector` + `ProjectPanel`)
-- `package.json` (alterado — adiciona `@codemirror/*`)
-- `MANIFESTO_M2_01.md` (preservado)
-- `RELATORIO_M2.md` (preservado)
-- `RELATORIO_M3.md` (novo — este relatório)
+O relatório anterior chamava o M3 de concluído, apesar de `cat`, `git log` e `git diff` retornarem texto fictício e o Terminal não estar na home. Essa inconsistência foi corrigida nesta branch.
 
-## Funcionalidades M3 implementadas
+## Implementado nesta rodada
 
-1. **Terminal Linux simulado (`Terminal.tsx`)**: 11 comandos (`help`, `whoami`, `pwd`, `ls`, `cd`, `cat`, `git log`, `git show`, `git diff`, `open <repo-id>`, `goto <section>`, `neofetch`). Dados do `PlaceholderCatalog`. Nenhum acesso a sistema real.
-2. **CodeMirror (`CodeMirror.tsx`)**: Editor readonly com `markdown()` e `basicSetup()`. Nenhuma edição de repositórios remotos.
-3. **Integração GitHub (`PlaceholderCatalog` + comandos)**: `open <repo-id>` aponta para `sourceUrl` dos candidatos; `ls` lista candidatos; `cat` retorna texto placeholder; `git log/show/diff` retornam strings ilustrativas.
-4. **ProjectPanel (`ProjectPanel.tsx`)**: Modal de projeto com detalhes (status, repo, demo) — demo indisponível (`null`) com mensagem honesta.
-5. **ProjectSelector (`ProjectSelector.tsx`)**: Grid de 3 cards abaixo do hero; ao clicar, abre `ProjectPanel`.
-6. **Isolamento (`IsolationController.tsx`)**: Suspende scroll global quando demo ativa; restaura ao fechar.
-7. **EmbeddedDemo (`EmbeddedDemo.tsx`)**: Iframe isolado (`sandbox` com permissões limitadas) + fallback quando `demoUrl` é `null`.
+- `src/services/githubReadonly.ts`: acesso **somente de leitura** à API pública do GitHub, limitado à allowlist do `PlaceholderCatalog`. Descobre branch padrão e árvore real, lê blobs pelo SHA, lista commits e carrega diffs/commits sob demanda. Cache de 5 minutos, limite de árvores e arquivos (128 KB), timeout, mensagens para 404/403/offline e índices parciais.
+- `src/components/Terminal.tsx`: terminal simulado com saída de **fontes reais**, não shell do sistema; `git log [página]` permite até dez páginas. `repos`, `open`, `ls`, `cd`, `pwd`, `cat`, `code`, `tree`, `find`, `git log/show/diff`, `help`, `whoami`, `neofetch`, `history`, `clear` e `goto`.
+- `src/app/pages.tsx` e `TopMenu.tsx`: terminal acessível por botão e `Ctrl+\``, carregamento lazy; modal com Escape, restauração de foco, bloqueio de rolagem e viewer lateral `CodeMirror`.
+- `src/styles/terminal.css`: aparência Kitty/Changli e adaptação para telas menores.
+- `src/components/RepositoryExplorer.tsx`: árvore de arquivos, busca local por nome, breadcrumbs, abas fecháveis e timeline de commits reais.
+- `src/components/SafeMarkdownPreview.tsx`: renderização segura limitada de Markdown, usando apenas texto/JSX escapado.
+- `src/components/CodeMirror.tsx` e `codeLanguages.ts`: gramáticas lazy por extensão, realce de tokens Changli, numeração de linhas, fallback para texto simples. Dependências declaradas no `package.json` e `package-lock.json`.
+- `src/services/githubReadonly.ts`: leitura retorna também o SHA do blob e histórico paginado.
+- Testes `src/__tests__/github-readonly.test.ts`, `repository-explorer.test.tsx`, `markdown-preview.test.tsx` e `code-languages.test.ts` para allowlist, traversal, SHA, árvore, busca, abas, timeline, proteção contra XSS e gramáticas por extensão.
 
-## O que NÃO está implementado (fora do escopo / bloqueado)
+## Bloqueios / ainda não implementado
 
-- Nenhum acesso real ao GitHub (sem token, sem API REST)
-- Nenhum arquivo real dos repositórios explorado via `cat`
-- Nenhuma URL de demo confirmada (`demoUrl: null` para todos)
-- Nenhum build de jogo/site-3D integrado (repositórios originais não alterados)
-- Nenhum Theme Studio / M4 (não antecipado)
-- Nenhum conteúdo pessoal inventado (nome ainda placeholder, bio pendente)
-- Nenhum `dotfiles-Arch` (excluído)
+- **Árvore lateral, busca, breadcrumbs e até sete abas readonly: implementados nesta revisão**, com acesso por clique e comando `code` ao mesmo conteúdo da API GitHub.
+- **Preview Markdown básico seguro: implementado**, sem injeção de HTML/JS ou imagens externas; suporta títulos, parágrafos, listas simples, citações, separadores, blocos de código e negrito/inline-code. Não promete compatibilidade completa com GitHub Flavored Markdown.
+- **Linha do tempo de commits reais: implementada parcialmente**, com paginação limitada a dez páginas, doze commits por página, detalhamento `git show` sob demanda. A curadoria manual de marcos e sincronização completa com o terminal ainda não foram feitas.
+- **Gramáticas sob demanda implementadas** para JavaScript, TypeScript, JSX/TSX, CSS, HTML e Markdown, com realce de tokens no tema Changli e numeração de linhas. JSON recebe realce básico usando parser compatível com JavaScript (não é um validador de JSON estrito). A revisão visual da coloração e cobertura das gramáticas permanece pendente.
+- Grafo de commits 3D e objeto terminal integrado à cena 3D; dependem de maturidade da UI.
+- Índice estático gerado **opcionalmente no CI** a partir da mesma allowlist JSON do catálogo (`src/data/approved-repos.json`) com até 4.000 entradas por projeto. O navegador prioriza o índice validado (máximo 90 dias) e recorre à API GitHub quando ausente, expirado ou inválido. Não inclui conteúdo de arquivos, apenas caminhos e SHAs, e não libera repositórios adicionais. CI não deve falhar se a API de terceiros estiver indisponível.
+- Teste manual completo no navegador do proprietário, rede offline/rate limit real e acessibilidade com leitor de tela.
+- Qualquer demo de Abismo/site-3D continua sem URL publicada autorizada; M2 ainda tem gate pendente.
 
-## Preservações confirmadas
+## Segurança e preservações
 
-- ✅ M1 (base reprodutível) — `ThemeProvider`, `AccessibilityProvider`, `changli.ts`
-- ✅ M2 (demonstráveis) — `PlaceholderCatalog` com 3 draft, `MANIFESTO_M2_01.md`, `EmbeddedDemo`, `IsolationController`
-- ✅ Correções M1/M2 preservadas (`App.tsx`, `TopMenu.tsx`, `ProjectCard.tsx`)
-- ✅ Nenhum repo original alterado
-- ✅ Nenhum M4+ iniciado
+- Nenhum `eval`, `fetch` de URLs arbitrárias digitadas pelo visitante, execução do shell, autenticação ou token no navegador.
+- Não liberar `dotfiles-Arch` nem qualquer repositório fora da allowlist.
+- Nenhum repositório de projeto original alterado; nenhum conteúdo de pessoa inventado.
+- Carrossel 3D, vidro e nome de partículas preservados na branch do PR #3.
 
-## Dívida técnica registrada
+## Validação
 
-1. **ESLint**: 3 avisos restantes (sem desativar regras — registrado como dívida técnica conforme instrução)
-2. **Vitest**: não executado — ambiente bloqueado
-3. **TypeScript**: não executado — ambiente bloqueado
-4. **Build Vite**: não executado — ambiente bloqueado
-5. **CodeMirror**: módulos `@codemirror/*` adicionados ao `package.json` mas não instalados ainda — precisa de `npm install` local
+GitHub Actions é a fonte de evidência para TypeScript, testes, build e lint. Não considerar `DONE` até CI verde **e** validação manual do fluxo no navegador.
 
-## Próximo passo
+## Bloco M3 — duas melhorias de histórico
 
-Aguardando revisão final do proprietário. Se aprovar, M3 está concluído e o ciclo pode reiniciar com M4 (Theme Studio / vitrine dos 5 temas / engine de paleta) conforme `docs/07_THEME_STUDIO.md`, ou retornar ao M1 se houver ajustes pendentes.
+- Grafo 2D de commits usando parentesco real da API GitHub. Arestas apenas quando ambos SHAs aparecem na página; merges têm conexões adicionais quando verificáveis. Nenhuma aresta inventada; grafo 3D permanece pendente.
+- Sete marcos técnicos candidatos de commits efetivos, com diffs e arquivos confirmados no GitHub (2 de Abismo, 2 de site-3D, 3 de Hyprland-Themes). Seleção editorial **provisória**, não aprovada pelo proprietário; link para fonte e diff real sob demanda.
+- Testes de vínculos de parentesco e allowlist de marcos, mais teste de interface para alternar marcos/histórico.
+- M3 segue IN_PROGRESS até revisão manual; não há mudanças em projetos originais.
 
-Nenhuma funcionalidade inventada. Nenhum conteúdo pessoal inventado. Nenhum repositório original alterado. Nenhum componente falso criado apenas para ocultar erros. Nenhum teste declarado como aprovado sem evidência real.
+## Próxima tarefa M3
+
+Conferir visualmente árvore, abas, Markdown, syntax highlighting e histórico no Arch. Em seguida, verificar que o índice gerado está presente no build implantado e revisar acessibilidade, históricos e curadoria. Não marcar M3 `DONE` antes da validação manual.
+
+## Bloco seguinte — sincronização e diff
+
+- Terminal Git agora compartilha estado de navegação com histórico visual: `git log 2` abre a página 2; `git show SHA` e `git diff A B` abrem um diff estruturado no painel Histórico.
+- Novo visualizador de diff readonly organiza arquivos, status, contagem de linhas adicionadas/removidas, trechos de código coloridos, links para a fonte e avisos de truncamento. Não executa conteúdo do repositório.
+- Reaproveita respostas reais da API; commits de marcos continuam explicitamente provisórios.
+- Revisão visual/manual no Arch ainda pendente; M3 continua IN_PROGRESS.
+
+## Bloco de duas melhorias — mobile e teclado (28/10/2026)
+
+- Modal Kitty usa **duas abas no celular (Console / Arquivos e Git)** em vez de duas áreas verticais comprimidas. Comandos `open`, `code` e `git log/show/diff` levam ao explorador após carregar; na aba Console o campo de comando recupera foco. Desktop mantém split-view.
+- Árvore tem navegação por setas ↑↓, Home/End e expansão/recolhimento por →/← com foco visível e tabulação reduzida. As teclas Enter e Espaço continuam ativando os botões nativos, sem capturar atalhos dentro do CodeMirror.
+- Testes de modo mobile e navegação por teclado. Validação manual em tela touch e leitor de tela ainda não substituída pelos testes.
+- M3 segue IN_PROGRESS, carrossel 3D e partículas não alterados.
+
+## Bloco M3 — foco e recuperação de erros
+
+- Modal tem contenção de foco de Tab/Shift+Tab, proteção contra foco externo, Escape, restauração de foco e descrição para leitor de tela. Estado conciso em região `role=status`, sem anúncio verboso dos patches.
+- Erros transitórios do GitHub oferecem `Tentar comando novamente`; consulta de arquivos bloqueia resultados/erros antigos usando ID de requisição e identidade da allowlist, com retry somente para falhas temporárias.
+- Testes para foco, reconsulta após offline e descarte de erro obsoleto. Validação manual mobile e leitor de tela continua pendente; M3 `IN_PROGRESS`.
+
+## M3 — entrega incremental `grep` (29/10/2026)
+
+**IN_PROGRESS (sem aceite manual):** o comando `grep "termo" [pasta|arquivo]` agora pesquisa texto real em arquivos GitHub allowlisted usando `src/services/githubGrep.ts`, sem executar regex arbitrária, shell, nem acessar repositórios excluídos. Saída com linha/caminho/branch, aviso de cobertura parcial. Orçamento: 6 arquivos até 48 KiB e 24 ocorrências por busca.
+
+Arquivos: `src/components/Terminal.tsx`, `src/services/githubGrep.ts`, `src/__tests__/github-grep.test.ts` e `docs/06_GITHUB_TERMINAL_EDITOR.md`. Testes manuais, QA mobile e rate-limit real continuam **BLOCKED por validação externa**. A PR é empilhada na `feat/knowledge-tree`, sem tocar `main`, jogo ou site de personagens.

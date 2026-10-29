@@ -143,3 +143,163 @@ Catálogo inicial, sujeito a comparação exata com o desktop/versão base:
 - Loja/social de temas, comunidade, sincronização multi-dispositivo, marketplace, IA de criação de temas.
 - MP4 ao fundo do portfólio principal; execução de QML no browser.
 - Microconfigurações não pedidas que dificultam o uso básico.
+
+## M4 — primeiro bloco (28/10/2026)
+
+- Cinco esquemas oficiais exatos (defaults, dark, light) copiados do repositório Hyprland-Themes, cada qual identificado por caminho e SHA em src/data/official-theme-schemes.json.
+- ThemeProvider aplica tokens globais e persiste a escolha em localStorage, com fallback Changli para IDs inválidos ou armazenamento bloqueado.
+- Partículas do nome, iluminação, poeira e vidros agora usam cores da paleta, atualizadas sem desmontar o carrossel ou reiniciar as câmeras. Destaques CSS globais seguem os tokens.
+- Acesso à galeria pelo botão Temas e pelo detalhe Hyprland-Themes. Prévia é local; Aplicar confirma a troca. Os cinco oficiais permanecem imutáveis.
+- M4 continua IN_PROGRESS: duplicação e edição personalizada, auditoria visual de todos os tons/contrastes e teste manual no navegador. M5 (widgets/wallpapers) ainda não foi implementado.
+
+## M4 — segundo bloco: cópias pessoais + editor (28/10/2026)
+
+- Duplicar qualquer tema oficial ou cópia, sem alterar os originais. A nova cópia mantém SHA e identidade do JSON oficial de origem.
+- Editor simples: nome, três acentos, fundo, superfície e texto, com prévia isolada. **Salvar** persiste; **Aplicar** altera a aparência global. Editar o tema atualmente aplicado não o modifica até o usuário reaplicar, inclusive após recarregar.
+- Storage provisório de M4: localStorage para paletas pequenas, até 12 cópias, validando ID, origem, hex e integridade. Falha de armazenamento comunica erro sem marcar como salvo. IndexedDB para widgets, imagens e layouts segue reservado a M5/M6.
+- Os cinco oficiais permanecem imutáveis. Sem widgets, wallpaper e exportação nesta etapa. M4 ainda IN_PROGRESS até teste visual e auditoria de contraste.
+
+## M4 — terceiro bloco: contraste e desktop simulado ampliado (28/10/2026)
+
+- Análise indicativa de contraste sRGB/WCAG 2.x na **prévia local**, com quatro pares de cores usuais: texto sobre fundo, texto sobre superfície, texto secundário sobre superfície (meta 4,5:1) e acento sobre fundo usado como elemento gráfico (meta 3:1). Mostra proporção calculada, status e aviso. Não é uma certificação de acessibilidade de todos os componentes do site nem bloqueia salvar uma paleta.
+- Nas cópias pessoais, botão opcional **Sugerir texto legível** escolhe branco ou preto maximizando a pior razão de contraste entre fundo e superfície. O ajuste modifica somente o rascunho; Salvar e Aplicar seguem etapas independentes.
+- **Abrir desktop ampliado** ativa uma simulação DOM/CSS 2D proporcional, com opções de aspecto 3440×1440 e 1920×1080, barra, dock e janelas visuais com três painéis alternáveis (Visão geral, Paleta e Sobre). Tudo é deliberadamente demonstrativo; nenhuma mídia, widget, card de personagem, wallpaper MP4 ou QML real foi implementado ainda.
+- Prévia ampliada herda alterações do rascunho em tempo real; muda apenas o Theme Studio, sem alterar o Arch real, o portfolio 3D, a seleção aplicada ou dados salvos. Mobile vertical tem aviso de orientação que pode ser dispensado.
+- Desktop simulado é um **andaime visual para a etapa de widgets/layouts**, não conclusão do editor de desktop previsto em M5. M4 permanece IN_PROGRESS até QA manual e aceitação.
+
+## M4 → M5 — primeiro relógio real + primeiros cards de personagem (28/10/2026)
+
+- Inspecionamos os QMLs no commit pinado 8fbb6716cba628a13103e665e9538021683a7250 da referência pctrade/end4-pC: ClockWidget.qml, DigitalClock.qml, ImageCardWidget.qml. O relógio web usa horário e data locais reais (Intl.DateTimeFormat pt-BR), atualiza a cada segundo e herda a paleta; é adaptação React/CSS do estilo digital, não QML executado.
+- Cards de personagem não são widgets: cada card recebe sua própria imagem PNG/JPG/WebP, selecionada pelo visitante, ID único e URL blob local. Imagens com até 8 MB cada, máximo temporário de 20 cards por sessão; SVG e arquivos incompatíveis são recusados. Não há imagens inventadas ou uploads para servidores.
+- Relógio e cards têm alças independentes com arraste via pointer (mouse/touch) ou movimentação por setas; Shift + seta aumenta o passo; remoção individual. Posicionamento percentual limitado à área da prévia.
+- IMPORTANTE: arquivos importados, relógio e posições existem apenas durante a sessão da prévia. URL.revokeObjectURL libera as imagens ao remover ou fechar o editor; não há IndexedDB, salvamento/exportação de mídia, layout por wallpaper, grid, grupos, snap ou undo/redo. Não afirmar persistência ou conclusão dessas funções.
+- Esta implementação inicia elementos reais do desktop simulado; M4/M5 ainda IN_PROGRESS até QA no navegador e persistência dos elementos em marco posterior. Os cinco temas oficiais continuam imutáveis, assim como o Arch real e o portfolio 3D.
+
+## Correção de navegação: somente pelo projeto Hyprland-Themes (28/10/2026)
+
+- O Theme Studio completo pertence ao projeto **Hyprland-Themes** no carrossel de Projetos. Quando o card estiver centralizado, clicar nele abre o Studio diretamente. Clicar no card lateral continua apenas a centralizá-lo.
+- O botão global **✦ Temas** foi removido do cabeçalho: o tema aplicado continua indicado visualmente, mas o editor completo não compete com a navegação do portfólio.
+- Os cards Abismo e site-3D preservam seu fluxo de detalhes.
+- A janela do Studio usa cobertura opaca do fundo para não deixar os cards do carrossel confundirem sua hierarquia visual. As cores aplicadas continuam globais, mas o acesso à edição é contextual ao projeto.
+
+## M5 — armazenamento local do desktop (28/10/2026)
+
+- O desktop simulado agora oferece **Salvar organização** e **Restaurar última organização salva**. Ao abrir a prévia, tenta recuperar automaticamente um único layout local do navegador. Esta primeira persistência é **global para a prévia** (não separada por wallpaper, tema ou resolução), com o formato de tela salvo como parte da organização. Múltiplos perfis e versões continuam futuros.
+- Dados persistidos em **IndexedDB, versão 1**: posição e presença do relógio, formato 3440×1440/1920×1080, e imagens originais (Blob) dos cards com nome, ID e posição. As imagens não são convertidas para base64 nem enviadas a servidores; URLs blob usadas na tela são **recriadas** na recuperação e revogadas na remoção/fechamento.
+- **Salvamento explícito, não automático:** arrastar, importar, remover ou mudar formato marca alterações como não salvas. Fechar sem salvar mantém apenas a organização anterior; Restaurar substitui mudanças da sessão. A aplicação do tema permanece separada.
+- A interface só informa sucesso quando o IndexedDB confirma a transação. Falha por espaço, permissão ou IndexedDB ausente gera mensagem visível e preserva a edição em memória. Validação estrita de versão, tipo, limite de 20 imagens de até 8 MB, dimensões, IDs e posições rejeita registros corrompidos.
+- Continuam ausentes: projetos de layout múltiplo, perfil por wallpaper, organização em grupos, undo/redo, exportação/backup de mídia, upload e integração com Quickshell real. O navegador pode apagar dados do site; persistência não equivale a backup portátil. O M5 permanece IN_PROGRESS até QA real no Arch e essas funcionalidades adicionais.
+
+## M5 — múltiplas organizações e desfazer/refazer de posições (28/10/2026)
+
+- Agora existem **quatro slots fixos de layout** no mesmo IndexedDB: Principal, Layout 2, Layout 3 e Layout 4. Cada um guarda seus próprios Blobs, posição/visibilidade de relógio, posições dos cards e modo de tela. O registro antigo sob a chave `default` é o novo slot Principal **sem migrar ou apagar o conteúdo**; o formato de dados continua `schemaVersion: 1`.
+- Trocar de organização carrega a versão salva do slot escolhido, ou uma prévia vazia caso esse slot ainda não exista. A troca é **bloqueada enquanto há edição não salva**, com mensagem que orienta Salvar organização ou Restaurar; uma falha de leitura preserva o slot e elementos atuais. Restaurar afeta apenas o slot ativo.
+- **Desfazer/Refazer movimento** funciona nas posições do relógio e dos cards. Até 30 etapas de posição são guardadas **somente em memória**; cada gesto de arraste registra uma etapa, e cada ajuste com setas registra outra. Atalhos Ctrl+Z / Ctrl+Shift+Z (ou Ctrl+Y), com controles de botão acessíveis. Mudanças na quantidade de elementos (adicionar/remover cards ou relógio) limpam esse histórico para não tentar ressuscitar URLs Blob revogadas. O histórico também é limpo ao trocar/restaurar o layout.
+- Desfazer/Refazer **não salva automaticamente**. Use Salvar organização para persistir o resultado final no slot escolhido.
+- Não foram implementados: nomes arbitrários de layouts, versões históricas, arraste entre monitores, layout por wallpaper, backup portátil, undo/redo de inclusão/exclusão de mídia e integração com Quickshell real. M5 continua **IN_PROGRESS** até validação visual no Arch/Chromium e avanços do roadmap.
+
+## M5/M6 — nomes das organizações + backup portátil de slot (28/10/2026)
+
+- **Renomeação:** cada um dos quatro slots fixos agora tem nome de exibição próprio (1–32 caracteres, sem controle), salvo no mesmo IndexedDB sob chaves `name:default`, `name:layout-2` etc. O nome novo não altera a chave do layout e **não mexe nos Blobs antigos**. Dados ausentes/corrompidos retornam aos rótulos Principal/Layout 2–4.
+- **Backup portátil antecipado de M6:** botão `Exportar backup do layout` descarrega apenas o **slot ativo previamente salvo**, com todas as imagens Blob originais e posições/relógio/resolução. Formato binário versionado `.ptsbackup` próprio da aplicação: assinatura, cabeçalho UTF-8 limitado e Blobs sequenciais, sem Base64, sem envio a servidor. Arquivo não é um ZIP genérico e só pode ser importado por esta versão do Theme Studio.
+- **Importação segura:** valida assinatura, versão, comprimentos, ausência de bytes extras, MIME/nomes, limites de cards/bytes e schema antes de mostrar uma confirmação. O visitante deve clicar em `Confirmar importação e substituir` para gravar no slot selecionado. Cancelar ou falhar na validação **não altera o layout salvo**. Não importa automaticamente nem sobrescreve os outros três slots.
+- Salvar nome do layout é ação separada de salvar o conteúdo. Exportar exige que as edições e o nome do slot estejam salvos. Não há exportação/importação em lote dos quatro layouts, backup de temas customizados, compressão nem sincronização entre dispositivos. A edição de mídias e wallpapers, versionamento de layouts e toda a funcionalidade M5/M6 seguem IN_PROGRESS até QA visual e testes de integração no navegador.
+
+## M6 — versões nomeadas por organização (29/10/2026)
+
+**Status: IN_PROGRESS — implementação e testes automatizados; QA visual no Arch pendente.**
+
+Foi acrescentada a seção **Versões do layout** dentro do desktop simulado. Cada um dos quatro slots pode guardar até **cinco versões nomeadas** de seu **último estado salvo**, incluindo as imagens Blob, relógio, coordenadas e proporção. Não são gravadas alterações não salvas. Versões têm botão de restauração com confirmação explícita e exclusão individual, também com confirmação.
+
+**Restauração segura:** numa **única transação IndexedDB**, o sistema grava a versão de segurança "Antes de restaurar" do layout atual e substitui o slot ativo pelo estado escolhido. Se faltar espaço, houver registro corrompido ou forem atingidas cinco versões, a transação aborta e o layout anterior permanece. Para restaurar com cinco versões, é preciso excluir explicitamente uma primeiro; o sistema jamais descarta históricos em silêncio.
+
+Os dados existentes usam a **mesma database, store e versão de schema**, com chaves novas prefixedas por `versions:` / `version:`. O layout principal `default`, os três slots adicionais e seus Blobs permanecem inalterados. A funcionalidade exige IndexedDB local; limpar os dados do navegador apaga essas versões e não equivale a backup portátil. O formato `.ptsbackup` existente continua útil para arquivo externo, e não mudou.
+
+Evidências: `src/__tests__/desktop-versions.test.ts` (isolamento dos slots, transações atômicas, limite/corrupção, restauração), `src/__tests__/desktop-versions-ui.test.tsx` (confirmação, bloqueio de mudanças não salvas). **Ainda ausentes:** perfis por wallpaper, snapshots automáticos periódicos, várias resoluções independentes, biblioteca compartilhada de mídia, MP4 e integração Linux real. Não declarar M5/M6 concluídos.
+
+
+## M6 — Prévia visual Changli conectada aos arquivos públicos do autor (29/10/2026)
+
+**Ajuste solicitado a partir de uma captura da prévia anterior:** a janela genérica "Visão geral / Paleta / Sobre", os cartões abstratos e as três bolinhas de dock foram **removidos** do desktop ampliado. Esse mockup não correspondia ao Arch personalizado do proprietário.
+
+**Fontes reais e verificadas no GitHub:**
+- `pedrogonzalez-png/dotfiles-Arch/wallpapers/changli.png` — imagem original do wallpaper estático, usada como fundo da simulação. Arquivo é referenciado por URL pública, **não copiado** ao repositório do portfólio.
+- `pedrogonzalez-png/dotfiles-Arch/wallpapers/changli.mp4` — wallpaper animado original, com cerca de 36 MB. **Opt-in**: nenhum `<video>` é montado nem baixado até o visitante clicar em **Ativar wallpaper animado**. Falha de vídeo volta à imagem.
+- `pedrogonzalez-png/Hyprland-Themes/end4-pC/changli.json` — fonte dos tons oficiais do Changli já incorporados ao `src/data/official-theme-schemes.json`.
+- `pedrogonzalez-png/dotfiles-Arch/quickshell/ii/modules/ii/bar/BarContent.qml` e `.../dock/Dock.qml` — referência estrutural da barra e dock, representados por **HTML/CSS, não QML executado**.
+
+Implementação em `src/components/desktop/RealDesktopPreview.tsx` e `src/styles/real-desktop-preview.css`, montada em `SimulatedDesktop.tsx`. A imagem usa cover e respeita ultrawide/16:9; a barra superior usa relógio local real, os indicadores de workspace são apenas ilustrativos, e o dock não finge abrir apps. Os **cards importados, relógio movível, layouts, versões e backup** continuam ativos na camada do editor.
+
+**Limitações transparentes:** isto é uma **prévia visual** do Changli usando mídia e cores originais do autor, e não um espelhamento em tempo real do Arch/Hyprland/Quickshell, nem reprodução pixel-perfect do QML em produção. Outro tema selecionado **não recebe** indevidamente o wallpaper Changli; fica com a própria paleta até haver mídia aprovada para ele. A origem pública das imagens é informada na interface. Se o GitHub estiver indisponível, mostra mensagem e fallback — não afirma que carregou o wallpaper.
+
+Evidências: `src/__tests__/real-desktop-preview.test.tsx` verifica URL real, carregamento opcional de vídeo, fallback em erros e isolamento de outros temas. `src/__tests__/theme-contrast-desktop.test.tsx` verifica ausência dos painéis genéricos antigos. **QA visual no Arch ainda pendente**. Nenhuma configuração real foi alterada nos repositórios de origem.
+
+## M6 — Hyprland viewer + Configurações, widgets QML e posição real (29/10/2026)
+
+**Decisão do proprietário:** o desktop animado e o que já foi desenvolvido aparecem na seção **Hyprland**; todo o restante (editor de cores, criação de cópias, layouts, cards, widgets editáveis, histórico, versões e backup) fica na aba **Configurações**. O Theme Studio agora abre na aba Hyprland, com uma galeria de prévia para os cinco temas oficiais originais e cópias personalizadas existentes no navegador. A paleta aplicada ao portfólio não é alterada até o clique em **Aplicar** nas configurações.
+
+**Fontes verificadas:** `Hyprland-Themes/end4-pC/{changli,hiyuki,emilia,furina,hotline-miami}.json`; `dotfiles-Arch/wallpapers/changli.png`, `changli.mp4`, `hsin.png`, `hsin.mp4`, `hutuki.mp4` e `hypr/custom/scripts/mpvpaper_thumbnails/hutuki.mp4.jpg`; `Hyprland-Themes/overrides/end4-pC/services/WallpaperLayouts.qml` e QML dos widgets, barra e dock públicos. O viewer respeita mídia original disponível e não atribui wallpapers inventados a Emilia, Furina ou Hotline Miami. **Hsin** aparece como prévia adicional porque existe wallpaper público, mas sua **paleta original não foi encontrada publicada**: usa provisoriamente as cores de Changli com um aviso explícito. Não cadastrar Hsin como esquema oficial sem JSON comprovado.
+
+**Aparência dos widgets:** galeria simplificada de relógio, clima, calendário, mídia, visualizador, recursos, notas, tarefas, imagem/card, temporizador, relógio mundial e texto. O `WallpaperLayouts.qml` lista **21 tipos/slots** com `enable`, `x`, `y`, `size`, `cardWidth`, `cardHeight` e outras propriedades; as prévias **não inventam dados de CPU, clima, conteúdo pessoal ou imagens privadas**.
+
+**Posicionamento real:** os perfis são armazenados no Linux do usuário em `~/.config/quickshell/end4-pC/wallpaper_widget_layouts.json` e **esse arquivo não está versionado no GitHub**. O site não consegue ler um arquivo no PC remoto de um visitante, portanto não exibe posições falsas como se fossem reais. O visitante pode importar esse JSON localmente e o parser `src/services/quickshellLayoutImport.ts` extrai **apenas ID do tema, tipo de widget e geometria numérica**. Descarta caminhos privados, nomes de wallpapers completos, conteúdos de notas, imagens, URLs locais e propriedades desconhecidas. A projeção presume a tela de referência de **3440×1440** para converter pixels em porcentagens; não promete reconstituição perfeita de QML. Após importar, pode exportar `widget-layouts-publico.json` seguro.
+
+**Publicação para outros visitantes:** `src/data/published-widget-layouts.json` está intencionalmente vazio enquanto o proprietário não fornecer o snapshot saneado. Somente após ele revisar e fornecer o JSON é correto publicá-lo no GitHub; o site poderá então renderizar as posições também para visitantes anônimos. A importação atual salva dados higienizados só no navegador local sob `portfolio.hyprland.sanitized.layout.v1`, sem backend ou upload automático.
+
+**Custos e acessibilidade:** MP4 só monta após clique explícito, e apenas na aba Hyprland. A área de Configurações usa wallpaper estático. Mantidas proporções 3440×1440 / 1920×1080, botão de pausa, fallback para indisponibilidade de mídia e seletor acessível.
+
+**Evidência:** `src/__tests__/quickshell-layout-import.test.ts`, `src/__tests__/hyprland-showcase.test.tsx`, além dos testes existentes de temas e configurações, com CI para TypeScript, testes, build e lint. **QA visual real e importação do arquivo privado ainda pendentes.**
+
+## M6 — Editor funcional de widgets e Hiyuki corrigida (29/10/2026)
+
+**Pedido:** o catálogo de widgets da aba Hyprland deixou de ser apenas uma vitrine. O visitante pode **arrastar do catálogo para a tela, clicar para adicionar, arrastar com mouse/touch para reposicionar, usar setas do teclado para movimentar (Shift + seta = passo maior), redimensionar com +/− e remover com × ou Delete**. A tela passa a ter mínimo de 960px e o comando **Ampliar desktop** abre uma visualização maior. Continuam disponíveis as proporções 3440×1440/1920×1080.
+
+**Persistência:** o layout editável é **uma cópia do visitante, separada por tema**, guardada em `localStorage` sob `portfolio.viewer.widgets.v1:<tema>` com limite de 24 widgets. Nunca altera o arquivo original `wallpaper_widget_layouts.json` nem o snapshot público sanitizado `portfolio.hyprland.sanitized.layout.v1`. Se não existir cópia do visitante, a prévia parte das coordenadas QML importadas (se houver) ou da tela vazia. O visitante pode limpar sua cópia ou restaurar a referência mediante confirmação. O conteúdo dos widgets é uma representação funcional de **edição e posicionamento**, mas não execução do Quickshell real: não são fornecidos CPU, clima, notas privadas nem player conectado.
+
+**Hiyuki — correção da mídia:** o proprietário informou o wallpaper específico `https://moewalls.com/anime/hiyuki-entrust-your-wishes-to-me-wuthering-waves-live-wallpaper/`. A referência anterior a `hutuki.mp4` / `hutuki.mp4.jpg` foi removida da prévia Hiyuki por **não representar a imagem escolhida**. O endereço MoeWalls fornecido é uma página e não um arquivo MP4 validado, portanto **não se inventa nem se embute um vídeo de terceiros**. A aba Hyprland mostra o link oficial indicado e o botão **Carregar wallpaper da Hiyuki**, que aceita arquivo local MP4/WebM/JPG/PNG/WebP (até 150 MB), exibindo essa mídia apenas na sessão do navegador via object URL, sem upload e sem publicar conteúdo de terceiros no GitHub.
+
+Evidências: `src/components/DesktopWidgetEditor.tsx`, `src/services/visitorDesktopWidgets.ts`, `src/__tests__/desktop-widget-editor.test.tsx`, `src/__tests__/hyprland-showcase.test.tsx`. QA visual mouse/touch em navegador real ainda pendente. **Não declarar a réplica Quickshell pixel-perfect.**
+
+## M6 — snapshot real do Quickshell recebido e integrado (29/10/2026)
+
+**Concluído em branch de revisão — pendente conferência visual no Arch.** O proprietário enviou `wallpaper_widget_layouts.json` da pasta real `~/.config/illogical-impulse/` (o caminho anterior para `~/.config/quickshell/end4-pC/` era incorreto no PC dele).
+
+O arquivo completo contém **19 perfis de wallpapers** e **268 widgets habilitados** entre os perfis, divididos em **Changli 4, Hiyuki 3, Emilia 3, Furina 2, Hsin 1, Hotline Miami 1 e 5 wallpapers não classificáveis automaticamente**. Os cinco últimos ficam na categoria **Outros wallpapers**, não são atribuídos a personagens sem evidência.
+
+A publicação em `src/data/published-widget-layouts.json` preserva somente `themeId`, IDs genéricos de variante, rótulos neutros, nomes permitidos dos widgets, coordenadas normalizadas com base no monitor **3440×1440**, largura/altura disponíveis, `sizeMode`, `vertical` e `z`. **Nenhum caminho pessoal, nome de arquivo de imagem, nota, nome de usuário ou mídia original foi copiado para o GitHub.** Os cards que têm `cardWidth` e `cardHeight` preservam suas dimensões proporcionais exatas; demais widgets usam dimensões aproximadas quando o JSON não registra o tamanho físico (a aparência QML real depende do runtime).
+
+O importador `quickshellLayoutImport.ts` antes utilizava `Map<theme,widgets>`, **sobrescrevendo versões anteriores**. Agora preserva uma variante por wallpaper e valida até 100 perfis sanitizados, inclusive `z`, `sizeMode` e orientação. No Hyprland, um seletor **Organização original por wallpaper** permite alternar layouts do mesmo tema, e o botão **Outros wallpapers** apresenta os perfis sem identificação segura. O editor do visitante guarda sua própria cópia em uma chave local **por tema + variante**, sem reescrever o snapshot público do autor.
+
+Evidências automatizadas: `src/__tests__/real-published-layouts.test.tsx` valida 19 perfis, 268 widgets, variantes, geometria, camadas e ausência de caminhos pessoais, além dos testes de importação e edição. **Ainda pendente:** verificar escala, tamanho aproximado dos widgets não-card, assets e alinhamento da visualização com o desktop real em 3440×1440. Não afirmar réplica exata de QML, pois apenas a geometria cadastrada é real.
+
+## Decisão final posterior — apenas coleção de temas prontos e escolha de cor (29/10/2026)
+
+**Esta decisão substitui e cancela os fluxos de criação/edição discutidos nos marcos M4–M6**: o visitante NÃO pode duplicar/criar/nomear tema, editar widgets, arrastá-los, alterar ou salvar layouts, carregar arquivos de wallpapers, importar JSON de Quickshell, restaurar históricos ou personalizar imagens. Tudo isso saiu da interface pública. Os arquivos de dados e os módulos antigos ficam no repositório para referência histórica, mas não são expostos nem chamados pela nova experiência. Nenhuma configuração do Arch do autor deve ser modificada.
+
+O projeto Hyprland-Themes agora abre uma **exposição inserida na própria página abaixo da constelação**, sem modal nem card flutuante sobre o site. São apresentados **cinco temas oficiais existentes** (Changli, Hiyuki, Emilia, Furina, Hotline Miami) e as composições originais disponíveis por tema, usando o snapshot público com coordenadas dos widgets. Os outros perfis já publicados continuam preservados como dados, mas não são apresentados como temas oficiais enquanto não forem identificados/confirmados.
+
+**Transição:** ao trocar tema ou composição, o desktop de saída se desintegra **da direita para a esquerda** em uma camada com recorte animado, fragmentos luminosos de diferentes cores, revelando o novo desktop ao fundo. A abertura da exposição usa uma revelação horizontal integrada à seção, em vez de popup. Sem animação caso `prefers-reduced-motion: reduce`; nenhuma sobreposição interativa bloqueia mouse/teclado. A animação é CSS/DOM, não um espelhamento QML nem um efeito WebGL já implementado.
+
+**Única personalização do visitante:** `Cor de destaque` (input color), persistida em `localStorage["portfolio.theme.accent.v1"]` e aplicada no CSS global, com botão para restaurar a cor oficial. Isso não altera os cinco JSON oficiais nem gera cópias ou temas personalizados. O ThemeProvider agora só aplica temas de `OFFICIAL_THEMES`; registros de temas personalizados antigos não são apagados, apenas deixam de ser usados pelo fluxo do usuário.
+
+**Limites de fidelidade:** os wallpapers públicos Changli e outros verificados são referenciados conforme disponibilidade; o vídeo Hiyuki correto no MoeWalls não foi copiado, pois não existe URL direta validada e autorizada. Cards usam símbolos quando as imagens originais são privadas. Widgets QML têm posicionamento documentado, mas seus corpos visuais são aproximações HTML/CSS, não componentes QML executados.
+
+**Verificação:** testes atuais cobrem ausência de interfaces de criação/edição, opção de cor, cinco presets, alternância de variantes, efeito de desintegração e fallback para movimento reduzido. Validação visual em navegador real ainda pendente.
+
+## Correção de navegação — página exclusiva Hyprland-Themes (29/10/2026)
+
+**Substitui a seção inline descrita acima.** A exposição de cinco temas prontos passa a existir em **`/hyprland-themes`**, rota própria no React Router, acessível diretamente por URL ou pelo projeto Hyprland-Themes no carrossel. **Não** aparece como card, modal, janela ou seção inserida na home. O retorno `Voltar aos projetos` navega para `/#projetos`, sem retirar o histórico de navegação do navegador. A página tem área principal própria com largura ampliada e animação de entrada por revelação da direita para a esquerda.
+
+Continuam válidos: transição de desintegração da direita para a esquerda **entre temas**, cinco presets oficiais readonly e apenas seleção de cor de destaque. Widgets e layouts originais são somente visualização. Testes de rota cobrem acesso direto, entrada pelo carrossel e retorno. QA manual em produção deve confirmar que o servidor/CDN oferece fallback de SPA ao abrir `/hyprland-themes` diretamente (BrowserRouter).
+
+## Changli — reprodução de referência 1914 × 862 em código (29/10/2026)
+
+O proprietário enviou uma captura do **desktop Changli completo** e pediu que a página exclusiva `/hyprland-themes` exibisse **a mesma composição de widgets construída em React/CSS**, com a mídia adicionada por ele depois. Esta implementação é **posterior e prevalece** sobre as versões anteriores do Changli genérico. Em `src/components/HyprlandShowcase.tsx`, a renderização de `theme.id === "changli"` usa `src/components/desktop/ChangliDesktop.tsx`; **outros temas oficiais mantêm a implementação atual**, inclusive as transições de desintegração da direita para a esquerda.
+
+A reprodução usa **11 regiões absolutas** seguindo a captura (notas, perfil, arte grande à esquerda, To-Do, marca Wuthering Waves, player, calendário, relógios mundiais, retrato à direita, clima e temporizadores), além dos **3 medidores** em coluna. Tudo é HTML/React com CSS de vidro translúcido, desfoque, bordas suaves, tons quentes e animação de fundo eventual. O calendário e os relógios utilizam a data/hora do navegador e fusos reais. Dados de CPU/RAM/Disco e meteorologia são **demonstrativos e explicitamente não conectados** a hardware ou API; player e timers são representações visuais readonly (o visitante só pode selecionar tema/cor).
+
+**Nenhuma imagem da captura ou MP4 foi incorporado** ao projeto. O fundo CSS funciona sem assets; os slots de mídia exibem placeholders até o usuário fornecer os arquivos. Todos os caminhos são configuráveis em **`src/data/changliDesktop.ts`**, sob `changliDesktop.media`. As sete chaves são `backgroundVideo`, `backgroundImage`, `profileBanner`, `profileAvatar`, `featureArtwork`, `rightPortrait` e `brandArtwork`. As mídias futuras ficam em `public/assets/hyprland/changli/` e o guia com nomes e exemplos está em `public/assets/hyprland/changli/README.md`. Arquivos vazios não provocam requisições 404. O vídeo é **local**, reproduzido como `muted/loop/autoplay/playsInline` atrás de todos os widgets, com `backgroundImage` como poster/fallback. Sem URLs de wallpaper de terceiros, sem upload do visitante.
+
+**Fidelidade visual:** a estrutura, as posições proporcionais e os vidros foram reconstruídos a partir da captura, mas o resultado **não pode ser pixel-perfect até o usuário fornecer as imagens e o vídeo** e até a validação real em 3440×1440. Para outras resoluções, os widgets escalam com a largura do canvas e o modo 16:9 ainda está disponível. Os layouts QML anteriores permanecem no dataset histórico intacto; a seleção de variantes Changli ficou oculta porque este novo layout é **a composição de referência única** decidida pelo proprietário. A criação/edição de temas por visitantes continua desabilitada.
+
+Arquivos de implementação: `src/components/desktop/ChangliDesktop.tsx`, `src/styles/changli-desktop.css`, `src/data/changliDesktop.ts`, `src/components/HyprlandShowcase.tsx`, `src/styles/preset-theme-gallery.css`. Testes: `src/__tests__/changli-desktop-reference.test.tsx` e atualização dos testes de galeria. QA visual em navegador Arch pendente.

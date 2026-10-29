@@ -1,0 +1,22 @@
+/* Dedicated route /hyprland-themes; a full page, not an inline expansion or modal. */
+.hyprland-dedicated-page{min-height:100svh;width:100%;padding:clamp(1rem,4vw,4rem) clamp(1rem,5vw,6rem) clamp(3rem,7vw,7rem);background:radial-gradient(circle at 70% 13%,color-mix(in srgb,var(--color-accent-primary) 12%,transparent),transparent 42%),var(--color-bg)}
+.preset-studio-inline{position:relative;width:100%;max-width:1800px;margin:0 auto;padding:0;animation:preset-studio-arrive 900ms ease-out both;color:var(--color-text)}
+.preset-studio-heading{display:flex;justify-content:space-between;align-items:start;gap:1.5rem;flex-wrap:wrap;margin:0 0 clamp(1rem,3vw,3rem)}
+.preset-studio-overline{font:700 .67rem ui-monospace,monospace;letter-spacing:.18em;color:var(--color-accent-yellow)}
+.preset-studio-heading h2{font:700 clamp(2.1rem,6vw,5.5rem)/.97 var(--font-display);letter-spacing:-.065em;margin:.8rem 0}
+.preset-studio-heading h2 em{font-style:normal;color:var(--color-accent-primary)}
+.preset-studio-heading p{max-width:70ch;font-size:.87rem;line-height:1.7;color:var(--color-text-variant)}
+.preset-studio-exit{background:transparent;flex:none;border:1px solid var(--color-outline);color:var(--color-text);padding:.78rem 1.1rem;border-radius:30px;cursor:pointer}
+.preset-studio-exit:hover{border-color:var(--color-accent-yellow)}
+.preset-color-only{display:flex;align-items:center;justify-content:space-between;gap:2rem;flex-wrap:wrap;margin-top:2rem;padding:clamp(1rem,2.8vw,2rem);border-radius:18px;background:color-mix(in srgb,var(--color-surface) 65%,transparent);border:1px solid var(--color-outline)}
+.preset-color-only strong{font:650 1.05rem var(--font-display)}
+.preset-color-only p{font-size:.8rem;color:var(--color-text-variant);line-height:1.65;margin:.6rem 0 0;max-width:60ch}
+.preset-color-control{display:flex;gap:.8rem;align-items:center;flex-wrap:wrap}
+.preset-color-control label{font-size:.75rem;font-weight:600}
+.preset-color-control input{min-width:56px;height:40px;cursor:pointer;border:1px solid var(--color-outline);border-radius:10px;background:transparent}
+.preset-color-control output{font:.72rem ui-monospace,monospace}
+.preset-color-control button{min-height:40px;padding:.55rem .9rem;cursor:pointer;border:1px solid var(--color-outline);color:var(--color-text);border-radius:10px;background:var(--color-surface-container);font-size:.75rem}
+.preset-color-control button:disabled{opacity:.45;cursor:default}
+.preset-studio-exit:focus-visible,.preset-color-control input:focus-visible,.preset-color-control button:focus-visible{outline:2px solid var(--color-accent-yellow);outline-offset:3px}
+@keyframes preset-studio-arrive{0%{opacity:0;clip-path:inset(0 0 0 100%);filter:blur(12px)}70%{opacity:1;filter:blur(1px)}100%{opacity:1;clip-path:inset(0);filter:blur(0)}}
+@media(prefers-reduced-motion:reduce){.preset-studio-inline{animation:none}}

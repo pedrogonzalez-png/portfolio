@@ -27,7 +27,21 @@ body::before {
   content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 0;
   background: radial-gradient(ellipse 55% 45% at 50% 30%, rgba(132,46,36,.17), transparent 80%), linear-gradient(180deg, transparent 55%, rgba(10,4,7,.5));
 }
-.scene-canvas { position: fixed; inset: 0; pointer-events: none; z-index: 0; opacity: .98; }
+/* The WebGL viewport intentionally exceeds the heading's box.
+   Without this overscan, the particles were clipped just as they dispersed. */
+.scene-canvas {
+  position: absolute;
+  left: -6%;
+  right: -6%;
+  top: -115px;
+  bottom: -115px;
+  pointer-events: none;
+  z-index: 2;
+  opacity: 1;
+}
+@media (max-width: 700px) {
+  .scene-canvas { left: -3%; right: -3%; top: -78px; bottom: -78px; }
+}
 .site-header, .site-main, .site-footer { position: relative; z-index: 1; }
 .site-header {
   position: fixed; top: 0; left: 0; right: 0; z-index: 100; height: 78px;
@@ -57,7 +71,24 @@ body::before {
   background-clip: text; -webkit-background-clip: text;
   text-shadow: 0 0 80px rgba(201,106,66,.1);
 }
-.has-webgl .hero-title { opacity: .23; }
+.hero-name-stage { position: relative; width: 100%; margin: 1.15rem 0 .15rem; }
+.hero-name-stage .hero-title { margin: 0; }
+.hero-title {
+  position: relative;
+  width: 100%;
+  font-size: clamp(1.65rem, 8.3vw, 8rem);
+  white-space: nowrap;
+  overflow: visible;
+}
+.hero-title-fallback {
+  display: block;
+  white-space: nowrap;
+  transition: opacity .3s ease;
+}
+.hero-title.particles-ready .hero-title-fallback { opacity: 0; }
+@media (prefers-reduced-motion: reduce) {
+  .hero-title.particles-ready .hero-title-fallback { opacity: 1; }
+}
 .hero-placeholder { margin: 0 0 1.9rem; font-size: .63rem; letter-spacing: .25em; color: var(--color-outline); }
 .hero-description { max-width: 550px; margin: 0 auto 2.4rem; font-size: .95rem; line-height: 1.85; color: var(--color-text-variant); }
 .primary-action, .secondary-action { display: inline-flex; align-items: center; justify-content: center; gap: 1.4rem; border-radius: 999px; padding: 1rem 1.7rem; font-size: .82rem; font-weight: 600; text-decoration: none; transition: transform .2s, box-shadow .2s, background .2s; cursor: pointer; }
@@ -185,14 +216,10 @@ body::before {
 }
 .spine-fallback {
   position: absolute;
-  top: 12%;
-  bottom: 11%;
-  left: calc(50% - 13px);
-  width: 26px;
-  border-radius: 50%;
-  background: linear-gradient(180deg, transparent, rgba(227, 179, 122, .55), rgba(201, 106, 66, .8), transparent);
-  filter: blur(10px);
-  opacity: .45;
+  inset: 0;
+  background:
+    radial-gradient(circle at 28% 39%, rgba(227, 179, 122, .12), transparent 25%),
+    radial-gradient(circle at 74% 65%, rgba(201, 106, 66, .10), transparent 28%);
   pointer-events: none;
 }
 .spine-guide {
@@ -306,3 +333,16 @@ body::before {
   .orbit-grid .orbit-card:nth-child(n) { transform: none; }
   .orbit-grid .orbit-card:hover { transform: none; }
 }
+
+/* M4: prominent surfaces, navigation and transitions follow the selected palette. */
+body,.site-header,.site-footer,.projects-area,.about-area,.project-dialog,.cinematic-panel{transition:background-color .45s ease,color .45s ease,border-color .45s ease;}
+body::before{background:radial-gradient(ellipse 55% 45% at 50% 30%,color-mix(in srgb,var(--color-accent-primary) 17%,transparent),transparent 80%),linear-gradient(180deg,transparent 55%,color-mix(in srgb,var(--color-bg) 64%,transparent))}
+.site-header{background:color-mix(in srgb,var(--color-bg) 74%,transparent);border-bottom-color:color-mix(in srgb,var(--color-outline) 18%,transparent)}
+.site-footer{background:var(--color-bg);border-top-color:color-mix(in srgb,var(--color-outline) 20%,transparent)}
+.hero-title{background:linear-gradient(125deg,var(--color-accent-primary) 8%,var(--color-accent-yellow) 54%,var(--color-accent-red) 95%);background-clip:text;-webkit-background-clip:text}
+.projects-area{background:radial-gradient(ellipse 50% 60% at 50% 48%,color-mix(in srgb,var(--color-accent-primary) 14%,transparent),transparent 75%),linear-gradient(180deg,var(--color-bg),var(--color-surface),var(--color-surface-container))}
+.about-area{background:linear-gradient(145deg,var(--color-surface),var(--color-bg))}
+.project-dialog{background:linear-gradient(135deg,var(--color-surface-container),var(--color-bg));border-color:color-mix(in srgb,var(--color-outline) 35%,transparent)}
+.modal-backdrop{background:color-mix(in srgb,var(--color-bg) 89%,transparent)}
+::selection{color:var(--color-bg);background:var(--color-accent-yellow)}
+@media(prefers-reduced-motion:reduce){body,.site-header,.site-footer,.projects-area,.about-area,.project-dialog,.cinematic-panel{transition:none}}

@@ -1,200 +1,300 @@
 import { useEffect, useMemo, useRef } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { AdditiveBlending, CatmullRomCurve3, MathUtils, Vector2, Vector3 } from "three";
-import type { Group, ShaderMaterial } from "three";
+import { AdditiveBlending, Color } from "three";
+import { useTheme } from "../stores/themeContext";
+import type { BufferAttribute, ShaderMaterial } from "three";
+import { advanceParticles, type ParticleState } from "./particlePhysics";
 
-type ParticleTextData = {
-  targets: Float32Array;
-  scattered: Float32Array;
-  seeds: Float32Array;
-};
+type ParticleData = ParticleState;
 
-function buildLetterParticles(): ParticleTextData {
-  const canvas = document.createElement("canvas");
-  canvas.width = 1100;
-  canvas.height = 240;
-  const context = canvas.getContext("2d");
-  if (!context) return { targets: new Float32Array(0), scattered: new Float32Array(0), seeds: new Float32Array(0) };
-  context.fillStyle = "#fff";
-  context.textAlign = "center";
-  context.textBaseline = "middle";
-  context.font = "700 126px Space Grotesk, sans-serif";
-  context.fillText("NOME DO AUTOR", 550, 118);
-  const pixels = context.getImageData(0, 0, 1100, 240).data;
+/** Sample the actual accessible heading, at its computed CSS size. */
+function sampleHeading(width: number, height: number): ParticleData {
   const targets: number[] = [];
-  const scattered: number[] = [];
   const seeds: number[] = [];
-
-  for (let y = 20; y < 220; y += 4) {
-    for (let x = 20; x < 1080; x += 4) {
-      if (pixels[(y * 1100 + x) * 4 + 3] < 150) continue;
-      const j = targets.length / 3;
-      const seed = (Math.sin(j * 91.719 + 0.11) * 43758.5453) % 1;
-      const spread = Math.abs(seed);
-      const tx = (x - 550) / 120;
-      const ty = (120 - y) / 120 + 0.42;
-      targets.push(tx, ty, 0);
-      scattered.push(tx + Math.cos(j * 2.317) * (1.5 + spread * 4.5), ty + Math.sin(j * 1.837) * (1.3 + spread * 3), Math.sin(j * 4.713) * (1 + spread * 3));
-      seeds.push(spread);
+  const canvas = document.createElement("canvas");
+  canvas.width = Math.max(1, Math.round(width));
+  canvas.height = Math.max(1, Math.round(height));
+  const context = canvas.getContext("2d", { willReadFrequently: true });
+  const element = document.getElementById("hero-name");
+  const fallback = element?.querySelector(".hero-title-fallback");
+  if (context && element && fallback) {
+    const style = window.getComputedStyle(element);
+    const fontSize = Number.parseFloat(style.fontSize) || 100;
+    context.font = "700 " + fontSize + 'px "Space Grotesk", sans-serif';
+    context.textAlign = "center";
+    context.textBaseline = "middle";
+    context.fillStyle = "#fff";
+    context.fillText(fallback.textContent || "NOME DO AUTOR", width / 2, height / 2, Math.min(width * 0.9, element.getBoundingClientRect().width * 0.96));
+    const pixels = context.getImageData(0, 0, canvas.width, canvas.height).data;
+    const stride = width < 650 ? 2 : 3;
+    for (let y = 0; y < canvas.height; y += stride) {
+      for (let x = 0; x < canvas.width; x += stride) {
+        if (pixels[(y * canvas.width + x) * 4 + 3] < 160) continue;
+        const i = seeds.length;
+        const r = Math.abs(Math.sin((i + 1) * 78.233) * 43758.5453) % 1;
+        targets.push(
+          x - width / 2 + (r - 0.5) * stride * 0.7,
+          height / 2 - y + (0.5 - r) * stride * 0.7,
+          Math.sin(i * 3.17) * 3.2,
+        );
+        seeds.push(r);
+      }
     }
   }
-  return { targets: new Float32Array(targets), scattered: new Float32Array(scattered), seeds: new Float32Array(seeds) };
+  const count = seeds.length;
+  const targetArray = new Float32Array(targets);
+  const positions = new Float32Array(targets.length);
+  for (let i = 0; i < count; i++) {
+    const j = i * 3;
+    const seed = seeds[i];
+    const direction = i * 2.39996;
+    const spread = 15 + seed * Math.min(width * 0.13, 80);
+    positions[j] = targets[j] + Math.cos(direction) * spread;
+    positions[j + 1] = targets[j + 1] + Math.sin(direction) * spread;
+    positions[j + 2] = targets[j + 2] + (seed - 0.5) * 35;
+  }
+  return {
+    positions,
+    velocities: new Float32Array(targets.length),
+    targets: targetArray,
+    seeds: new Float32Array(seeds),
+    energy: new Float32Array(count),
+    count,
+  };
 }
 
-const textVertex = `
-  attribute vec3 aScatter;
+const vertex = `
   attribute float aSeed;
-  uniform float uTime;
-  uniform vec2 uPointer;
-  uniform float uBurst;
-  varying float vWarmth;
-
+  attribute float aEnergy;
+  uniform float uPixelRatio;
+  varying float vEnergy;
+  varying float vSeed;
   void main() {
-    float gathered = smoothstep(0.0, 3.1, uTime + aSeed * 0.7);
-    vec3 pos = mix(aScatter, position, gathered);
-    float ripple = sin(uTime * 1.2 + position.x * 3.1 + aSeed * 22.0);
-    pos.xy += vec2(ripple, cos(uTime * 0.83 + aSeed * 16.0)) * 0.012;
-    vec2 away = pos.xy - uPointer;
-    float influence = exp(-dot(away, away) * 2.6);
-    pos.xy += normalize(away + vec2(0.0001)) * influence * 0.31 * gathered;
-    pos.xyz += (aScatter - position) * uBurst * (0.12 + aSeed * 0.17);
-    vec4 mv = modelViewMatrix * vec4(pos, 1.0);
+    vEnergy = clamp(aEnergy, 0.0, 1.0);
+    vSeed = aSeed;
+    vec4 mv = modelViewMatrix * vec4(position, 1.0);
     gl_Position = projectionMatrix * mv;
-    gl_PointSize = clamp((2.0 + aSeed * 2.0) * 9.0 / -mv.z, 1.2, 5.1);
-    vWarmth = aSeed * 0.65 + abs(ripple) * 0.35;
+    gl_PointSize = min(6.5, (1.4 + aSeed * 1.5 + vEnergy * 1.2) * uPixelRatio);
   }
 `;
-const textFragment = `
-  varying float vWarmth;
+const fragment = `
+  varying float vEnergy;
+  varying float vSeed;
+  uniform vec3 uBronze;
+  uniform vec3 uGold;
+  uniform vec3 uFast;
   void main() {
-    float d = length(gl_PointCoord - vec2(0.5));
-    float alpha = exp(-d * d * 22.0);
-    vec3 color = mix(vec3(0.80, 0.34, 0.23), vec3(1.0, 0.80, 0.55), vWarmth);
-    gl_FragColor = vec4(color, alpha * 0.91);
+    vec2 uv = gl_PointCoord - vec2(0.5);
+    float dist = dot(uv, uv);
+    float alpha = exp(-dist * 22.0) * (0.76 + vEnergy * 0.24);
+    vec3 color = mix(mix(uBronze, uGold, vSeed), uFast, vEnergy * 0.85);
+    gl_FragColor = vec4(color, alpha);
   }
 `;
+
+type PointerState = {
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  movedAt: number;
+  lastTime: number;
+  inside: boolean;
+  nearLetter: boolean;
+  idleFired: boolean;
+  burstStarted: number;
+  burstX: number;
+  burstY: number;
+  lastBurstAt: number;
+};
 
 function ParticleName() {
-  const data = useMemo(buildLetterParticles, []);
-  const shader = useRef<ShaderMaterial>(null);
-  const pointer = useRef({ current: new Vector2(90, 90), target: new Vector2(90, 90), hover: false, changedAt: 0, fired: false, burstStart: -10000 });
-  const progress = useRef(0);
+  const { theme } = useTheme();
+  const colors = useMemo(() => ({
+    bronze: new Color(theme.palette.accentPrimary),
+    gold: new Color(theme.palette.accentYellow),
+    fast: new Color(theme.palette.text),
+  }), [theme.palette]);
+  const material = useRef<ShaderMaterial>(null);
+  const { size, gl } = useThree();
+  const data = useMemo(() => sampleHeading(size.width, size.height), [size.width, size.height]);
+  const positionAttribute = useRef<BufferAttribute>(null);
+  const energyAttribute = useRef<BufferAttribute>(null);
+  const pointer = useRef<PointerState>({
+    x: 100000, y: 100000, vx: 0, vy: 0,
+    movedAt: 0, lastTime: 0, inside: false, nearLetter: false,
+    idleFired: false, burstStarted: -100000, burstX: 100000, burstY: 100000, lastBurstAt: -100000,
+  });
+  const time = useRef(0);
 
   useEffect(() => {
-    const onPointer = (event: PointerEvent) => {
-      const rect = document.getElementById("hero-name")?.getBoundingClientRect();
-      const inside = Boolean(rect && event.clientX >= rect.left && event.clientX <= rect.right && event.clientY >= rect.top && event.clientY <= rect.bottom);
-      const x = (event.clientX / window.innerWidth - 0.5) * 10.5;
-      const y = (0.5 - event.clientY / window.innerHeight) * 8.2;
-      const state = pointer.current;
-      if (state.target.distanceTo(new Vector2(x, y)) > 0.07 || state.hover !== inside) {
-        state.changedAt = performance.now();
-        state.fired = false;
+    const title = document.getElementById("hero-name");
+    if (!title || !data.count) return;
+    const onMove = (event: PointerEvent) => {
+      const box = title.getBoundingClientRect();
+      const canvasBox = gl.domElement.getBoundingClientRect();
+      // The canvas is deliberately larger than the heading so dispersed
+      // particles remain visible above and below the letters.
+      const x = event.clientX - canvasBox.left - canvasBox.width / 2;
+      const y = canvasBox.height / 2 - (event.clientY - canvasBox.top);
+      const insideBox = event.clientX >= box.left && event.clientX <= box.right
+        && event.clientY >= box.top && event.clientY <= box.bottom;
+
+      // Letter proximity is only required for the idle re-trigger, not hover
+      // activation; grazing the letter edge must still start a visible burst.
+      let nearLetter = false;
+      if (insideBox) {
+        for (let i = 0; i < data.count; i++) {
+          const j = i * 3;
+          const dx = data.targets[j] - x;
+          const dy = data.targets[j + 1] - y;
+          if (dx * dx + dy * dy < 750) {
+            nearLetter = true;
+            break;
+          }
+        }
       }
-      state.target.set(x, y);
-      state.hover = inside;
+
+      const p = pointer.current;
+      const now = performance.now();
+      const deltaMs = Math.max(4, now - p.lastTime);
+      const moved = Math.hypot(x - p.x, y - p.y);
+      if (p.lastTime && moved > 1.8) {
+        p.vx = Math.max(-1700, Math.min(1700, (x - p.x) * 1000 / deltaMs));
+        p.vy = Math.max(-1700, Math.min(1700, (y - p.y) * 1000 / deltaMs));
+      } else {
+        p.vx = 0;
+        p.vy = 0;
+      }
+
+      // Start a localized pulse only when entering a glyph or moving
+      // far enough along the text to reach the next letter neighborhood.
+      const traveled = Math.hypot(x - p.burstX, y - p.burstY);
+      if (nearLetter && now - p.lastBurstAt > 320
+        && (!p.nearLetter || traveled > 78)) {
+        p.burstStarted = now;
+        p.burstX = x;
+        p.burstY = y;
+        p.lastBurstAt = now;
+        p.idleFired = false;
+      }
+      if (insideBox && moved > 4) {
+        p.movedAt = now;
+        p.idleFired = false;
+      }
+      p.x = x;
+      p.y = y;
+      p.lastTime = now;
+      p.inside = insideBox;
+      p.nearLetter = nearLetter;
     };
-    window.addEventListener("pointermove", onPointer, { passive: true });
-    return () => window.removeEventListener("pointermove", onPointer);
-  }, []);
+    const onDown = (event: PointerEvent) => {
+      const box = title.getBoundingClientRect();
+      if (event.clientX < box.left || event.clientX > box.right
+        || event.clientY < box.top || event.clientY > box.bottom) return;
+      const p = pointer.current;
+      const bounds = gl.domElement.getBoundingClientRect();
+      p.burstX = event.clientX - bounds.left - bounds.width / 2;
+      p.burstY = bounds.height / 2 - (event.clientY - bounds.top);
+      p.burstStarted = performance.now();
+      p.lastBurstAt = p.burstStarted;
+      p.idleFired = true;
+    };
+    const onLeave = () => {
+      pointer.current.inside = false;
+      pointer.current.nearLetter = false;
+      pointer.current.vx = 0;
+      pointer.current.vy = 0;
+    };
+    window.addEventListener("pointermove", onMove, { passive: true });
+    window.addEventListener("pointerdown", onDown);
+    window.addEventListener("blur", onLeave);
+    title.classList.add("particles-ready");
+    return () => {
+      title.classList.remove("particles-ready");
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerdown", onDown);
+      window.removeEventListener("blur", onLeave);
+    };
+  }, [data, gl]);
 
   useFrame((_, delta) => {
-    if (!shader.current) return;
-    const dt = Math.min(delta, 0.06);
-    progress.current += dt;
-    const state = pointer.current;
-    state.current.lerp(state.target, Math.min(1, dt * 4));
-    const now = performance.now();
-    if (state.hover && !state.fired && now - state.changedAt > 950) {
-      state.burstStart = now;
-      state.fired = true;
+    if (material.current) {
+      const easing = 1 - Math.exp(-5 * Math.min(delta, 0.06));
+      material.current.uniforms.uBronze.value.lerp(colors.bronze, easing);
+      material.current.uniforms.uGold.value.lerp(colors.gold, easing);
+      material.current.uniforms.uFast.value.lerp(colors.fast, easing);
     }
-    const burstProgress = (now - state.burstStart) / 1400;
-    shader.current.uniforms.uTime.value = progress.current;
-    shader.current.uniforms.uPointer.value.copy(state.current);
-    shader.current.uniforms.uBurst.value = burstProgress >= 0 && burstProgress < 1 ? Math.sin(burstProgress * Math.PI) : 0;
+    if (!data.count || !positionAttribute.current || !energyAttribute.current) return;
+    const dt = Math.min(0.04, delta);
+    const now = performance.now();
+    const p = pointer.current;
+    time.current += dt;
+
+    // Hover disperses immediately; remaining still on a letter after the
+    // previous burst causes one more pulse, then stops until movement resumes.
+    if (p.inside && p.nearLetter && !p.idleFired
+      && now - p.movedAt > 950 && now - p.lastBurstAt > 900) {
+      p.burstStarted = now;
+      p.burstX = p.x;
+      p.burstY = p.y;
+      p.lastBurstAt = now;
+      p.idleFired = true;
+    }
+
+    const timeSinceMove = now - p.lastTime;
+    const decay = Math.exp(-7 * dt);
+    p.vx *= decay;
+    p.vy *= decay;
+    if (timeSinceMove > 300) {
+      p.vx = 0;
+      p.vy = 0;
+    }
+
+    advanceParticles(data, {
+      dt,
+      time: time.current,
+      burstAge: (now - p.burstStarted) / 1000,
+      burstX: p.burstX,
+      burstY: p.burstY,
+      width: size.width,
+      pointerX: p.x,
+      pointerY: p.y,
+      pointerVX: p.vx,
+      pointerVY: p.vy,
+      pointerActive: p.nearLetter && timeSinceMove < 180,
+    });
+    positionAttribute.current.needsUpdate = true;
+    energyAttribute.current.needsUpdate = true;
   });
 
-  if (data.seeds.length === 0) return null;
+  if (!data.count) return null;
   return (
     <points frustumCulled={false}>
       <bufferGeometry>
-        <bufferAttribute attach="attributes-position" args={[data.targets, 3]} />
-        <bufferAttribute attach="attributes-aScatter" args={[data.scattered, 3]} />
+        <bufferAttribute ref={positionAttribute} attach="attributes-position" args={[data.positions, 3]} />
         <bufferAttribute attach="attributes-aSeed" args={[data.seeds, 1]} />
+        <bufferAttribute ref={energyAttribute} attach="attributes-aEnergy" args={[data.energy, 1]} />
       </bufferGeometry>
       <shaderMaterial
-        ref={shader}
-        vertexShader={textVertex}
-        fragmentShader={textFragment}
-        uniforms={{ uTime: { value: 0 }, uPointer: { value: new Vector2(90, 90) }, uBurst: { value: 0 } }}
-        transparent depthWrite={false} blending={AdditiveBlending}
+        ref={material}
+        vertexShader={vertex}
+        fragmentShader={fragment}
+        uniforms={{ uPixelRatio: { value: Math.min(1.75, gl.getPixelRatio()) }, uBronze: { value: colors.bronze.clone() }, uGold: { value: colors.gold.clone() }, uFast: { value: colors.fast.clone() } }}
+        transparent
+        depthWrite={false}
+        blending={AdditiveBlending}
       />
     </points>
   );
 }
 
-function Atmosphere() {
-  const group = useRef<Group>(null);
-  const positions = useMemo(() => {
-    const array = new Float32Array(1800 * 3);
-    for (let i = 0; i < 1800; i++) {
-      const a = i * 2.39996;
-      const r = 2.7 + Math.abs(Math.sin(i * 18.82)) * 9;
-      array[i * 3] = Math.cos(a) * r;
-      array[i * 3 + 1] = Math.sin(a) * r * 0.48;
-      array[i * 3 + 2] = -3 - Math.abs(Math.sin(i * 41.77)) * 6;
-    }
-    return array;
-  }, []);
-  useFrame(({ clock }) => {
-    if (group.current) group.current.rotation.z = Math.sin(clock.elapsedTime * 0.07) * 0.06;
-  });
-  return (
-    <group ref={group}>
-      <points>
-        <bufferGeometry>
-          <bufferAttribute attach="attributes-position" args={[positions, 3]} />
-        </bufferGeometry>
-        <pointsMaterial size={0.022} color="#C96A42" transparent opacity={0.6} sizeAttenuation depthWrite={false} blending={AdditiveBlending} />
-      </points>
-    </group>
-  );
-}
-
-function CameraJourney() {
-  const { camera } = useThree();
-  const scroll = useRef(0);
-  const curve = useMemo(() => new CatmullRomCurve3([
-    new Vector3(0, 0, 9.5),
-    new Vector3(0.5, -0.2, 9),
-    new Vector3(-0.9, 0.2, 8.7),
-    new Vector3(0.1, 0.1, 9.1),
-  ]), []);
-
-  useEffect(() => {
-    const update = () => {
-      const max = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
-      scroll.current = MathUtils.clamp(window.scrollY / max, 0, 1);
-    };
-    update();
-    window.addEventListener("scroll", update, { passive: true });
-    return () => window.removeEventListener("scroll", update);
-  }, []);
-
-  useFrame((_, delta) => {
-    camera.position.lerp(curve.getPoint(scroll.current), 1 - Math.exp(-2.6 * Math.min(delta, 0.05)));
-    camera.lookAt(0, 0, 0);
-  });
-  return null;
-}
-
+/** The canvas occupies exactly the h1 area, so text and particles cannot double up. */
 export default function Scene3D() {
   return (
     <div className="scene-canvas" aria-hidden="true">
-      <Canvas camera={{ position: [0, 0, 9.5], fov: 48 }} dpr={[1, 1.6]} gl={{ alpha: true, antialias: true, powerPreference: "high-performance" }}>
-        <CameraJourney />
-        <Atmosphere />
+      <Canvas orthographic camera={{ position: [0, 0, 100], zoom: 1, near: 0.1, far: 1000 }}
+        dpr={[1, 1.75]} gl={{ alpha: true, antialias: true, powerPreference: "high-performance" }}>
         <ParticleName />
       </Canvas>
     </div>

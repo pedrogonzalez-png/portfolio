@@ -1,0 +1,2513 @@
+{
+  "schemaVersion": 1,
+  "source": "sanitized-quickshell",
+  "profiles": [
+    {
+      "themeId": "outros",
+      "variantId": "outros-1",
+      "label": "Wallpaper extra 1",
+      "widgets": [
+        {
+          "kind": "weather",
+          "x": 85.814,
+          "y": 70,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 243,
+          "sizeMode": "2x3"
+        },
+        {
+          "kind": "calendar",
+          "x": 3.8372,
+          "y": 80.8333,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 239,
+          "sizeMode": "2x3"
+        },
+        {
+          "kind": "worldClock",
+          "x": 16.7442,
+          "y": 80.8333,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 240,
+          "sizeMode": "2x2",
+          "vertical": false
+        },
+        {
+          "kind": "media",
+          "x": 3.1395,
+          "y": 70.8333,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 236,
+          "sizeMode": "1x3"
+        },
+        {
+          "kind": "visualizer",
+          "x": 0,
+          "y": 83.3333,
+          "width": 11.0465,
+          "height": 18.0556,
+          "z": -1000
+        },
+        {
+          "kind": "resources",
+          "x": 10.1163,
+          "y": 2.5,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 246,
+          "vertical": true
+        },
+        {
+          "kind": "userCard",
+          "x": 1.3953,
+          "y": 1.6667,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 211,
+          "sizeMode": "1x2"
+        },
+        {
+          "kind": "todo",
+          "x": 18.8372,
+          "y": 33.3333,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 237
+        },
+        {
+          "kind": "notes",
+          "x": 1.7442,
+          "y": 12.5,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 227
+        },
+        {
+          "kind": "timers",
+          "x": 86.1628,
+          "y": 88.3333,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 244,
+          "vertical": false
+        },
+        {
+          "kind": "imageCard",
+          "x": 86.1628,
+          "y": 2.5,
+          "width": 11.7151,
+          "height": 66.4583,
+          "z": 245,
+          "sizeMode": "2x2"
+        },
+        {
+          "kind": "imageCard2",
+          "x": 3.8372,
+          "y": 54.1667,
+          "width": 16.5698,
+          "height": 15.9028,
+          "z": 233,
+          "sizeMode": "1x2"
+        },
+        {
+          "kind": "imageCard3",
+          "x": 1.3953,
+          "y": 30.8333,
+          "width": 16.7733,
+          "height": 21.4583,
+          "z": 229,
+          "sizeMode": "1x2"
+        }
+      ]
+    },
+    {
+      "themeId": "changli",
+      "variantId": "changli-1",
+      "label": "Layout 1",
+      "widgets": [
+        {
+          "kind": "weather",
+          "x": 86.1628,
+          "y": 70,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 55,
+          "sizeMode": "2x3"
+        },
+        {
+          "kind": "calendar",
+          "x": 0.3488,
+          "y": 80,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 77,
+          "sizeMode": "2x3"
+        },
+        {
+          "kind": "worldClock",
+          "x": 13.2558,
+          "y": 80,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 76,
+          "sizeMode": "2x2",
+          "vertical": false
+        },
+        {
+          "kind": "media",
+          "x": 0.6977,
+          "y": 70.8333,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 64,
+          "sizeMode": "1x3"
+        },
+        {
+          "kind": "visualizer",
+          "x": 0,
+          "y": 83.3333,
+          "width": 11.0465,
+          "height": 18.0556,
+          "z": -1000
+        },
+        {
+          "kind": "resources",
+          "x": 9.7674,
+          "y": 4.1667,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 42,
+          "vertical": true
+        },
+        {
+          "kind": "userCard",
+          "x": 1.0465,
+          "y": 4.1667,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 57,
+          "sizeMode": "1x2"
+        },
+        {
+          "kind": "todo",
+          "x": 11.8605,
+          "y": 34.1667,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 73
+        },
+        {
+          "kind": "notes",
+          "x": 1.0465,
+          "y": 13.3333,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 50
+        },
+        {
+          "kind": "timers",
+          "x": 86.1628,
+          "y": 88.3333,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 70,
+          "vertical": false
+        },
+        {
+          "kind": "imageCard",
+          "x": 86.1628,
+          "y": 5,
+          "width": 12.5872,
+          "height": 63.8889,
+          "z": 62,
+          "sizeMode": "2x2"
+        },
+        {
+          "kind": "imageCard2",
+          "x": 0.6977,
+          "y": 54.1667,
+          "width": 13.4593,
+          "height": 14.3056,
+          "z": 75,
+          "sizeMode": "1x2"
+        },
+        {
+          "kind": "imageCard3",
+          "x": 0.3488,
+          "y": 35,
+          "width": 10.9012,
+          "height": 15.8333,
+          "z": 78,
+          "sizeMode": "1x2"
+        }
+      ]
+    },
+    {
+      "themeId": "emilia",
+      "variantId": "emilia-1",
+      "label": "Layout 1",
+      "widgets": [
+        {
+          "kind": "weather",
+          "x": 5.5814,
+          "y": 38.3333,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 319,
+          "sizeMode": "2x3"
+        },
+        {
+          "kind": "calendar",
+          "x": 87.2093,
+          "y": 75.8333,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 336,
+          "sizeMode": "2x3"
+        },
+        {
+          "kind": "worldClock",
+          "x": 4.186,
+          "y": 80.8333,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 314,
+          "sizeMode": "2x2",
+          "vertical": false
+        },
+        {
+          "kind": "media",
+          "x": 18.4884,
+          "y": 34.1667,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 324,
+          "sizeMode": "1x3"
+        },
+        {
+          "kind": "visualizer",
+          "x": 0,
+          "y": 83.3333,
+          "width": 11.0465,
+          "height": 18.0556,
+          "z": -1000
+        },
+        {
+          "kind": "resources",
+          "x": 18.8372,
+          "y": 20.8333,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 332,
+          "vertical": false
+        },
+        {
+          "kind": "userCard",
+          "x": 4.5349,
+          "y": 2.5,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 297,
+          "sizeMode": "2x3"
+        },
+        {
+          "kind": "todo",
+          "x": 17.7907,
+          "y": 2.5,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 294
+        },
+        {
+          "kind": "notes",
+          "x": 78.1395,
+          "y": 9.1667,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 340
+        },
+        {
+          "kind": "timers",
+          "x": 82.3256,
+          "y": 30.8333,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 341,
+          "vertical": true
+        },
+        {
+          "kind": "imageCard",
+          "x": 86.8605,
+          "y": 5,
+          "width": 12.2965,
+          "height": 68.6111,
+          "z": 339,
+          "sizeMode": "2x2"
+        },
+        {
+          "kind": "imageCard2",
+          "x": 1.7442,
+          "y": 20.8333,
+          "width": 16.5698,
+          "height": 15.9028,
+          "z": 316,
+          "sizeMode": "1x2"
+        },
+        {
+          "kind": "imageCard3",
+          "x": 21.9767,
+          "y": 45,
+          "width": 12.9942,
+          "height": 27.3611,
+          "z": 325,
+          "sizeMode": "1x2"
+        },
+        {
+          "kind": "imageCard4",
+          "x": 2.4419,
+          "y": 56.6667,
+          "width": 19.3605,
+          "height": 23.1944,
+          "z": 322,
+          "sizeMode": "1x2"
+        }
+      ]
+    },
+    {
+      "themeId": "emilia",
+      "variantId": "emilia-2",
+      "label": "Layout 2",
+      "widgets": [
+        {
+          "kind": "weather",
+          "x": 9.7674,
+          "y": 13.3333,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 83,
+          "sizeMode": "2x3"
+        },
+        {
+          "kind": "calendar",
+          "x": 86.5116,
+          "y": 69.1667,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 86,
+          "sizeMode": "2x3"
+        },
+        {
+          "kind": "worldClock",
+          "x": 68.0233,
+          "y": 9.1667,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 91,
+          "sizeMode": "2x2",
+          "vertical": false
+        },
+        {
+          "kind": "media",
+          "x": 1.3953,
+          "y": 33.3333,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 89,
+          "sizeMode": "1x3"
+        },
+        {
+          "kind": "visualizer",
+          "x": 0,
+          "y": 83.3333,
+          "width": 11.0465,
+          "height": 18.0556,
+          "z": -1000
+        },
+        {
+          "kind": "resources",
+          "x": 9.7674,
+          "y": 4.1667,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 42,
+          "vertical": false
+        },
+        {
+          "kind": "userCard",
+          "x": 1.0465,
+          "y": 4.1667,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 57,
+          "sizeMode": "1x2"
+        },
+        {
+          "kind": "todo",
+          "x": 76.7442,
+          "y": 10,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 82
+        },
+        {
+          "kind": "notes",
+          "x": 1.0465,
+          "y": 13.3333,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 50
+        },
+        {
+          "kind": "timers",
+          "x": 81.2791,
+          "y": 31.6667,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 87,
+          "vertical": true
+        },
+        {
+          "kind": "imageCard",
+          "x": 86.1628,
+          "y": 4.1667,
+          "width": 12.5872,
+          "height": 63.8889,
+          "z": 92,
+          "sizeMode": "2x2"
+        },
+        {
+          "kind": "imageCard2",
+          "x": 22.6744,
+          "y": 5,
+          "width": 13.4593,
+          "height": 14.3056,
+          "z": 88,
+          "sizeMode": "1x2"
+        },
+        {
+          "kind": "imageCard3",
+          "x": 1.7442,
+          "y": 44.1667,
+          "width": 25.407,
+          "height": 32.7083,
+          "z": 90,
+          "sizeMode": "1x2"
+        }
+      ]
+    },
+    {
+      "themeId": "furina",
+      "variantId": "furina-1",
+      "label": "Layout 1",
+      "widgets": [
+        {
+          "kind": "weather",
+          "x": 84.7674,
+          "y": 67.5,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 286,
+          "sizeMode": "2x3"
+        },
+        {
+          "kind": "calendar",
+          "x": 5.2326,
+          "y": 74.1667,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 290,
+          "sizeMode": "2x3"
+        },
+        {
+          "kind": "worldClock",
+          "x": 76.0465,
+          "y": 77.5,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 279,
+          "sizeMode": "2x2",
+          "vertical": false
+        },
+        {
+          "kind": "media",
+          "x": 15.6977,
+          "y": 37.5,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 258,
+          "sizeMode": "1x3"
+        },
+        {
+          "kind": "visualizer",
+          "x": 0,
+          "y": 83.3333,
+          "width": 11.0465,
+          "height": 18.0556,
+          "z": -1000
+        },
+        {
+          "kind": "resources",
+          "x": 15,
+          "y": 8.3333,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 257,
+          "vertical": true
+        },
+        {
+          "kind": "userCard",
+          "x": 2.4419,
+          "y": 0.8333,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 260,
+          "sizeMode": "2x3"
+        },
+        {
+          "kind": "todo",
+          "x": 19.5349,
+          "y": 1.6667,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 288
+        },
+        {
+          "kind": "notes",
+          "x": 8.7209,
+          "y": 47.5,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 289
+        },
+        {
+          "kind": "timers",
+          "x": 78.1395,
+          "y": 9.1667,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 272,
+          "vertical": true
+        },
+        {
+          "kind": "imageCard",
+          "x": 85.4651,
+          "y": 19.1667,
+          "width": 10.2035,
+          "height": 25.625,
+          "z": 291,
+          "sizeMode": "2x2"
+        },
+        {
+          "kind": "imageCard2",
+          "x": 82.3256,
+          "y": 1.6667,
+          "width": 16.5698,
+          "height": 15.9028,
+          "z": 263,
+          "sizeMode": "1x2"
+        },
+        {
+          "kind": "imageCard3",
+          "x": 17.4419,
+          "y": 46.6667,
+          "width": 18.7791,
+          "height": 27.0139,
+          "z": 285,
+          "sizeMode": "1x2"
+        },
+        {
+          "kind": "imageCard4",
+          "x": 0.3488,
+          "y": 19.1667,
+          "width": 14.0988,
+          "height": 27.4306,
+          "z": 284,
+          "sizeMode": "1x2"
+        },
+        {
+          "kind": "imageCard5",
+          "x": 76.0465,
+          "y": 38.3333,
+          "width": 7.936,
+          "height": 17.9861,
+          "z": 282,
+          "sizeMode": "1x2"
+        },
+        {
+          "kind": "imageCard6",
+          "x": 85.1163,
+          "y": 45.8333,
+          "width": 13.9826,
+          "height": 21.0417,
+          "z": 283,
+          "sizeMode": "1x2"
+        }
+      ]
+    },
+    {
+      "themeId": "hiyuki",
+      "variantId": "hiyuki-1",
+      "label": "Layout 1",
+      "widgets": [
+        {
+          "kind": "weather",
+          "x": 18.4884,
+          "y": 50,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 309,
+          "sizeMode": "2x3"
+        },
+        {
+          "kind": "calendar",
+          "x": 23.0233,
+          "y": 30,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 316,
+          "sizeMode": "2x3"
+        },
+        {
+          "kind": "worldClock",
+          "x": -0.3488,
+          "y": 68.3333,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 315,
+          "sizeMode": "2x2",
+          "vertical": false
+        },
+        {
+          "kind": "media",
+          "x": 8.3721,
+          "y": 69.1667,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 286,
+          "sizeMode": "1x3"
+        },
+        {
+          "kind": "visualizer",
+          "x": 0,
+          "y": 82.5,
+          "width": 11.0465,
+          "height": 18.0556,
+          "z": -1000
+        },
+        {
+          "kind": "resources",
+          "x": 18.1395,
+          "y": 21.6667,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 294,
+          "vertical": true
+        },
+        {
+          "kind": "userCard",
+          "x": 91.0465,
+          "y": 1.6667,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 311,
+          "sizeMode": "2x2"
+        },
+        {
+          "kind": "todo",
+          "x": 89.3023,
+          "y": 48.3333,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 313
+        },
+        {
+          "kind": "notes",
+          "x": 18.4884,
+          "y": 3.3333,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 296
+        },
+        {
+          "kind": "timers",
+          "x": 78.1395,
+          "y": 0.8333,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 314,
+          "vertical": false
+        },
+        {
+          "kind": "imageCard",
+          "x": 5.9302,
+          "y": 0.8333,
+          "width": 11.9767,
+          "height": 66.8056,
+          "z": 293,
+          "sizeMode": "2x2"
+        },
+        {
+          "kind": "imageCard2",
+          "x": 82.6744,
+          "y": 66.6667,
+          "width": 16.5698,
+          "height": 15.9028,
+          "z": 317,
+          "sizeMode": "1x2"
+        },
+        {
+          "kind": "imageCard3",
+          "x": 21.2791,
+          "y": 70,
+          "width": 22.2384,
+          "height": 27.2917,
+          "z": 310,
+          "sizeMode": "1x2"
+        }
+      ]
+    },
+    {
+      "themeId": "hiyuki",
+      "variantId": "hiyuki-2",
+      "label": "Layout 2",
+      "widgets": [
+        {
+          "kind": "weather",
+          "x": 1.3953,
+          "y": 55,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 204,
+          "sizeMode": "2x3"
+        },
+        {
+          "kind": "calendar",
+          "x": 70.814,
+          "y": 79.1667,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 188,
+          "sizeMode": "2x3"
+        },
+        {
+          "kind": "worldClock",
+          "x": 82.3256,
+          "y": 1.6667,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 206,
+          "sizeMode": "2x2",
+          "vertical": false
+        },
+        {
+          "kind": "media",
+          "x": 5.9302,
+          "y": 25,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 199,
+          "sizeMode": "1x3"
+        },
+        {
+          "kind": "visualizer",
+          "x": 0,
+          "y": 83.3333,
+          "width": 11.0465,
+          "height": 18.0556,
+          "z": -1000
+        },
+        {
+          "kind": "resources",
+          "x": 19.186,
+          "y": 0.8333,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 153,
+          "vertical": false
+        },
+        {
+          "kind": "userCard",
+          "x": 91.0465,
+          "y": 1.6667,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 205,
+          "sizeMode": "2x2"
+        },
+        {
+          "kind": "todo",
+          "x": 5.9302,
+          "y": 35.8333,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 200
+        },
+        {
+          "kind": "notes",
+          "x": 14.6512,
+          "y": 47.5,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 201
+        },
+        {
+          "kind": "timers",
+          "x": 1.0465,
+          "y": 25,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 168,
+          "vertical": true
+        },
+        {
+          "kind": "imageCard",
+          "x": 83.7209,
+          "y": 20.8333,
+          "width": 14.9709,
+          "height": 77.0139,
+          "z": 183,
+          "sizeMode": "2x2"
+        },
+        {
+          "kind": "imageCard2",
+          "x": 0.6977,
+          "y": 1.6667,
+          "width": 17.7907,
+          "height": 22.2222,
+          "z": 207,
+          "sizeMode": "1x2"
+        },
+        {
+          "kind": "imageCard3",
+          "x": 19.5349,
+          "y": 11.6667,
+          "width": 24.3023,
+          "height": 32.9861,
+          "z": 164,
+          "sizeMode": "1x2"
+        },
+        {
+          "kind": "imageCard4",
+          "x": 14.6512,
+          "y": 66.6667,
+          "width": 15.8721,
+          "height": 33.75,
+          "z": 203,
+          "sizeMode": "1x2"
+        }
+      ]
+    },
+    {
+      "themeId": "hotline-miami",
+      "variantId": "hotline-miami-1",
+      "label": "Layout 1",
+      "widgets": [
+        {
+          "kind": "weather",
+          "x": 31.3953,
+          "y": 78.3333,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 346,
+          "sizeMode": "2x3"
+        },
+        {
+          "kind": "calendar",
+          "x": 75,
+          "y": 35,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 362,
+          "sizeMode": "2x3"
+        },
+        {
+          "kind": "worldClock",
+          "x": 10.4651,
+          "y": 2.5,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 332,
+          "sizeMode": "2x2",
+          "vertical": false
+        },
+        {
+          "kind": "media",
+          "x": 1.7442,
+          "y": 22.5,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 350,
+          "sizeMode": "1x3"
+        },
+        {
+          "kind": "visualizer",
+          "x": 0,
+          "y": 83.3333,
+          "width": 11.0465,
+          "height": 18.0556,
+          "z": -1000
+        },
+        {
+          "kind": "resources",
+          "x": 10.814,
+          "y": 32.5,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 348,
+          "vertical": true
+        },
+        {
+          "kind": "userCard",
+          "x": 79.186,
+          "y": 54.1667,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 366,
+          "sizeMode": "1x2"
+        },
+        {
+          "kind": "todo",
+          "x": 79.186,
+          "y": 63.3333,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 364
+        },
+        {
+          "kind": "notes",
+          "x": 22.6744,
+          "y": 78.3333,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 352
+        },
+        {
+          "kind": "timers",
+          "x": 44.3023,
+          "y": 87.5,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 353,
+          "vertical": false
+        },
+        {
+          "kind": "imageCard",
+          "x": 14.6512,
+          "y": 21.6667,
+          "width": 9.9709,
+          "height": 20.625,
+          "z": 347,
+          "sizeMode": "2x2"
+        },
+        {
+          "kind": "imageCard2",
+          "x": 18.8372,
+          "y": 4.1667,
+          "width": 16.5698,
+          "height": 15.9028,
+          "z": 331,
+          "sizeMode": "1x2"
+        },
+        {
+          "kind": "imageCard3",
+          "x": 58.9535,
+          "y": 27.5,
+          "width": 10.9012,
+          "height": 24.7222,
+          "z": 363,
+          "sizeMode": "1x2"
+        },
+        {
+          "kind": "imageCard4",
+          "x": 78.8372,
+          "y": 2.5,
+          "width": 19.7674,
+          "height": 30.3472,
+          "z": 365,
+          "sizeMode": "1x2"
+        },
+        {
+          "kind": "imageCard5",
+          "x": 87.907,
+          "y": 34.1667,
+          "width": 10.6105,
+          "height": 24.0972,
+          "z": 361,
+          "sizeMode": "1x2"
+        },
+        {
+          "kind": "imageCard6",
+          "x": 87.5581,
+          "y": 59.1667,
+          "width": 11.2791,
+          "height": 25.6944,
+          "z": 343,
+          "sizeMode": "1x2"
+        }
+      ]
+    },
+    {
+      "themeId": "changli",
+      "variantId": "changli-2",
+      "label": "Layout 2",
+      "widgets": [
+        {
+          "kind": "weather",
+          "x": 85.814,
+          "y": 70,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 243,
+          "sizeMode": "2x3"
+        },
+        {
+          "kind": "calendar",
+          "x": 3.8372,
+          "y": 80.8333,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 239,
+          "sizeMode": "2x3"
+        },
+        {
+          "kind": "worldClock",
+          "x": 16.7442,
+          "y": 80.8333,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 240,
+          "sizeMode": "2x2",
+          "vertical": false
+        },
+        {
+          "kind": "media",
+          "x": 3.1395,
+          "y": 70.8333,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 236,
+          "sizeMode": "1x3"
+        },
+        {
+          "kind": "visualizer",
+          "x": 0,
+          "y": 83.3333,
+          "width": 11.0465,
+          "height": 18.0556,
+          "z": -1000
+        },
+        {
+          "kind": "resources",
+          "x": 9.7674,
+          "y": 2.5,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 228,
+          "vertical": true
+        },
+        {
+          "kind": "userCard",
+          "x": 1.3953,
+          "y": 1.6667,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 211,
+          "sizeMode": "1x2"
+        },
+        {
+          "kind": "todo",
+          "x": 18.8372,
+          "y": 33.3333,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 237
+        },
+        {
+          "kind": "notes",
+          "x": 1.7442,
+          "y": 12.5,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 227
+        },
+        {
+          "kind": "timers",
+          "x": 86.1628,
+          "y": 88.3333,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 244,
+          "vertical": false
+        },
+        {
+          "kind": "imageCard",
+          "x": 86.1628,
+          "y": 2.5,
+          "width": 11.7151,
+          "height": 66.4583,
+          "z": 245,
+          "sizeMode": "2x2"
+        },
+        {
+          "kind": "imageCard2",
+          "x": 3.8372,
+          "y": 54.1667,
+          "width": 16.5698,
+          "height": 15.9028,
+          "z": 233,
+          "sizeMode": "1x2"
+        },
+        {
+          "kind": "imageCard3",
+          "x": 1.3953,
+          "y": 30.8333,
+          "width": 16.7733,
+          "height": 21.4583,
+          "z": 229,
+          "sizeMode": "1x2"
+        }
+      ]
+    },
+    {
+      "themeId": "changli",
+      "variantId": "changli-3",
+      "label": "Layout 3",
+      "widgets": [
+        {
+          "kind": "weather",
+          "x": 85.814,
+          "y": 70,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 243,
+          "sizeMode": "2x3"
+        },
+        {
+          "kind": "calendar",
+          "x": 3.8372,
+          "y": 80.8333,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 269,
+          "sizeMode": "2x3"
+        },
+        {
+          "kind": "worldClock",
+          "x": 16.7442,
+          "y": 70.8333,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 260,
+          "sizeMode": "2x2",
+          "vertical": false
+        },
+        {
+          "kind": "media",
+          "x": 3.8372,
+          "y": 70.8333,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 262,
+          "sizeMode": "1x3"
+        },
+        {
+          "kind": "visualizer",
+          "x": 0,
+          "y": 83.3333,
+          "width": 11.7442,
+          "height": 15,
+          "z": -1000
+        },
+        {
+          "kind": "resources",
+          "x": 23.0233,
+          "y": 5,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 251,
+          "vertical": true
+        },
+        {
+          "kind": "userCard",
+          "x": 9.4186,
+          "y": 11.6667,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 270,
+          "sizeMode": "2x3"
+        },
+        {
+          "kind": "todo",
+          "x": 22.6744,
+          "y": 32.5,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 268
+        },
+        {
+          "kind": "notes",
+          "x": 1.0465,
+          "y": 10.8333,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 271
+        },
+        {
+          "kind": "timers",
+          "x": 86.1628,
+          "y": 88.3333,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 249,
+          "vertical": false
+        },
+        {
+          "kind": "imageCard",
+          "x": 86.1628,
+          "y": 2.5,
+          "width": 11.7151,
+          "height": 66.4583,
+          "z": 261,
+          "sizeMode": "2x2"
+        },
+        {
+          "kind": "imageCard2",
+          "x": 1.7442,
+          "y": 54.1667,
+          "width": 16.5698,
+          "height": 15.9028,
+          "z": 263,
+          "sizeMode": "1x2"
+        },
+        {
+          "kind": "imageCard3",
+          "x": 2.4419,
+          "y": 30.8333,
+          "width": 19.5349,
+          "height": 22.0833,
+          "z": 264,
+          "sizeMode": "1x2"
+        }
+      ]
+    },
+    {
+      "themeId": "changli",
+      "variantId": "changli-4",
+      "label": "Layout 4",
+      "widgets": [
+        {
+          "kind": "weather",
+          "x": 85.814,
+          "y": 70,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 243,
+          "sizeMode": "2x3"
+        },
+        {
+          "kind": "calendar",
+          "x": 3.8372,
+          "y": 80.8333,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 239,
+          "sizeMode": "2x3"
+        },
+        {
+          "kind": "worldClock",
+          "x": 16.7442,
+          "y": 80.8333,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 240,
+          "sizeMode": "2x2",
+          "vertical": false
+        },
+        {
+          "kind": "media",
+          "x": 3.1395,
+          "y": 70.8333,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 236,
+          "sizeMode": "1x3"
+        },
+        {
+          "kind": "visualizer",
+          "x": 0,
+          "y": 83.3333,
+          "width": 11.0465,
+          "height": 18.0556,
+          "z": -1000
+        },
+        {
+          "kind": "resources",
+          "x": 9.7674,
+          "y": 2.5,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 228,
+          "vertical": true
+        },
+        {
+          "kind": "userCard",
+          "x": 1.3953,
+          "y": 1.6667,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 211,
+          "sizeMode": "1x2"
+        },
+        {
+          "kind": "todo",
+          "x": 18.8372,
+          "y": 33.3333,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 237
+        },
+        {
+          "kind": "notes",
+          "x": 1.7442,
+          "y": 12.5,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 227
+        },
+        {
+          "kind": "timers",
+          "x": 86.1628,
+          "y": 88.3333,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 244,
+          "vertical": false
+        },
+        {
+          "kind": "imageCard",
+          "x": 86.1628,
+          "y": 2.5,
+          "width": 11.7151,
+          "height": 66.4583,
+          "z": 245,
+          "sizeMode": "2x2"
+        },
+        {
+          "kind": "imageCard2",
+          "x": 3.8372,
+          "y": 54.1667,
+          "width": 16.5698,
+          "height": 15.9028,
+          "z": 233,
+          "sizeMode": "1x2"
+        },
+        {
+          "kind": "imageCard3",
+          "x": 1.3953,
+          "y": 30.8333,
+          "width": 16.7733,
+          "height": 21.4583,
+          "z": 229,
+          "sizeMode": "1x2"
+        }
+      ]
+    },
+    {
+      "themeId": "hiyuki",
+      "variantId": "hiyuki-3",
+      "label": "Layout 3",
+      "widgets": [
+        {
+          "kind": "weather",
+          "x": 18.4884,
+          "y": 50,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 309,
+          "sizeMode": "2x3"
+        },
+        {
+          "kind": "calendar",
+          "x": 22.6744,
+          "y": 28.3333,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 336,
+          "sizeMode": "2x3"
+        },
+        {
+          "kind": "worldClock",
+          "x": 3.4884,
+          "y": 73.3333,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 339,
+          "sizeMode": "2x2",
+          "vertical": false
+        },
+        {
+          "kind": "media",
+          "x": 5.5814,
+          "y": 63.3333,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 338,
+          "sizeMode": "1x3"
+        },
+        {
+          "kind": "visualizer",
+          "x": 0,
+          "y": 82.5,
+          "width": 11.0465,
+          "height": 18.0556,
+          "z": -1000
+        },
+        {
+          "kind": "resources",
+          "x": 18.1395,
+          "y": 21.6667,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 332,
+          "vertical": true
+        },
+        {
+          "kind": "userCard",
+          "x": 87.2093,
+          "y": 2.5,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 322,
+          "sizeMode": "2x3"
+        },
+        {
+          "kind": "todo",
+          "x": 86.8605,
+          "y": 48.3333,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 321
+        },
+        {
+          "kind": "notes",
+          "x": 18.4884,
+          "y": 2.5,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 328
+        },
+        {
+          "kind": "timers",
+          "x": 1.7442,
+          "y": 31.6667,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 333,
+          "vertical": true
+        },
+        {
+          "kind": "imageCard",
+          "x": 5.9302,
+          "y": 0.8333,
+          "width": 12.0058,
+          "height": 61.5278,
+          "z": 331,
+          "sizeMode": "2x2"
+        },
+        {
+          "kind": "imageCard2",
+          "x": 82.6744,
+          "y": 66.6667,
+          "width": 16.5698,
+          "height": 15.9028,
+          "z": 317,
+          "sizeMode": "1x2"
+        },
+        {
+          "kind": "imageCard3",
+          "x": 18.4884,
+          "y": 68.3333,
+          "width": 22.2384,
+          "height": 27.2917,
+          "z": 335,
+          "sizeMode": "1x2"
+        },
+        {
+          "kind": "imageCard4",
+          "x": 87.907,
+          "y": 20.8333,
+          "width": 11.657,
+          "height": 26.0417,
+          "z": 320,
+          "sizeMode": "1x2"
+        }
+      ]
+    },
+    {
+      "themeId": "hsin",
+      "variantId": "hsin-1",
+      "label": "Layout 1",
+      "widgets": [
+        {
+          "kind": "weather",
+          "x": 84.7674,
+          "y": 76.6667,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 295,
+          "sizeMode": "2x3"
+        },
+        {
+          "kind": "calendar",
+          "x": 3.8372,
+          "y": 70,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 285,
+          "sizeMode": "2x3"
+        },
+        {
+          "kind": "worldClock",
+          "x": 77.093,
+          "y": 56.6667,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 296,
+          "sizeMode": "2x2",
+          "vertical": false
+        },
+        {
+          "kind": "media",
+          "x": 77.093,
+          "y": 35.8333,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 305,
+          "sizeMode": "2x2"
+        },
+        {
+          "kind": "visualizer",
+          "x": 0,
+          "y": 83.3333,
+          "width": 11.7442,
+          "height": 15,
+          "z": -1000
+        },
+        {
+          "kind": "resources",
+          "x": 15.3488,
+          "y": 30,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 283,
+          "vertical": false
+        },
+        {
+          "kind": "userCard",
+          "x": 24.7674,
+          "y": 50,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 300,
+          "sizeMode": "2x3"
+        },
+        {
+          "kind": "todo",
+          "x": 15.3488,
+          "y": 11.6667,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 306
+        },
+        {
+          "kind": "notes",
+          "x": 6.2791,
+          "y": 20.8333,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 281
+        },
+        {
+          "kind": "timers",
+          "x": 94.186,
+          "y": 5,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 294,
+          "vertical": true
+        },
+        {
+          "kind": "imageCard",
+          "x": 86.1628,
+          "y": 33.3333,
+          "width": 12.0349,
+          "height": 41.875,
+          "z": 303,
+          "sizeMode": "2x2"
+        },
+        {
+          "kind": "imageCard2",
+          "x": 76.3953,
+          "y": 17.5,
+          "width": 17.093,
+          "height": 14.5833,
+          "z": 307,
+          "sizeMode": "1x2"
+        },
+        {
+          "kind": "imageCard3",
+          "x": 2.7907,
+          "y": 39.1667,
+          "width": 21.5988,
+          "height": 28.6806,
+          "z": 301,
+          "sizeMode": "1x2"
+        },
+        {
+          "kind": "imageCard4",
+          "x": 16.7442,
+          "y": 70,
+          "width": 14.9419,
+          "height": 23.8194,
+          "z": 302,
+          "sizeMode": "1x2"
+        }
+      ]
+    },
+    {
+      "themeId": "outros",
+      "variantId": "outros-2",
+      "label": "Wallpaper extra 2",
+      "widgets": [
+        {
+          "kind": "weather",
+          "x": 84.4186,
+          "y": 56.6667,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 354,
+          "sizeMode": "2x3"
+        },
+        {
+          "kind": "calendar",
+          "x": 3.1395,
+          "y": 70.8333,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 348,
+          "sizeMode": "2x3"
+        },
+        {
+          "kind": "worldClock",
+          "x": 25.4651,
+          "y": 24.1667,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 352,
+          "sizeMode": "2x2",
+          "vertical": false
+        },
+        {
+          "kind": "media",
+          "x": 15.6977,
+          "y": 73.3333,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 357,
+          "sizeMode": "1x3"
+        },
+        {
+          "kind": "visualizer",
+          "x": 0,
+          "y": 83.3333,
+          "width": 11.7442,
+          "height": 15,
+          "z": -1000
+        },
+        {
+          "kind": "resources",
+          "x": 21.2791,
+          "y": 4.1667,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 350,
+          "vertical": true
+        },
+        {
+          "kind": "userCard",
+          "x": 87.2093,
+          "y": 36.6667,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 358,
+          "sizeMode": "2x3"
+        },
+        {
+          "kind": "todo",
+          "x": 85.1163,
+          "y": 11.6667,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 308
+        },
+        {
+          "kind": "notes",
+          "x": 66.6279,
+          "y": 31.6667,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 311
+        },
+        {
+          "kind": "timers",
+          "x": 93.4884,
+          "y": 5.8333,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 325,
+          "vertical": true
+        },
+        {
+          "kind": "imageCard",
+          "x": 2.4419,
+          "y": 7.5,
+          "width": 18.4302,
+          "height": 62.7778,
+          "z": 346,
+          "sizeMode": "2x2"
+        },
+        {
+          "kind": "imageCard2",
+          "x": 25.814,
+          "y": 4.1667,
+          "width": 20.843,
+          "height": 18.9583,
+          "z": 353,
+          "sizeMode": "1x2"
+        },
+        {
+          "kind": "imageCard3",
+          "x": 66.2791,
+          "y": 8.3333,
+          "width": 18.5756,
+          "height": 22.1528,
+          "z": 355,
+          "sizeMode": "1x2"
+        },
+        {
+          "kind": "imageCard4",
+          "x": 21.2791,
+          "y": 42.5,
+          "width": 20.7558,
+          "height": 30.2778,
+          "z": 351,
+          "sizeMode": "1x2"
+        },
+        {
+          "kind": "imageCard5",
+          "x": 75.3488,
+          "y": 30.8333,
+          "width": 11.25,
+          "height": 24.5139,
+          "z": 327,
+          "sizeMode": "1x2"
+        },
+        {
+          "kind": "imageCard6",
+          "x": 63.4884,
+          "y": 58.3333,
+          "width": 20.3488,
+          "height": 23.6806,
+          "z": 356,
+          "sizeMode": "1x2"
+        }
+      ]
+    },
+    {
+      "themeId": "emilia",
+      "variantId": "emilia-3",
+      "label": "Layout 3",
+      "widgets": [
+        {
+          "kind": "weather",
+          "x": 4.8837,
+          "y": 37.5,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 337,
+          "sizeMode": "2x3"
+        },
+        {
+          "kind": "calendar",
+          "x": 86.8605,
+          "y": 70,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 326,
+          "sizeMode": "2x3"
+        },
+        {
+          "kind": "worldClock",
+          "x": 2.7907,
+          "y": 80,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 339,
+          "sizeMode": "2x2",
+          "vertical": false
+        },
+        {
+          "kind": "media",
+          "x": 11.5116,
+          "y": 80,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 338,
+          "sizeMode": "1x3"
+        },
+        {
+          "kind": "visualizer",
+          "x": 0,
+          "y": 82.5,
+          "width": 11.0465,
+          "height": 18.0556,
+          "z": -1000
+        },
+        {
+          "kind": "resources",
+          "x": 18.1395,
+          "y": 21.6667,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 332,
+          "vertical": false
+        },
+        {
+          "kind": "userCard",
+          "x": 5.2326,
+          "y": 2.5,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 335,
+          "sizeMode": "2x3"
+        },
+        {
+          "kind": "todo",
+          "x": 18.1395,
+          "y": 2.5,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 334
+        },
+        {
+          "kind": "notes",
+          "x": 76.3953,
+          "y": 12.5,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 343
+        },
+        {
+          "kind": "timers",
+          "x": 82.6744,
+          "y": 30.8333,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 342,
+          "vertical": true
+        },
+        {
+          "kind": "imageCard",
+          "x": 86.8605,
+          "y": 1.6667,
+          "width": 11.9767,
+          "height": 66.8056,
+          "z": 325,
+          "sizeMode": "2x2"
+        },
+        {
+          "kind": "imageCard2",
+          "x": 1.0465,
+          "y": 20.8333,
+          "width": 16.5698,
+          "height": 15.9028,
+          "z": 336,
+          "sizeMode": "1x2"
+        },
+        {
+          "kind": "imageCard3",
+          "x": 3.1395,
+          "y": 55.8333,
+          "width": 19.2442,
+          "height": 23.2639,
+          "z": 340,
+          "sizeMode": "1x2"
+        },
+        {
+          "kind": "imageCard4",
+          "x": 23.0233,
+          "y": 45,
+          "width": 11.8314,
+          "height": 26.4583,
+          "z": 341,
+          "sizeMode": "1x2"
+        }
+      ]
+    },
+    {
+      "themeId": "furina",
+      "variantId": "furina-2",
+      "label": "Layout 2",
+      "widgets": [
+        {
+          "kind": "weather",
+          "x": 18.4884,
+          "y": 37.5,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 387,
+          "sizeMode": "2x3"
+        },
+        {
+          "kind": "calendar",
+          "x": 86.8605,
+          "y": 48.3333,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 380,
+          "sizeMode": "2x3"
+        },
+        {
+          "kind": "worldClock",
+          "x": 2.093,
+          "y": 19.1667,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 333,
+          "sizeMode": "2x2",
+          "vertical": false
+        },
+        {
+          "kind": "media",
+          "x": 14.6512,
+          "y": 0.8333,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 372,
+          "sizeMode": "1x2"
+        },
+        {
+          "kind": "visualizer",
+          "x": 0,
+          "y": 83.3333,
+          "width": 11.0465,
+          "height": 18.0556,
+          "z": -1000
+        },
+        {
+          "kind": "resources",
+          "x": 22.6744,
+          "y": 8.3333,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 330,
+          "vertical": true
+        },
+        {
+          "kind": "userCard",
+          "x": 2.4419,
+          "y": 0.8333,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 332,
+          "sizeMode": "2x3"
+        },
+        {
+          "kind": "todo",
+          "x": 26.8605,
+          "y": 4.1667,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 336
+        },
+        {
+          "kind": "notes",
+          "x": 77.4419,
+          "y": 26.6667,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 346
+        },
+        {
+          "kind": "timers",
+          "x": 73.6047,
+          "y": 17.5,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 347,
+          "vertical": false
+        },
+        {
+          "kind": "imageCard",
+          "x": 85.1163,
+          "y": 71.6667,
+          "width": 13.4012,
+          "height": 21.3194,
+          "z": 384,
+          "sizeMode": "2x2"
+        },
+        {
+          "kind": "imageCard2",
+          "x": 80.2326,
+          "y": 0.8333,
+          "width": 16.5698,
+          "height": 15.9028,
+          "z": 385,
+          "sizeMode": "1x2"
+        },
+        {
+          "kind": "imageCard3",
+          "x": 5.9302,
+          "y": 56.6667,
+          "width": 20.436,
+          "height": 25.2083,
+          "z": 388,
+          "sizeMode": "1x2"
+        },
+        {
+          "kind": "imageCard4",
+          "x": 86.1628,
+          "y": 17.5,
+          "width": 11.657,
+          "height": 26.0417,
+          "z": 318,
+          "sizeMode": "1x2"
+        },
+        {
+          "kind": "imageCard5",
+          "x": 68.7209,
+          "y": 45,
+          "width": 17.4128,
+          "height": 25.625,
+          "z": 360,
+          "sizeMode": "1x2"
+        },
+        {
+          "kind": "imageCard6",
+          "x": 10.814,
+          "y": 19.1667,
+          "width": 11.5407,
+          "height": 17.5,
+          "z": 367,
+          "sizeMode": "1x2"
+        }
+      ]
+    },
+    {
+      "themeId": "outros",
+      "variantId": "outros-3",
+      "label": "Wallpaper extra 3",
+      "widgets": [
+        {
+          "kind": "weather",
+          "x": 65.2326,
+          "y": 69.1667,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 328,
+          "sizeMode": "2x3"
+        },
+        {
+          "kind": "calendar",
+          "x": 76.0465,
+          "y": 38.3333,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 325,
+          "sizeMode": "2x3"
+        },
+        {
+          "kind": "worldClock",
+          "x": 24.4186,
+          "y": 20.8333,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 311,
+          "sizeMode": "2x2",
+          "vertical": false
+        },
+        {
+          "kind": "media",
+          "x": 4.5349,
+          "y": 56.6667,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 290,
+          "sizeMode": "1x3"
+        },
+        {
+          "kind": "visualizer",
+          "x": 0,
+          "y": 83.3333,
+          "width": 11.0465,
+          "height": 18.0556,
+          "z": -1000
+        },
+        {
+          "kind": "resources",
+          "x": 3.1395,
+          "y": 29.1667,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 300,
+          "vertical": false
+        },
+        {
+          "kind": "userCard",
+          "x": 8.3721,
+          "y": 38.3333,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 332,
+          "sizeMode": "2x2"
+        },
+        {
+          "kind": "todo",
+          "x": 21.2791,
+          "y": 40,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 331
+        },
+        {
+          "kind": "notes",
+          "x": 79.5349,
+          "y": 57.5,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 321
+        },
+        {
+          "kind": "timers",
+          "x": 19.8837,
+          "y": 59.1667,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 309,
+          "vertical": true
+        },
+        {
+          "kind": "imageCard",
+          "x": 9.4186,
+          "y": 65.8333,
+          "width": 9.9709,
+          "height": 20.625,
+          "z": 291,
+          "sizeMode": "2x2"
+        },
+        {
+          "kind": "imageCard2",
+          "x": 7.3256,
+          "y": 11.6667,
+          "width": 16.5698,
+          "height": 15.9028,
+          "z": 330,
+          "sizeMode": "1x2"
+        },
+        {
+          "kind": "imageCard3",
+          "x": 88.6047,
+          "y": 60,
+          "width": 10.9012,
+          "height": 24.7222,
+          "z": 324,
+          "sizeMode": "1x2"
+        },
+        {
+          "kind": "imageCard4",
+          "x": 78.4884,
+          "y": 3.3333,
+          "width": 20.7558,
+          "height": 33.4028,
+          "z": 314,
+          "sizeMode": "1x2"
+        },
+        {
+          "kind": "imageCard5",
+          "x": 67.3256,
+          "y": 13.3333,
+          "width": 10.6105,
+          "height": 24.0972,
+          "z": 315,
+          "sizeMode": "1x2"
+        },
+        {
+          "kind": "imageCard6",
+          "x": 64.186,
+          "y": 40.8333,
+          "width": 11.3372,
+          "height": 26.25,
+          "z": 333,
+          "sizeMode": "1x2"
+        }
+      ]
+    },
+    {
+      "themeId": "outros",
+      "variantId": "outros-4",
+      "label": "Wallpaper extra 4",
+      "widgets": [
+        {
+          "kind": "weather",
+          "x": 2.093,
+          "y": 37.5,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 124,
+          "sizeMode": "2x3"
+        },
+        {
+          "kind": "calendar",
+          "x": 86.5116,
+          "y": 70,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 96,
+          "sizeMode": "2x3"
+        },
+        {
+          "kind": "worldClock",
+          "x": 1.3953,
+          "y": 80.8333,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 108,
+          "sizeMode": "2x2",
+          "vertical": false
+        },
+        {
+          "kind": "media",
+          "x": 15,
+          "y": 35.8333,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 126,
+          "sizeMode": "1x3"
+        },
+        {
+          "kind": "visualizer",
+          "x": 0,
+          "y": 83.3333,
+          "width": 11.0465,
+          "height": 18.0556,
+          "z": -1000
+        },
+        {
+          "kind": "resources",
+          "x": 81.6279,
+          "y": 30.8333,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 94,
+          "vertical": true
+        },
+        {
+          "kind": "userCard",
+          "x": 0.6977,
+          "y": 2.5,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 87,
+          "sizeMode": "2x3"
+        },
+        {
+          "kind": "todo",
+          "x": 13.6047,
+          "y": 2.5,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 114
+        },
+        {
+          "kind": "notes",
+          "x": 77.7907,
+          "y": 7.5,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 112
+        },
+        {
+          "kind": "timers",
+          "x": 15,
+          "y": 20.8333,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 92,
+          "vertical": false
+        },
+        {
+          "kind": "imageCard",
+          "x": 86.1628,
+          "y": 5,
+          "width": 12.5872,
+          "height": 63.8889,
+          "z": 62,
+          "sizeMode": "2x2"
+        },
+        {
+          "kind": "imageCard2",
+          "x": 0.6977,
+          "y": 20.8333,
+          "width": 13.6919,
+          "height": 15.4167,
+          "z": 88,
+          "sizeMode": "1x2"
+        },
+        {
+          "kind": "imageCard3",
+          "x": 1.7442,
+          "y": 55.8333,
+          "width": 16.8314,
+          "height": 23.5417,
+          "z": 117,
+          "sizeMode": "1x2"
+        },
+        {
+          "kind": "imageCard4",
+          "x": 19.8837,
+          "y": 45.8333,
+          "width": 12.1512,
+          "height": 29.5833,
+          "z": 127,
+          "sizeMode": "1x2"
+        }
+      ]
+    },
+    {
+      "themeId": "outros",
+      "variantId": "outros-5",
+      "label": "Wallpaper extra 5",
+      "widgets": [
+        {
+          "kind": "weather",
+          "x": 86.1628,
+          "y": 70,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 55,
+          "sizeMode": "2x3"
+        },
+        {
+          "kind": "calendar",
+          "x": 0.3488,
+          "y": 80,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 77,
+          "sizeMode": "2x3"
+        },
+        {
+          "kind": "worldClock",
+          "x": 13.2558,
+          "y": 80,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 76,
+          "sizeMode": "2x2",
+          "vertical": false
+        },
+        {
+          "kind": "media",
+          "x": 0.6977,
+          "y": 70.8333,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 64,
+          "sizeMode": "1x3"
+        },
+        {
+          "kind": "visualizer",
+          "x": 0,
+          "y": 83.3333,
+          "width": 11.0465,
+          "height": 18.0556,
+          "z": -1000
+        },
+        {
+          "kind": "resources",
+          "x": 9.7674,
+          "y": 4.1667,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 42,
+          "vertical": true
+        },
+        {
+          "kind": "userCard",
+          "x": 1.0465,
+          "y": 4.1667,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 57,
+          "sizeMode": "1x2"
+        },
+        {
+          "kind": "todo",
+          "x": 11.8605,
+          "y": 34.1667,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 73
+        },
+        {
+          "kind": "notes",
+          "x": 1.0465,
+          "y": 13.3333,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 50
+        },
+        {
+          "kind": "timers",
+          "x": 86.1628,
+          "y": 88.3333,
+          "width": 7.5581,
+          "height": 8.6806,
+          "z": 70,
+          "vertical": false
+        },
+        {
+          "kind": "imageCard",
+          "x": 86.1628,
+          "y": 5,
+          "width": 12.5872,
+          "height": 63.8889,
+          "z": 62,
+          "sizeMode": "2x2"
+        },
+        {
+          "kind": "imageCard2",
+          "x": 0.6977,
+          "y": 54.1667,
+          "width": 13.4593,
+          "height": 14.3056,
+          "z": 75,
+          "sizeMode": "1x2"
+        },
+        {
+          "kind": "imageCard3",
+          "x": 0.3488,
+          "y": 35,
+          "width": 11.25,
+          "height": 16.6667,
+          "z": 78,
+          "sizeMode": "1x2"
+        }
+      ]
+    }
+  ]
+}

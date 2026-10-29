@@ -1,11 +1,13 @@
 import { useEffect, useMemo, useRef, useState, Suspense } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { AdditiveBlending, CatmullRomCurve3, DynamicDrawUsage, MathUtils, Object3D, Vector2, Vector3 } from "three";
-import type { Group, InstancedMesh, ShaderMaterial } from "three";
+import { AdditiveBlending, DynamicDrawUsage, MathUtils, Vector2, Vector3 } from "three";
+import type { ShaderMaterial } from "three";
+import { Color } from "three";
+import { useTheme } from "../stores/themeContext";
 import { useAccessibility } from "./accessibilityContext";
+import { GlassScreens } from "./GlassScreens";
 
 const PARTICLES = 7200;
-const VERTEBRAE = 23;
 
 const particleVertex = `
   uniform float uTime;
@@ -34,16 +36,21 @@ const particleVertex = `
 `;
 const particleFragment = `
   varying float vHeat;
+  uniform vec3 uCopper;
+  uniform vec3 uGold;
   void main() {
     float radius = length(gl_PointCoord - vec2(0.5));
     float glow = exp(-radius * radius * 24.0) * 0.82;
-    vec3 copper = vec3(0.78, 0.29, 0.22);
-    vec3 gold = vec3(0.99, 0.77, 0.53);
-    gl_FragColor = vec4(mix(copper, gold, vHeat), glow);
+    gl_FragColor = vec4(mix(uCopper, uGold, vHeat), glow);
   }
 `;
 
 function OrganicDust() {
+  const { theme } = useTheme();
+  const colors = useMemo(() => ({
+    low: new Color(theme.palette.accentPrimary),
+    high: new Color(theme.palette.accentYellow),
+  }), [theme.palette]);
   const material = useRef<ShaderMaterial>(null);
   const pointer = useRef(new Vector2(80, 80));
   const pointerTarget = useRef(new Vector2(80, 80));
@@ -83,6 +90,8 @@ function OrganicDust() {
   useFrame((_, delta) => {
     if (!material.current) return;
     material.current.uniforms.uTime.value += Math.min(delta, 0.07);
+    material.current.uniforms.uCopper.value.lerp(colors.low, 1 - Math.exp(-5 * delta));
+    material.current.uniforms.uGold.value.lerp(colors.high, 1 - Math.exp(-5 * delta));
     pointer.current.lerp(pointerTarget.current, Math.min(delta * 2.5, 1));
     material.current.uniforms.uPointer.value.copy(pointer.current);
   });
@@ -95,7 +104,7 @@ function OrganicDust() {
       </bufferGeometry>
       <shaderMaterial
         ref={material}
-        uniforms={{ uTime: { value: 0 }, uPointer: { value: new Vector2(80, 80) } }}
+        uniforms={{ uTime: { value: 0 }, uPointer: { value: new Vector2(80, 80) }, uCopper: { value: colors.low.clone() }, uGold: { value: colors.high.clone() } }}
         vertexShader={particleVertex}
         fragmentShader={particleFragment}
         transparent
@@ -105,57 +114,6 @@ function OrganicDust() {
     </points>
   );
 }
-
-function VertebralStructure() {
-  const group = useRef<Group>(null);
-  const mesh = useRef<InstancedMesh>(null);
-  const template = useMemo(() => new Object3D(), []);
-  const centerLine = useMemo(() => new CatmullRomCurve3([
-    new Vector3(0.1, -3.9, -0.02),
-    new Vector3(-0.22, -1.8, 0),
-    new Vector3(0.18, 0.1, -0.12),
-    new Vector3(-0.1, 2.0, 0.02),
-    new Vector3(0.08, 4.0, 0),
-  ]), []);
-
-  useEffect(() => {
-    if (!mesh.current) return;
-    for (let i = 0; i < VERTEBRAE; i++) {
-      const t = i / (VERTEBRAE - 1);
-      const p = centerLine.getPoint(t);
-      template.position.copy(p);
-      template.rotation.set(Math.sin(t * 11) * 0.24 + 0.15, 0, Math.cos(t * 9) * 0.28);
-      const taper = 0.55 + Math.sin(t * Math.PI) * 0.58;
-      template.scale.set(taper, taper, 0.6 + taper * 0.42);
-      template.updateMatrix();
-      mesh.current.setMatrixAt(i, template.matrix);
-    }
-    mesh.current.instanceMatrix.needsUpdate = true;
-  }, [centerLine, template]);
-
-  useFrame(({ clock }, delta) => {
-    if (group.current) {
-      const t = clock.elapsedTime;
-      group.current.rotation.y += Math.min(delta, 0.06) * 0.055;
-      group.current.rotation.z = Math.sin(t * 0.3) * 0.035;
-    }
-  });
-
-  return (
-    <group ref={group}>
-      <mesh>
-        <tubeGeometry args={[centerLine, 180, 0.055, 8, false]} />
-        <meshStandardMaterial color="#A85244" emissive="#C96A42" emissiveIntensity={0.95} metalness={0.8} roughness={0.22} />
-      </mesh>
-      <instancedMesh ref={mesh} args={[undefined, undefined, VERTEBRAE]}>
-        <torusGeometry args={[0.53, 0.15, 8, 28]} />
-        <meshStandardMaterial color="#C47A68" emissive="#6A2729" emissiveIntensity={0.24} metalness={0.82} roughness={0.25} transparent opacity={0.88} />
-      </instancedMesh>
-      <OrganicDust />
-    </group>
-  );
-}
-
 
 function SpineCameraJourney() {
   const { camera } = useThree();
@@ -191,15 +149,17 @@ function SpineCameraJourney() {
   return null;
 }
 
-function SpineCanvas() {
+function ConstellationCanvas() {
+  const { theme } = useTheme();
   return (
     <div className="spine-world" aria-hidden="true">
       <Canvas camera={{ position: [0, 0, 13], fov: 43 }} dpr={[1, 1.5]} gl={{ alpha: true, antialias: true, powerPreference: "high-performance" }}>
         <SpineCameraJourney />
         <ambientLight intensity={1.5} />
-        <pointLight position={[4, 4, 5]} intensity={42} color="#f8b88a" />
-        <pointLight position={[-4, -3, 4]} intensity={17} color="#b82946" />
-        <VertebralStructure />
+        <pointLight position={[4, 4, 5]} intensity={42} color={theme.palette.accentYellow} />
+        <pointLight position={[-4, -3, 4]} intensity={17} color={theme.palette.accentPrimary} />
+        <OrganicDust />
+        <GlassScreens />
       </Canvas>
     </div>
   );
@@ -232,13 +192,33 @@ export function SpineWorld() {
     return () => observer.disconnect();
   }, [ready]);
 
+  useEffect(() => {
+    const stage = document.getElementById("spine-stage");
+    if (!stage) return;
+    const syncGlassFallback = () => {
+      // Small screens intentionally hide the expensive transmissive panes.
+      // Keep the frosted CSS material enabled on those devices.
+      if (ready && active && !reducedMotion && window.innerWidth > 760) {
+        stage.dataset.glass = "true";
+      } else {
+        delete stage.dataset.glass;
+      }
+    };
+    syncGlassFallback();
+    window.addEventListener("resize", syncGlassFallback);
+    return () => {
+      window.removeEventListener("resize", syncGlassFallback);
+      delete stage.dataset.glass;
+    };
+  }, [ready, active, reducedMotion]);
+
   if (!ready || !active || reducedMotion) {
     return <div className="spine-fallback" aria-hidden="true" />;
   }
 
   return (
     <Suspense fallback={<div className="spine-fallback" aria-hidden="true" />}>
-      <SpineCanvas />
+      <ConstellationCanvas />
     </Suspense>
   );
 }

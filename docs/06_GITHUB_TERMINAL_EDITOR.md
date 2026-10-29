@@ -86,3 +86,32 @@ visitor@portfolio:jogo-site/$ git log
 - `git log` e grafos representam dados reais; histórico grande tem paginação e avisos de cobertura.
 - Teclas/scroll no editor não movimentam cena 3D por trás; Escape e foco restaurados.
 - Estilos e acentos seguem mudança de tema; código permanece legível.
+
+## Estado da visualização Git (28/10/2026)
+
+O histórico paginado agora mostra grafo 2D com SHAs de parentesco reais retornados pela API. Arestas só existem quando pai e filho estão na página carregada, sem inventar relações. A seleção de sete marcos técnicos foi verificada por SHA e arquivos alterados, mas segue **provisória e não aprovada pelo proprietário**. O grafo 3D e curadoria final são futuros.
+
+## Integração terminal e diff visual (28/10/2026)
+
+Comandos `git log [página]`, `git show <SHA>` e `git diff <SHA-A> <SHA-B>` agora ativam a aba Histórico visual da mesma seleção de repositório, incluindo página ou resultado consultado. A mesma resposta tipada alimenta o resumo do console e o diff do painel, sem fabricar alterações. O visualizador separa arquivos, status, números de linhas da visualização, adições, remoções e contexto. Exibição limitada a 16 arquivos e 6.000 caracteres de patch por arquivo, com aviso de conteúdo parcial e link oficial. Testes de integração e XSS ainda não substituem revisão visual manual.
+
+## Mobile e acesso por teclado (28/10/2026)
+
+Em viewport de até 760px o terminal tem abas **Console** e **Arquivos e Git** (cada uma ocupa a área útil da janela). Não rolar duas regiões verticais juntas. Comandos que abrem conteúdo ativam a aba correspondente. No desktop as duas regiões permanecem lado a lado.
+
+Na árvore de arquivos, usar ↑ e ↓ para percorrer itens visíveis; Home e End vão ao primeiro e último; → expande pasta ou entra no primeiro filho; ← recolhe pasta ou volta ao pai. Enter e Espaço ativam o botão focado. Mostrar o foco com contorno de contraste. Essas melhorias são estruturais; aceite final de acessibilidade requer teste com leitor de tela e mobile real.
+
+## Acessibilidade e robustez (28/10/2026)
+
+O modal contém foco de teclado enquanto está aberto, fecha com Escape e devolve o foco ao elemento que iniciou a abertura; mantém descrição acessível e anuncia status curto por `role=status`, sem reler os diffs inteiros do log. Falhas transitórias (offline, timeout, limite temporário e indisponibilidade GitHub) oferecem repetição explícita do comando; erros definitivos (path/allowlist/404) não induzem retry infinito. A leitura de arquivos usa token de requisição e identidade do repositório para ignorar respostas e erros obsoletos depois de abrir outro projeto. Isso não substitui auditoria real de leitor de tela ou teste de rede intermitente no navegador.
+
+## M3 — `grep` literal, limitado e auditável (29/10/2026)
+
+**IN_PROGRESS — implementação e testes unitários, sem QA de navegador.** O terminal agora permite `grep "texto literal" [pasta|arquivo]` após `open <repo-id>`. A pesquisa é **case-insensitive** e apresenta `path:linha:conteúdo` de arquivos do GitHub público e aprovado, não um sistema de arquivos local e não uma execução de shell ou regex do visitante.
+
+- **Orçamento por comando:** até **6 arquivos** de texto indexados por consulta, até **48 KiB** por arquivo, até **24 ocorrências** e 180 caracteres mostrados por linha. Arquivos binários/grandes não entram na busca. Sem repositórios fora da allowlist ou fetch para URL arbitrária.
+- A busca sem caminho considera o diretório virtual atual; o usuário pode restringir a uma pasta como `grep "Phaser" src/world` para melhorar a cobertura.
+- A saída mostra arquivos pesquisados e total de candidatos; se índice parcial, limite atingido ou falha de leitura, mostra **RESULTADO PARCIAL**, não "não existe".
+- Erros de quota, offline e timeout são propagados com as mensagens existentes do terminal.
+- **Evidências automáticas:** `src/__tests__/github-grep.test.ts`, incluindo allowlist, travessia de caminhos, custo de API, busca literal, arquivos não-textuais e índice parcial.
+- **Pendências:** teste manual de `grep` em Chrome/Firefox/Arch e conexões lentas; a integração não substitui o grep em *todo* o repositório (cobertura parcial declarada). O marco M3 continua **IN_PROGRESS**.
