@@ -90,7 +90,7 @@
 }
 .hypr-widget-position-layer{pointer-events:none}
 .hypr-widget-interactive{
-  pointer-events:auto;overflow:visible;max-width:40%;max-height:55%;
+  pointer-events:auto;overflow:visible;max-width:40%;max-height:95%;
   cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;
   transition:box-shadow .18s;
   min-width:0;min-height:0;
