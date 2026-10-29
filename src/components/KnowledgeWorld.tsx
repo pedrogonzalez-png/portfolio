@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { RoundedBox, useFBO } from "@react-three/drei";
 import { AdditiveBlending, BufferAttribute, BufferGeometry, CatmullRomCurve3, Color, DoubleSide, Vector2, Vector3 } from "three";
-import type { Group, ShaderMaterial } from "three";
+import type { Group, OrthographicCamera, ShaderMaterial } from "three";
 import { useTheme } from "../stores/themeContext";
 import RibbonParticles from "./RibbonParticles";
 import WaterVeil from "./WaterVeil";
@@ -353,6 +353,37 @@ function SharedGlass({ skillPositions, activeSkill }: Pick<KnowledgeWorldProps, 
   );
 }
 
+/** A small lens-breathing move connects the glass cards to scroll navigation.
+ *  Runs before the FBO pass so the glass captures the same camera this frame.
+ *  Orthographic zoom is eased and returns to its exact resting value.
+ */
+function CameraProjectTransition({ project }: { project: KnowledgeProjectId }) {
+  const { camera } = useThree();
+  const previous = useRef(project);
+  const motion = useRef(0);
+  useEffect(() => {
+    if (previous.current !== project) {
+      previous.current = project;
+      motion.current = 1;
+    }
+  }, [project]);
+
+  useFrame((_, delta) => {
+    const dt = Math.min(delta, 0.05);
+    motion.current *= Math.exp(-2.8 * dt);
+    if (motion.current < 0.001) motion.current = 0;
+    const ortho = camera as OrthographicCamera;
+    const targetZoom = 54 - motion.current * 1.2;
+    const easing = 1 - Math.exp(-7 * dt);
+    const nextZoom = ortho.zoom + (targetZoom - ortho.zoom) * easing;
+    if (Math.abs(nextZoom - ortho.zoom) > 0.0001) {
+      ortho.zoom = nextZoom;
+      ortho.updateProjectionMatrix();
+    }
+  }, -3);
+  return null;
+}
+
 export default function KnowledgeWorld(props: KnowledgeWorldProps) {
   return (
     <Canvas
@@ -363,6 +394,7 @@ export default function KnowledgeWorld(props: KnowledgeWorldProps) {
       onCreated={({ gl }) => gl.domElement.addEventListener("webglcontextlost", props.onContextLost, { once: true })}
     >
       <color attach="background" args={["#090b15"]} />
+      <CameraProjectTransition project={props.activeProject} />
       <Backdrop />
       <WaterVeil />
       <AmbientRings />
