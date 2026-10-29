@@ -69,14 +69,12 @@ describe("expanded 2D desktop simulation", () => {
       .toHaveAttribute("aria-pressed", "true");
     expect(desktop.querySelector(".theme-desktop-standard")).not.toBeNull();
 
-    fireEvent.click(within(desktop).getByRole("button", { name: "Paleta" }));
-    expect(within(desktop).getByRole("group", { name: "Janela de prévia: Paleta" }))
+    // The previous generic three-panel dashboard has been intentionally removed.
+    expect(within(desktop).queryByRole("button", { name: "Paleta" })).not.toBeInTheDocument();
+    expect(within(desktop).queryByRole("button", { name: "Sobre" })).not.toBeInTheDocument();
+    expect(within(desktop).getByText(/A paleta Emilia está ativa nesta prévia/))
       .toBeInTheDocument();
-    expect(within(desktop).getByText(OFFICIAL_THEMES[2].palette.accentPrimary))
-      .toBeInTheDocument();
-    fireEvent.click(within(desktop).getByRole("button", { name: "Sobre" }));
-    expect(within(desktop).getByText(/Nesta prévia há quatro organizações locais independentes/))
-      .toBeInTheDocument();
+    expect(desktop.querySelector(".real-desktop-wallpaper")).toBeNull();
 
     expect(screen.getByTestId("active-theme")).toHaveTextContent("changli");
     fireEvent.click(screen.getByRole("button", { name: "Recolher desktop simulado" }));
