@@ -104,3 +104,14 @@ Na árvore de arquivos, usar ↑ e ↓ para percorrer itens visíveis; Home e En
 ## Acessibilidade e robustez (28/10/2026)
 
 O modal contém foco de teclado enquanto está aberto, fecha com Escape e devolve o foco ao elemento que iniciou a abertura; mantém descrição acessível e anuncia status curto por `role=status`, sem reler os diffs inteiros do log. Falhas transitórias (offline, timeout, limite temporário e indisponibilidade GitHub) oferecem repetição explícita do comando; erros definitivos (path/allowlist/404) não induzem retry infinito. A leitura de arquivos usa token de requisição e identidade do repositório para ignorar respostas e erros obsoletos depois de abrir outro projeto. Isso não substitui auditoria real de leitor de tela ou teste de rede intermitente no navegador.
+
+## M3 — `grep` literal, limitado e auditável (29/10/2026)
+
+**IN_PROGRESS — implementação e testes unitários, sem QA de navegador.** O terminal agora permite `grep "texto literal" [pasta|arquivo]` após `open <repo-id>`. A pesquisa é **case-insensitive** e apresenta `path:linha:conteúdo` de arquivos do GitHub público e aprovado, não um sistema de arquivos local e não uma execução de shell ou regex do visitante.
+
+- **Orçamento por comando:** até **6 arquivos** de texto indexados por consulta, até **48 KiB** por arquivo, até **24 ocorrências** e 180 caracteres mostrados por linha. Arquivos binários/grandes não entram na busca. Sem repositórios fora da allowlist ou fetch para URL arbitrária.
+- A busca sem caminho considera o diretório virtual atual; o usuário pode restringir a uma pasta como `grep "Phaser" src/world` para melhorar a cobertura.
+- A saída mostra arquivos pesquisados e total de candidatos; se índice parcial, limite atingido ou falha de leitura, mostra **RESULTADO PARCIAL**, não "não existe".
+- Erros de quota, offline e timeout são propagados com as mensagens existentes do terminal.
+- **Evidências automáticas:** `src/__tests__/github-grep.test.ts`, incluindo allowlist, travessia de caminhos, custo de API, busca literal, arquivos não-textuais e índice parcial.
+- **Pendências:** teste manual de `grep` em Chrome/Firefox/Arch e conexões lentas; a integração não substitui o grep em *todo* o repositório (cobertura parcial declarada). O marco M3 continua **IN_PROGRESS**.
