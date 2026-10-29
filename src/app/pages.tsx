@@ -1,24 +1,27 @@
 import { lazy, Suspense, useCallback, useEffect, useState } from "react";
-import { Route, Routes, useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
+import type { CSSProperties } from "react";
 import { TopMenu } from "../components/TopMenu";
 import { ProjectPanel } from "../components/ProjectPanel";
 import SceneIntegration from "../components/SceneIntegration";
 import { KnowledgeTree } from "../components/KnowledgeTree";
+import { ThemeDisintegration } from "../components/desktop/ThemeDisintegration";
+import { OFFICIAL_THEMES } from "../stores/themes";
+import "../styles/hyprland-entry-transition.css";
 
 const Terminal = lazy(() => import("../components/Terminal").then((module) => ({ default: module.Terminal })));
 const ThemeStudio = lazy(() => import("../components/ThemeStudio").then((module) => ({ default: module.ThemeStudio })));
 
-function HomePage() {
+function HomePage({onOpenHyprland}:{onOpenHyprland:()=>void}) {
   const [terminalOpen, setTerminalOpen] = useState(false);
   const openTerminal = useCallback(() => setTerminalOpen(true), []);
   const closeTerminal = useCallback(() => setTerminalOpen(false), []);
-  const navigate = useNavigate();
   const location = useLocation();
 
   useEffect(() => {
     if (location.hash !== "#projetos") return;
     const frame = window.requestAnimationFrame(() =>
-      document.getElementById("projetos")?.scrollIntoView({ behavior: "instant", block: "start" }));
+      document.getElementById("projetos")?.scrollIntoView?.({ behavior: "instant", block: "start" }));
     return () => window.cancelAnimationFrame(frame);
   }, [location.hash]);
 
@@ -63,7 +66,7 @@ function HomePage() {
             <h2>Um universo de <em>possibilidades.</em></h2>
             <p>Projetos do catálogo autorizado, ainda em desenvolvimento. Abra um painel para conhecer os detalhes.</p>
           </div>
-          <ProjectPanel onOpenThemeStudio={() => navigate("/hyprland-themes")} />
+          <ProjectPanel onOpenThemeStudio={onOpenHyprland} />
         </section>
 
         <section id="habilidades" className="knowledge-area" aria-label="Habilidades e conhecimentos">
@@ -118,9 +121,48 @@ function HyprlandThemesPage() {
   );
 }
 
+/**
+ * Only the PROJECT ENTRY has a disintegration transition.
+ * Keep the SAME HomePage React subtree alive while the route changes so the
+ * old carousel, scroll position and WebGL scene do not reset on click.
+ * The dedicated Hyprland page mounts underneath before the fragments vanish.
+ */
 export default function Pages() {
-  return <Routes>
-    <Route path="/" element={<HomePage />} />
-    <Route path="/hyprland-themes" element={<HyprlandThemesPage />} />
-  </Routes>;
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [leavingHome,setLeavingHome] = useState<{scrollY:number;accent:string;secondary:string}|null>(null);
+
+  const openHyprland = useCallback(() => {
+    if (location.pathname !== "/") return;
+    if (window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches) {
+      navigate("/hyprland-themes");
+      return;
+    }
+    const css = getComputedStyle(document.documentElement);
+    setLeavingHome({
+      scrollY:window.scrollY,
+      accent:css.getPropertyValue("--color-accent-primary").trim() || OFFICIAL_THEMES[0].palette.accentPrimary,
+      secondary:css.getPropertyValue("--color-accent-yellow").trim() || OFFICIAL_THEMES[0].palette.accentYellow,
+    });
+    navigate("/hyprland-themes");
+  }, [location.pathname,navigate]);
+
+  const renderHome = location.pathname === "/" || leavingHome !== null;
+  return <>
+    {location.pathname === "/hyprland-themes" && <HyprlandThemesPage />}
+    {renderHome && (
+      <div className={"hyprland-route-home" + (leavingHome ? " is-leaving" : "")}
+        style={leavingHome ? {"--exit-scroll-y": leavingHome.scrollY+"px"} as CSSProperties : undefined}>
+        <ThemeDisintegration active={leavingHome !== null}
+          oldAccent={leavingHome?.accent ?? OFFICIAL_THEMES[0].palette.accentPrimary}
+          oldSecondary={leavingHome?.secondary ?? OFFICIAL_THEMES[0].palette.accentYellow}
+          newAccent={OFFICIAL_THEMES[0].palette.accentPrimary}
+          onFinished={() => setLeavingHome(null)}>
+          <div className="hyprland-route-home-content">
+            <HomePage onOpenHyprland={openHyprland}/>
+          </div>
+        </ThemeDisintegration>
+      </div>
+    )}
+  </>;
 }

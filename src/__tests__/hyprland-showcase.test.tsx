@@ -17,21 +17,15 @@ describe("finished Hyprland gallery and dissolving transition",()=>{
     expect(screen.queryByLabelText("Carregar wallpaper correto da Hiyuki")).not.toBeInTheDocument();
     expect(screen.queryByLabelText("Importar posições do Quickshell")).not.toBeInTheDocument();
   });
-  it("breaks the old desktop into 720 masked cells and 260 detached shards, not a curtain",()=>{
+  it("switches ready-made themes without disintegrating inside the gallery",()=>{
     const changed=vi.fn();
     const {container}=render(<HyprlandShowcase themes={OFFICIAL_THEMES} selectedId="changli" onChoose={changed}/>);
     fireEvent.click(screen.getByRole("button",{name:"Hiyuki"}));
     expect(changed).toHaveBeenCalledWith(OFFICIAL_THEMES[1]);
-    const oldScene=container.querySelector(".preset-fractured-desktop") as HTMLElement;
-    expect(oldScene).not.toBeNull();
-    expect(oldScene.style.maskImage).toMatch(/preset-fracture-mask/);
-    expect(oldScene.style.clipPath).toBe("");
-    expect(container.querySelectorAll(".preset-fracture-cell")).toHaveLength(720);
-    expect(container.querySelectorAll(".preset-fragment-cloud .preset-fragment")).toHaveLength(260);
-    expect(container.querySelector(".preset-dissolve-out")).toBeNull();
     expect(screen.getAllByText(/Hiyuki —/).length).toBeGreaterThan(0);
-    fireEvent.animationEnd(container.querySelector(".preset-disintegration-lifetime")!);
     expect(container.querySelector(".preset-disintegrating")).toBeNull();
+    expect(container.querySelector(".preset-fracture-cell")).toBeNull();
+    expect(container.querySelector(".preset-fragment-cloud")).toBeNull();
   });
   it("preserves published positions in read-only presentation, with no misleading private data",()=>{
     const {container}=render(<HyprlandShowcase selectedId="changli"/>);

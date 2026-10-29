@@ -3,7 +3,6 @@ import type { CSSProperties } from "react";
 import { OFFICIAL_THEMES, type Theme, type ThemePalette } from "../stores/themes";
 import { RealDesktopPreview } from "./desktop/RealDesktopPreview";
 import { ChangliDesktop } from "./desktop/ChangliDesktop";
-import { ThemeDisintegration } from "./desktop/ThemeDisintegration";
 import { validatePublishedLayouts, type WidgetPlacement, type WidgetKind } from "../services/quickshellLayoutImport";
 import published from "../data/published-widget-layouts.json";
 import "../styles/preset-theme-gallery.css";
@@ -18,9 +17,6 @@ const NAMES: Partial<Record<WidgetKind,string>> = {
 
 type View = { id:string; name:string; palette:ThemePalette; variant:string; widgets:WidgetPlacement[] };
 const collection = validatePublishedLayouts(published).profiles;
-const hasReducedMotion = () => typeof window !== "undefined" &&
-  typeof window.matchMedia === "function" &&
-  window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 function ProfileDesktop({ view, active, accent }: { view:View; active:boolean; accent:string | null }) {
   const palette = accent ? { ...view.palette, accentPrimary:accent } : view.palette;
@@ -71,7 +67,6 @@ export function HyprlandShowcase({
   const approvedThemes=useMemo(()=>themes.filter(t=>t.kind==="official"),[themes]);
   const [id,setId]=useState(selectedId);
   const [variant,setVariant]=useState("");
-  const [outgoing,setOutgoing]=useState<View|null>(null);
   const [format,setFormat]=useState<"ultrawide"|"standard">("ultrawide");
   const theme=approvedThemes.find(t=>t.id===id)??OFFICIAL_THEMES[0];
   const variants=collection.filter(p=>p.themeId===theme.id);
@@ -93,7 +88,6 @@ export function HyprlandShowcase({
     const next=nextOptions.find(p=>p.variantId===nextVariant)??nextOptions[0];
     const nextKey=next?.variantId??"default";
     if(nextId===id && nextKey===current.variant)return;
-    setOutgoing(hasReducedMotion()?null:current);
     setId(nextId);
     setVariant(nextKey);
     if(nextId!==id)onChoose?.(nextTheme);
@@ -128,16 +122,7 @@ export function HyprlandShowcase({
 
       <div className={"preset-stage preset-stage-"+format+(theme.id==="changli"?" preset-stage-changli":"")} aria-label={"Desktop pronto de "+theme.name}>
         <ProfileDesktop view={current} active accent={accentColor}/>
-        {outgoing&&(
-          <ThemeDisintegration
-            key={outgoing.id+":"+outgoing.variant}
-            oldAccent={outgoing.palette.accentPrimary}
-            oldSecondary={outgoing.palette.accentYellow}
-            newAccent={current.palette.accentPrimary}
-            onFinished={()=>setOutgoing(null)}>
-            <ProfileDesktop view={outgoing} active={false} accent={accentColor}/>
-          </ThemeDisintegration>
-        )}
+
       </div>
 
       <div className="preset-gallery-foot">

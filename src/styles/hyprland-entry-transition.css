@@ -1,0 +1,51 @@
+/*
+ * Only the entry from the Projects carousel to /hyprland-themes disintegrates.
+ * The home page stays mounted beneath this wrapper until the organic mask
+ * finishes, keeping the original scroll position and WebGL carousel intact.
+ */
+.hyprland-route-home{
+  position:relative;
+  z-index:auto;
+}
+.hyprland-route-home .preset-disintegrating-idle{
+  position:relative;
+  inset:auto;
+  z-index:auto;
+  pointer-events:auto;
+  overflow:visible;
+  isolation:auto;
+}
+.hyprland-route-home .preset-disintegrating-idle .preset-fractured-desktop{
+  position:relative;
+  inset:auto;
+  pointer-events:auto;
+  -webkit-mask-image:none!important;
+  mask-image:none!important;
+  animation:none;
+  will-change:auto;
+}
+.hyprland-route-home.is-leaving{
+  position:fixed;
+  inset:0;
+  width:100%;
+  height:100dvh;
+  z-index:9999;
+  overflow:hidden;
+  pointer-events:none;
+}
+.hyprland-route-home.is-leaving .preset-disintegrating{
+  position:absolute;
+  inset:0;
+  overflow:hidden;
+}
+.hyprland-route-home.is-leaving .hyprland-route-home-content{
+  width:100%;
+  transform:translateY(calc(-1 * var(--exit-scroll-y, 0px)));
+  transform-origin:top left;
+}
+.hyprland-route-home.is-leaving .preset-fractured-desktop{
+  pointer-events:none;
+}
+@media (prefers-reduced-motion:reduce){
+  .hyprland-route-home.is-leaving{display:none}
+}

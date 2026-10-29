@@ -317,3 +317,13 @@ A troca agora usa `ThemeDisintegration.tsx` e `theme-disintegration.css`:
 - A galeria permanece readonly e os wallpapers locais opcionais de Changli continuam sem alterações. Não substituir por `clip-path: inset(...)` novamente.
 
 **Validação:** testes verificam 720 máscaras, variação dos tempos por linha, preferência temporal da direita para a esquerda, 260 peças em quatro tonalidades, remoção do DOM ao terminar, e ausência do `preset-wipe` antigo. A inspeção visual com GPU no navegador real ainda deve ser feita antes de considerar o efeito artisticamente finalizado.
+
+## Ajuste de gatilho — efeito só na entrada do projeto Hyprland-Themes (29/10/2026)
+
+**Esta decisão substitui as menções anteriores ao efeito na troca entre temas.** A desintegração não ocorre ao escolher Changli, Hiyuki, Emilia, Furina ou Hotline Miami *dentro* da página. A troca interna de temas deve ser direta, sem o efeito de partículas.
+
+O efeito agora acontece **ao clicar no card do projeto Hyprland-Themes no carrossel da home**. A rota `/hyprland-themes` é aberta imediatamente **por trás da home**, que permanece montada temporariamente, na mesma posição de rolagem, enquanto `ThemeDisintegration` aplica a máscara de 720 células e 260 fragmentos sobre **a página inicial inteira visível no viewport**. Com o fim da animação, a home é desmontada, deixando a página dedicada. Para visitantes com redução de movimento ativada, a navegação ocorre imediatamente sem efeito.
+
+A implementação reutiliza o mesmo DOM React da home durante a animação (sem clonar/remontar os componentes principais e sem capturar screenshots), em `src/app/pages.tsx` e `src/styles/hyprland-entry-transition.css`. `ThemeDisintegration` aceita `active={false}` para preservar o DOM quando o visitante ainda navega na home. `HyprlandShowcase.tsx` deixou de chamar o efeito nas trocas internas.
+
+**Condição de aceite:** clicar no card do Hyprland-Themes na constelação provoca a desintegração da tela anterior, revelando a página separada; trocar temas já dentro de `/hyprland-themes` não provoca a desintegração. O botão de voltar continua levando à seção de projetos. Testes de rota verificam o gatilho e a montagem da nova página por baixo. A verificação visual no Opera do proprietário ainda é necessária.
