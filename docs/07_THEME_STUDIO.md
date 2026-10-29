@@ -204,3 +204,15 @@ Catálogo inicial, sujeito a comparação exata com o desktop/versão base:
 - **Backup portátil antecipado de M6:** botão `Exportar backup do layout` descarrega apenas o **slot ativo previamente salvo**, com todas as imagens Blob originais e posições/relógio/resolução. Formato binário versionado `.ptsbackup` próprio da aplicação: assinatura, cabeçalho UTF-8 limitado e Blobs sequenciais, sem Base64, sem envio a servidor. Arquivo não é um ZIP genérico e só pode ser importado por esta versão do Theme Studio.
 - **Importação segura:** valida assinatura, versão, comprimentos, ausência de bytes extras, MIME/nomes, limites de cards/bytes e schema antes de mostrar uma confirmação. O visitante deve clicar em `Confirmar importação e substituir` para gravar no slot selecionado. Cancelar ou falhar na validação **não altera o layout salvo**. Não importa automaticamente nem sobrescreve os outros três slots.
 - Salvar nome do layout é ação separada de salvar o conteúdo. Exportar exige que as edições e o nome do slot estejam salvos. Não há exportação/importação em lote dos quatro layouts, backup de temas customizados, compressão nem sincronização entre dispositivos. A edição de mídias e wallpapers, versionamento de layouts e toda a funcionalidade M5/M6 seguem IN_PROGRESS até QA visual e testes de integração no navegador.
+
+## M6 — versões nomeadas por organização (29/10/2026)
+
+**Status: IN_PROGRESS — implementação e testes automatizados; QA visual no Arch pendente.**
+
+Foi acrescentada a seção **Versões do layout** dentro do desktop simulado. Cada um dos quatro slots pode guardar até **cinco versões nomeadas** de seu **último estado salvo**, incluindo as imagens Blob, relógio, coordenadas e proporção. Não são gravadas alterações não salvas. Versões têm botão de restauração com confirmação explícita e exclusão individual, também com confirmação.
+
+**Restauração segura:** numa **única transação IndexedDB**, o sistema grava a versão de segurança "Antes de restaurar" do layout atual e substitui o slot ativo pelo estado escolhido. Se faltar espaço, houver registro corrompido ou forem atingidas cinco versões, a transação aborta e o layout anterior permanece. Para restaurar com cinco versões, é preciso excluir explicitamente uma primeiro; o sistema jamais descarta históricos em silêncio.
+
+Os dados existentes usam a **mesma database, store e versão de schema**, com chaves novas prefixedas por `versions:` / `version:`. O layout principal `default`, os três slots adicionais e seus Blobs permanecem inalterados. A funcionalidade exige IndexedDB local; limpar os dados do navegador apaga essas versões e não equivale a backup portátil. O formato `.ptsbackup` existente continua útil para arquivo externo, e não mudou.
+
+Evidências: `src/__tests__/desktop-versions.test.ts` (isolamento dos slots, transações atômicas, limite/corrupção, restauração), `src/__tests__/desktop-versions-ui.test.tsx` (confirmação, bloqueio de mudanças não salvas). **Ainda ausentes:** perfis por wallpaper, snapshots automáticos periódicos, várias resoluções independentes, biblioteca compartilhada de mídia, MP4 e integração Linux real. Não declarar M5/M6 concluídos.
