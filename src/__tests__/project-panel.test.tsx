@@ -10,11 +10,35 @@ import { MemoryRouter } from "react-router-dom";
 describe("three-panel carousel", () => {
   it("renders only the three allowlisted projects with Abismo centered initially", () => {
     render(<ProjectPanel />);
-    const current = screen.getByRole("button", { name: /Abrir detalhes de Abismo/ });
+    const current = screen.getByRole("button", { name: /Jogar Abismo no card/ });
     expect(current).toHaveAttribute("data-position", "center");
     expect(screen.getByRole("button", { name: /Trazer site-3D para o centro/ })).toHaveAttribute("data-position", "right");
     expect(screen.getByRole("button", { name: /Trazer Hyprland-Themes para o centro/ })).toHaveAttribute("data-position", "left");
     expect(screen.queryByText(/dotfiles-Arch/i)).not.toBeInTheDocument();
+  });
+
+
+  it("opens the real Abismo game viewport INSIDE the centered card, not a dialog", async () => {
+    const { container } = render(<ProjectPanel />);
+    fireEvent.click(screen.getByRole("button", { name: "Jogar Abismo no card" }));
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(container.querySelector(".spine-stage.is-abismo-playing")).not.toBeNull();
+    expect(screen.getByRole("region", { name: "Abismo — jogo integrado" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Fechar jogo/ })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: /Fechar jogo/ }));
+    expect(container.querySelector(".spine-stage.is-abismo-playing")).toBeNull();
+    expect(screen.getByRole("button", { name: "Jogar Abismo no card" })).toBeInTheDocument();
+  });
+
+  it("disables carousel navigation while the playable Abismo card is expanded", () => {
+    render(<ProjectPanel />);
+    fireEvent.click(screen.getByRole("button", { name: "Jogar Abismo no card" }));
+    const carousel = screen.getByRole("region", { name: "Carrossel de projetos" });
+    fireEvent.keyDown(carousel, { key: "ArrowRight" });
+    expect(screen.getByRole("region", { name: "Abismo — jogo integrado" })).toBeInTheDocument();
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    fireEvent.keyDown(window, { key: "Escape" });
+    expect(screen.queryByRole("region", { name: "Abismo — jogo integrado" })).not.toBeInTheDocument();
   });
 
   it("rotates roles with navigation controls, and opens only the centered project", () => {
@@ -79,7 +103,7 @@ describe("three-panel carousel", () => {
     expect(screen.getByRole("button", { name: /Abrir detalhes de site-3D/ }))
       .toHaveAttribute("data-position", "center");
     fireEvent.keyDown(carousel, { key: "ArrowLeft" });
-    expect(screen.getByRole("button", { name: /Abrir detalhes de Abismo/ }))
+    expect(screen.getByRole("button", { name: /Jogar Abismo no card/ }))
       .toHaveAttribute("data-position", "center");
   });
 });
