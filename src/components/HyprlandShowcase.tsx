@@ -1,11 +1,12 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { CSSProperties } from "react";
 import { RealDesktopPreview } from "./desktop/RealDesktopPreview";
+import { DesktopWidgetEditor } from "./DesktopWidgetEditor";
 import { OFFICIAL_THEMES, type Theme, type ThemePalette } from "../stores/themes";
 import published from "../data/published-widget-layouts.json";
 import {
-  validatePublishedLayouts, WIDGET_KINDS, type WidgetKind,
-  type SanitizedDesktopLayouts, type WidgetPlacement,
+  validatePublishedLayouts, type WidgetKind,
+  type SanitizedDesktopLayouts,
 } from "../services/quickshellLayoutImport";
 import { readLocalWidgetLayouts, WIDGET_LAYOUT_CHANGED } from "../services/widgetLayoutLocal";
 import "../styles/hyprland-showcase.css";
@@ -19,11 +20,6 @@ const WIDGET_NAMES: Record<WidgetKind, string> = {
   imageCard4: "Card 4", imageCard5: "Card 5", imageCard6: "Card 6",
   sticker: "Adesivo", customText: "Texto livre",
 };
-const DEMO_WIDGETS: WidgetKind[] = [
-  "clock", "weather", "calendar", "media", "visualizer", "resources",
-  "notes", "todo", "imageCard", "timers", "worldClock", "customText",
-];
-
 function WidgetFace({ kind }: { kind: WidgetKind }) {
   const now = new Date();
   const hhmm = new Intl.DateTimeFormat("pt-BR", { hour: "2-digit", minute: "2-digit" }).format(now);
@@ -63,6 +59,25 @@ export function HyprlandShowcase({
   useEffect(() => { setSelected(selectedId); }, [selectedId]);
   const [localProfiles, setLocalProfiles] = useState<SanitizedDesktopLayouts | null>(readLocalWidgetLayouts);
   const [previewFormat, setPreviewFormat] = useState<"ultrawide"|"standard">("ultrawide");
+  const [hiyukiWallpaper, setHiyukiWallpaper] = useState<{url:string;type:"video"|"image"}|null>(null);
+  const hiyukiUrlRef = useRef<string|null>(null);
+  const [hiyukiMessage,setHiyukiMessage] = useState("");
+  useEffect(()=>()=>{if(hiyukiUrlRef.current)URL.revokeObjectURL(hiyukiUrlRef.current);},[]);
+  const loadHiyuki = (event:React.ChangeEvent<HTMLInputElement>)=>{
+    const file=event.currentTarget.files?.[0];
+    event.currentTarget.value="";
+    if(!file)return;
+    const video=file.type==="video/mp4"||file.type==="video/webm";
+    const image=file.type==="image/png"||file.type==="image/jpeg"||file.type==="image/webp";
+    if((!video&&!image)||file.size>150*1024*1024){
+      setHiyukiMessage("Use MP4, WebM, PNG, JPG ou WebP até 150 MB.");return;
+    }
+    const url=URL.createObjectURL(file);
+    if(hiyukiUrlRef.current)URL.revokeObjectURL(hiyukiUrlRef.current);
+    hiyukiUrlRef.current=url;
+    setHiyukiWallpaper({url,type:video?"video":"image"});
+    setHiyukiMessage("Wallpaper escolhido carregado localmente, sem upload.");
+  };
   useEffect(() => {
     const refresh = () => setLocalProfiles(readLocalWidgetLayouts());
     window.addEventListener(WIDGET_LAYOUT_CHANGED, refresh);
@@ -78,7 +93,6 @@ export function HyprlandShowcase({
   const activeLayout = (localProfiles?.profiles ?? []).find((p) => p.themeId === profileId) ??
     publishedProfiles.profiles.find((p) => p.themeId === profileId) ?? null;
   const hasLayout = activeLayout !== null;
-  const kindLabels = WIDGET_KINDS.map((k) => WIDGET_NAMES[k]);
 
   return (
     <section className="hypr-showcase" aria-label="Hyprland — temas e widgets do autor">
@@ -113,33 +127,34 @@ export function HyprlandShowcase({
         <button type="button" aria-pressed={previewFormat==="standard"}
           onClick={() => setPreviewFormat("standard")}>1920 × 1080</button>
         <span>{hasLayout
-          ? "Posições de widgets importadas · projeção em 3440 × 1440"
-          : "Posições reais não publicadas · sem posicionamentos inventados"}</span>
+          ? "Posições QML importadas disponíveis · personalize sem alterar a referência"
+          : "Posições reais do autor não publicadas · crie seu próprio layout"}</span>
       </div>
 
-      <div className="hypr-desktop-scroll">
-        <div className={"hypr-desktop-stage hypr-desktop-" + previewFormat}>
-          <RealDesktopPreview palette={palette} themeName={themeName} animationEnabled={active} />
-          {hasLayout && (
-            <div className="hypr-widget-position-layer" aria-label="Posições importadas do Quickshell">
-              {activeLayout.widgets.map((widget: WidgetPlacement, i) => (
-                <div key={widget.kind+"-"+i} className="hypr-widget-position"
-                  style={{
-                    left: widget.x+"%", top: widget.y+"%",
-                    width: "max(98px, " + widget.width + "%)",
-                    minHeight: "max(58px, " + widget.height + "%)",
-                  }}>
-                  <WidgetFace kind={widget.kind}/>
-                </div>
-              ))}
-            </div>
-          )}
-          {!hasLayout && <div className="hypr-no-layout">
-            <span>Desktop e tema do GitHub</span>
-            <small>Importe as posições reais em Configurações para ver o layout dos widgets.</small>
-          </div>}
+
+      {profileId === "hiyuki" && (
+        <div className="hypr-hiyuki-source">
+          <div>
+            <strong>Hiyuki · Entrust Your Wishes to Me</strong>
+            <p>Referência correta indicada pelo autor:
+              {" "}<a href="https://moewalls.com/anime/hiyuki-entrust-your-wishes-to-me-wuthering-waves-live-wallpaper/"
+                target="_blank" rel="noopener noreferrer">ver wallpaper original no MoeWalls</a>.
+              O vídeo anterior foi removido. Baixe a mídia na origem e selecione o arquivo para vê-la nesta prévia.
+              Nenhum vídeo de terceiros é republicado no GitHub.</p>
+          </div>
+          <label className="hypr-hiyuki-upload">Carregar wallpaper da Hiyuki
+            <input type="file" accept="video/mp4,video/webm,image/png,image/jpeg,image/webp,.mp4,.webm,.png,.jpg,.jpeg,.webp"
+              aria-label="Carregar wallpaper correto da Hiyuki" onChange={loadHiyuki}/>
+          </label>
+          {hiyukiMessage&&<p role="status">{hiyukiMessage}</p>}
         </div>
-      </div>
+      )}
+      <DesktopWidgetEditor themeId={profileId}
+        sourceWidgets={activeLayout?.widgets} format={previewFormat}
+        background={<RealDesktopPreview palette={palette} themeName={themeName}
+          animationEnabled={active} localWallpaper={profileId==="hiyuki"?(hiyukiWallpaper??undefined):undefined} />}
+        renderWidget={(kind)=><WidgetFace kind={kind}/>}
+        widgetNames={WIDGET_NAMES}/>
 
       {hsin && <p className="hypr-source-warning">
         O wallpaper Hsin está no GitHub, mas o JSON de cores Hsin não está publicado.
@@ -148,16 +163,6 @@ export function HyprlandShowcase({
       {["emilia","furina","hotline-miami"].includes(profileId) &&
         <p className="hypr-source-warning">A paleta {themeName} é original do repositório Hyprland-Themes,
           mas ainda não há wallpaper próprio desse tema nos arquivos públicos consultados.</p>}
-
-      <section className="hypr-widget-catalog" aria-label="Catálogo de widgets do Quickshell">
-        <h4>Widgets encontrados no seu código QML</h4>
-        <p>Modelos visuais simplificados, sem inventar métricas de hardware, conteúdo das notas ou imagens privadas.
-          As posições acima são exibidas somente quando os dados reais estão disponíveis.</p>
-        <div className="hypr-widget-catalog-grid">
-          {DEMO_WIDGETS.map((kind)=><WidgetFace key={kind} kind={kind}/>)}
-        </div>
-        <p className="hypr-widget-count">O serviço <code>WallpaperLayouts.qml</code> reconhece {kindLabels.length} tipos/slots de widgets, incluindo seis cards de imagem.</p>
-      </section>
 
       <p className="hypr-source-warning">Quer mostrar suas posições reais?
         Importe o arquivo `wallpaper_widget_layouts.json` na aba <strong>Configurações</strong>.
