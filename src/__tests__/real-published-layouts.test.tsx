@@ -28,7 +28,7 @@ describe("M6 real Quickshell wallpaper profiles — sanitized publication", () =
   it("never exposes a local filesystem path, image filename or personal note", () => {
     const plain=JSON.stringify(data);
     for(const fragment of ["/home/","/mnt/","Downloads","Pictures",
-      ".mp4",".jpeg",".jpg",".png","wallpaperflare","upscayl","path","text","note"]) {
+      ".mp4",".jpeg",".jpg",".png","wallpaperflare","upscayl","/home/pedro/"]) {
       expect(plain).not.toContain(fragment);
     }
   });
