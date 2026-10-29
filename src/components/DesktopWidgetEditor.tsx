@@ -26,6 +26,7 @@ export function DesktopWidgetEditor({
   const widgetsRef=useRef(widgets);
   const [status,setStatus]=useState("");
   const [expanded,setExpanded]=useState(false);
+  const [expandedKind,setExpandedKind]=useState<WidgetKind>("clock");
   const canvasRef=useRef<HTMLDivElement>(null);
   const gestureRef=useRef<Gesture|null>(null);
   const draggingKindRef=useRef<WidgetKind|null>(null);
@@ -189,8 +190,19 @@ export function DesktopWidgetEditor({
             <strong>Desktop livre</strong>
             <small>Pegue um widget na coleção abaixo e solte nesta tela.</small>
           </div>}
-          {expanded&&<button type="button" className="hypr-editor-close"
-            onClick={()=>setExpanded(false)} aria-label="Fechar desktop ampliado">Fechar ×</button>}
+          {expanded&&(
+            <div className="hypr-expanded-tray">
+              <label htmlFor="hypr-expanded-select">Adicionar widget
+                <select id="hypr-expanded-select" value={expandedKind}
+                  onChange={(event)=>setExpandedKind(event.target.value as WidgetKind)}>
+                  {WIDGET_KINDS.map(kind=><option value={kind} key={kind}>{widgetNames[kind]}</option>)}
+                </select>
+              </label>
+              <button type="button" onClick={()=>add(expandedKind,38,36)}>Colocar na tela</button>
+              <button type="button" className="hypr-editor-close"
+                onClick={()=>setExpanded(false)} aria-label="Fechar desktop ampliado">Fechar ×</button>
+            </div>
+          )}
         </div>
       </div>
       <p className="hypr-editor-status" role="status">{status||
