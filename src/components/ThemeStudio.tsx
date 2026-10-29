@@ -4,6 +4,7 @@ import type { Theme, ThemePalette } from "../stores/themes";
 import { ThemeContrastAudit } from "./ThemeContrastAudit";
 import { SimulatedDesktop } from "./SimulatedDesktop";
 import { HyprlandShowcase } from "./HyprlandShowcase";
+import { WidgetLayoutSettings } from "./WidgetLayoutSettings";
 import { suggestReadableText } from "../services/themeContrast";
 import "../styles/theme-studio.css";
 
@@ -172,6 +173,7 @@ export function ThemeStudio({ onClose }: { onClose: () => void }) {
             active={studioTab === "hyprland"}/>
         </div>
         <div role="tabpanel" aria-label="Configurações" hidden={studioTab !== "settings"}>
+          <WidgetLayoutSettings />
         <h3 className="theme-studio-section-title">Temas oficiais <span>originais protegidos</span></h3>
         <div className="theme-studio-gallery" role="group" aria-label="Cinco temas oficiais">
           {availableThemes.filter((item) => item.kind === "official").map(renderOption)}
