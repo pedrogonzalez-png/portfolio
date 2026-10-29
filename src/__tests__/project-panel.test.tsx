@@ -34,6 +34,8 @@ describe("three-panel carousel", () => {
     render(<ProjectPanel />);
     fireEvent.click(screen.getByRole("button", { name: "Jogar Abismo no card" }));
     const carousel = screen.getByRole("region", { name: "Carrossel de projetos" });
+    expect(screen.getByRole("button", { name: "Projeto anterior" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Próximo projeto" })).toBeDisabled();
     fireEvent.keyDown(carousel, { key: "ArrowRight" });
     expect(screen.getByRole("region", { name: "Abismo — jogo integrado" })).toBeInTheDocument();
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();

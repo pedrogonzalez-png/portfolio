@@ -253,14 +253,14 @@ export function ProjectPanel({ onOpenThemeStudio }: { onOpenThemeStudio?: () => 
         </div>
       </div>
       <div className="carousel-controls" aria-label="Navegação dos projetos">
-        <button type="button" aria-label="Projeto anterior" onClick={() => activate(activeIndex - 1)} disabled={activeIndex === 0}>←</button>
+        <button type="button" aria-label="Projeto anterior" onClick={() => activate(activeIndex - 1)} disabled={abismoOpen || activeIndex === 0}>←</button>
         <div className="carousel-progress" role="status" aria-live="polite">
           <span>{String(activeIndex + 1).padStart(2, "0")} / {String(projects.length).padStart(2, "0")}</span>
           <strong>{projects[activeIndex]?.title}</strong>
         </div>
-        <button type="button" aria-label="Próximo projeto" onClick={() => activate(activeIndex + 1)} disabled={activeIndex === projects.length - 1}>→</button>
+        <button type="button" aria-label="Próximo projeto" onClick={() => activate(activeIndex + 1)} disabled={abismoOpen || activeIndex === projects.length - 1}>→</button>
       </div>
-      <p className="carousel-instructions">Use a rodinha do mouse sobre os painéis ou as setas para alternar projetos.</p>
+      <p className="carousel-instructions">{abismoOpen ? "Abismo em execução · Clique na área do jogo para usar os controles. Feche o jogo para alternar projetos." : "Use a rodinha do mouse sobre os painéis ou as setas para alternar projetos."}</p>
       <p className="projects-disclaimer">
         Três projetos selecionados · Abismo pode ser jogado no card após instalar a build local
       </p>

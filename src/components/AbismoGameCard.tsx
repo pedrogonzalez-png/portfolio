@@ -12,6 +12,8 @@ export function AbismoGameCard({ onClose }: { onClose: () => void }) {
   const [reload, setReload] = useState(0);
   const [check, setCheck] = useState(0);
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  const viewportRef = useRef<HTMLDivElement>(null);
+  const [fullscreenError, setFullscreenError] = useState(false);
 
   useEffect(() => {
     const abort = new AbortController();
@@ -42,6 +44,20 @@ export function AbismoGameCard({ onClose }: { onClose: () => void }) {
     return () => abort.abort();
   }, [check]);
 
+  const openFullscreen = async () => {
+    const viewport = viewportRef.current;
+    if (!viewport?.requestFullscreen) {
+      setFullscreenError(true);
+      return;
+    }
+    try {
+      await viewport.requestFullscreen();
+      setFullscreenError(false);
+    } catch {
+      setFullscreenError(true);
+    }
+  };
+
   return (
     <section className="abismo-live-card" aria-label="Abismo — jogo integrado">
       <header className="abismo-live-header">
@@ -52,15 +68,27 @@ export function AbismoGameCard({ onClose }: { onClose: () => void }) {
         <div className="abismo-live-actions">
           {state === "available" && (
             <button type="button" onClick={() => setReload(value => value + 1)}>
+              <span className="abismo-live-action-icon" aria-hidden="true">↻</span>
               Reiniciar jogo
             </button>
           )}
           <button type="button" className="abismo-live-close" onClick={onClose}>
             Fechar jogo <span aria-hidden="true">×</span>
           </button>
+          {state === "available" && (
+            <button
+              type="button"
+              className="abismo-live-fullscreen"
+              aria-label="Abrir Abismo em tela cheia"
+              title="Tela cheia"
+              onClick={() => { void openFullscreen(); }}
+            >
+              <span className="abismo-live-action-icon" aria-hidden="true">⛶</span>
+            </button>
+          )}
         </div>
       </header>
-      <div className="abismo-live-viewport" aria-label="Tela jogável do Abismo">
+      <div ref={viewportRef} className="abismo-live-viewport" aria-label="Tela jogável do Abismo">
         {state === "available" ? (
           <iframe key={reload} ref={iframeRef}
             title="Abismo — jogo Phaser integrado ao card"
@@ -88,7 +116,9 @@ export function AbismoGameCard({ onClose }: { onClose: () => void }) {
       </div>
       <footer className="abismo-live-footer">
         <span>1280 × 720 · PHASER 4 · BUILD LOCAL</span>
-        <span>Use o mouse e teclado após clicar na área do jogo. O progresso é salvo pelo próprio Abismo.</span>
+        <span>{fullscreenError
+          ? "O navegador não permitiu abrir em tela cheia."
+          : "Clique na área do jogo para usar mouse e teclado. O progresso é salvo pelo Abismo."}</span>
       </footer>
     </section>
   );

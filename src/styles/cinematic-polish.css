@@ -1,0 +1,369 @@
+/*
+ * Cinematic polish for the portfolio / project gallery.
+ * All decorative layers are CSS-only: original theme tokens, 3D cards,
+ * iframe controls, interaction and saved games remain untouched.
+ */
+
+/* A floating navigation capsule instead of a flat header strip. */
+.site-header {
+  top: 14px;
+  left: 50%;
+  right: auto;
+  width: min(calc(100% - 44px), 1510px);
+  height: 64px;
+  padding: 0 clamp(20px, 2.8vw, 38px);
+  transform: translateX(-50%);
+  border: 1px solid color-mix(in srgb, var(--color-accent-yellow) 28%, transparent);
+  border-radius: 20px;
+  background:
+    linear-gradient(115deg, color-mix(in srgb, var(--color-surface) 91%, transparent),
+      color-mix(in srgb, var(--color-bg) 95%, transparent));
+  box-shadow: 0 16px 50px #0007, inset 0 1px #ffffff0c;
+  -webkit-backdrop-filter: blur(22px) saturate(1.3);
+  backdrop-filter: blur(22px) saturate(1.3);
+}
+.site-logo { gap: .7rem; }
+.site-logo-mark {
+  font-size: 1.35rem;
+  text-shadow: 0 0 22px color-mix(in srgb, var(--color-accent-yellow) 55%, transparent);
+}
+.site-nav a { position: relative; padding: .5rem 0; }
+.site-nav a::after {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  height: 1px;
+  background: var(--color-accent-yellow);
+  transform: scaleX(0);
+  transform-origin: center;
+  transition: transform .25s ease;
+}
+.site-nav a:hover::after, .site-nav a:focus-visible::after { transform: scaleX(1); }
+.site-terminal-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding: .45rem .9rem;
+  border: 1px solid color-mix(in srgb, var(--color-outline) 52%, transparent);
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--color-surface-container) 32%, transparent);
+  box-shadow: inset 0 1px #ffffff12;
+  color: var(--color-text);
+  font: 500 .75rem var(--font-body);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: border-color .2s, background-color .2s, transform .2s;
+}
+.site-terminal-button:hover {
+  border-color: var(--color-accent-yellow);
+  background: color-mix(in srgb, var(--color-accent-primary) 17%, var(--color-surface));
+  transform: translateY(-1px);
+}
+
+/* The gallery becomes a distinct cinematic chapter. */
+.projects-area {
+  isolation: isolate;
+  padding-top: clamp(7rem, 11vw, 11rem);
+  padding-bottom: clamp(6rem, 9vw, 10rem);
+  background:
+    radial-gradient(ellipse 60% 44% at 50% 68%, color-mix(in srgb, var(--color-accent-primary) 14%, transparent), transparent 87%),
+    radial-gradient(circle at 8% 58%, color-mix(in srgb, var(--color-accent-red) 11%, transparent), transparent 26%),
+    radial-gradient(circle at 94% 36%, color-mix(in srgb, var(--color-accent-yellow) 7%, transparent), transparent 23%),
+    linear-gradient(180deg, var(--color-bg) 0%, color-mix(in srgb, var(--color-surface) 56%, #09070a) 51%, var(--color-surface) 100%);
+}
+.projects-area > * { position: relative; z-index: 1; }
+.projects-area::before,
+.projects-area::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  width: 145%;
+  max-width: 1900px;
+  aspect-ratio: 2.85 / 1;
+  border: 1px solid color-mix(in srgb, var(--color-accent-yellow) 15%, transparent);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+}
+.projects-area::before { top: 24%; transform: translateX(-50%) rotate(-11deg); }
+.projects-area::after {
+  bottom: 4%;
+  transform: translateX(-50%) rotate(13deg);
+  border-color: color-mix(in srgb, var(--color-accent-primary) 17%, transparent);
+}
+.projects-area .section-heading {
+  max-width: 1040px;
+  margin-bottom: clamp(3rem, 5vw, 5.5rem);
+}
+.projects-area .section-heading .eyebrow {
+  font-size: .68rem;
+  letter-spacing: .32em;
+  text-shadow: 0 0 28px color-mix(in srgb, var(--color-accent-primary) 26%, transparent);
+}
+.projects-area .section-heading h2 {
+  font-weight: 700;
+  font-size: clamp(2.65rem, 5vw, 5.4rem);
+  letter-spacing: -.065em;
+  line-height: 1.12;
+  text-wrap: balance;
+}
+.projects-area .section-heading h2 em {
+  background: linear-gradient(110deg, var(--color-accent-yellow), color-mix(in srgb, var(--color-accent-primary) 48%, #ffe3b2));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.projects-area .section-heading > p:last-child {
+  max-width: 760px;
+  margin: 1.3rem auto 0;
+  font-size: clamp(.82rem, 1.2vw, .98rem);
+  line-height: 1.75;
+}
+.projects-area .section-heading::after {
+  content: "✦";
+  display: block;
+  width: min(70%, 700px);
+  margin: clamp(1.9rem, 3vw, 3rem) auto 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--color-accent-yellow) 24%, transparent);
+  color: var(--color-accent-yellow);
+  font-size: 1rem;
+  line-height: 0;
+  text-shadow: 0 0 20px color-mix(in srgb, var(--color-accent-yellow) 65%, transparent);
+}
+
+/* Subtle embers and an aura behind the real project cards. */
+.projects-area .spine-stage.project-carousel::before {
+  inset: 0 4%;
+  filter: blur(45px);
+  background:
+    radial-gradient(ellipse 60% 68% at center, color-mix(in srgb, var(--color-accent-primary) 23%, transparent), transparent 74%);
+}
+.projects-area .spine-stage.project-carousel::after {
+  content: "";
+  position: absolute;
+  inset: -10% -8%;
+  pointer-events: none;
+  z-index: 0;
+  opacity: .65;
+  background-image:
+    radial-gradient(circle, var(--color-accent-primary) 1px, transparent 2px),
+    radial-gradient(circle, var(--color-accent-yellow) 1px, transparent 2px);
+  background-size: 167px 173px, 239px 197px;
+  background-position: 11% 34%, 63% 59%;
+  mask-image: radial-gradient(ellipse at center, #000 30%, transparent 78%);
+}
+.projects-area .spine-stage.project-carousel.is-abismo-playing {
+  height: clamp(585px, 68vw, 865px);
+}
+.projects-area .spine-stage.project-carousel.is-abismo-playing .spine-world {
+  opacity: .20;
+}
+.projects-area .carousel-controls { margin-top: 1.15rem; gap: clamp(1rem, 3.4vw, 2.3rem); }
+.projects-area .carousel-controls button {
+  width: 53px;
+  height: 53px;
+  background: color-mix(in srgb, var(--color-surface) 65%, transparent);
+  border-color: color-mix(in srgb, var(--color-accent-yellow) 40%, transparent);
+  box-shadow: inset 0 1px #ffffff0c, 0 8px 25px #0003;
+  transition: transform .2s, background .2s, border-color .2s, box-shadow .2s;
+}
+.projects-area .carousel-controls button:not(:disabled):hover {
+  transform: translateY(-3px);
+  background: color-mix(in srgb, var(--color-accent-primary) 19%, var(--color-surface));
+  box-shadow: 0 0 22px color-mix(in srgb, var(--color-accent-primary) 20%, transparent);
+}
+.projects-area .carousel-progress span { color: var(--color-accent-yellow); }
+.projects-area .carousel-progress strong { font-size: 1rem; font-weight: 600; }
+.projects-area .carousel-instructions { margin-top: 1.15rem; line-height: 1.7; }
+.projects-area .projects-disclaimer {
+  width: min(670px, 100%);
+  margin-top: 2.3rem;
+  padding-top: 2.2rem;
+  border-top: 1px solid color-mix(in srgb, var(--color-outline) 22%, transparent);
+  line-height: 1.6;
+}
+
+/* The Abismo card remains in the carousel. Only its shell is refined. */
+.projects-area .abismo-live-card {
+  width: min(98%, 1190px);
+  border-radius: 19px;
+  border: 1px solid color-mix(in srgb, var(--color-accent-yellow) 80%, #512b1f);
+  background: linear-gradient(145deg, color-mix(in srgb, var(--color-surface) 86%, #130c14), #0a090d 78%);
+  box-shadow:
+    0 35px 110px #000b,
+    0 0 0 5px color-mix(in srgb, var(--color-accent-primary) 4%, transparent),
+    0 0 48px color-mix(in srgb, var(--color-accent-primary) 22%, transparent),
+    inset 0 1px color-mix(in srgb, var(--color-accent-yellow) 25%, transparent);
+}
+.projects-area .abismo-live-header {
+  min-height: 77px;
+  padding: 1rem clamp(1rem, 2.3vw, 1.9rem);
+  background: linear-gradient(92deg, color-mix(in srgb, var(--color-surface) 82%, #110c12), #100c10);
+  border-bottom: 1px solid color-mix(in srgb, var(--color-accent-yellow) 22%, transparent);
+}
+.projects-area .abismo-live-brand { gap: .38rem; }
+.projects-area .abismo-live-kicker {
+  font-size: .61rem;
+  letter-spacing: .2em;
+}
+.projects-area .abismo-live-brand h3 {
+  font-size: clamp(1rem, 1.5vw, 1.3rem);
+  letter-spacing: .07em;
+}
+.projects-area .abismo-live-brand h3 span {
+  font-size: .61rem;
+  color: var(--color-text-variant);
+  letter-spacing: .12em;
+}
+.projects-area .abismo-live-actions { gap: .65rem; }
+.projects-area .abismo-live-actions button,
+.projects-area .abismo-live-fallback button {
+  min-height: 43px;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  gap: .55rem;
+  padding: .65rem 1rem;
+  border-radius: 10px;
+  border-color: color-mix(in srgb, var(--color-accent-yellow) 42%, transparent);
+  background: color-mix(in srgb, var(--color-surface-container) 25%, transparent);
+  font-size: .77rem;
+  color: var(--color-text);
+  box-shadow: inset 0 1px #ffffff08;
+  transition: background .2s, border-color .2s, transform .2s;
+}
+.projects-area .abismo-live-actions button:hover,
+.projects-area .abismo-live-fallback button:hover {
+  transform: translateY(-1px);
+  border-color: var(--color-accent-yellow);
+  background: color-mix(in srgb, var(--color-accent-primary) 14%, var(--color-surface));
+}
+.projects-area .abismo-live-action-icon {
+  font-size: 1.07rem;
+  line-height: 1;
+  color: var(--color-accent-yellow);
+}
+.projects-area .abismo-live-actions .abismo-live-fullscreen {
+  min-width: 43px;
+  padding: .55rem;
+  font-size: 1.2rem;
+}
+.projects-area .abismo-live-close span { margin-left: 0; }
+.projects-area .abismo-live-viewport {
+  isolation: isolate;
+  background: #000;
+}
+.projects-area .abismo-live-viewport::before,
+.projects-area .abismo-live-viewport::after {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+  z-index: 2;
+  width: 24px;
+  height: 24px;
+  border-color: color-mix(in srgb, var(--color-accent-yellow) 44%, transparent);
+  border-style: solid;
+}
+.projects-area .abismo-live-viewport::before {
+  top: 15px; left: 15px;
+  border-width: 1px 0 0 1px;
+}
+.projects-area .abismo-live-viewport::after {
+  right: 15px; bottom: 15px;
+  border-width: 0 1px 1px 0;
+}
+.projects-area .abismo-live-viewport:fullscreen {
+  width: 100vw;
+  height: 100dvh;
+  aspect-ratio: auto;
+  background: #000;
+}
+.projects-area .abismo-live-viewport:fullscreen iframe {
+  width: 100%;
+  height: 100%;
+}
+.projects-area .abismo-live-footer {
+  min-height: 44px;
+  padding: .75rem clamp(1rem, 2.3vw, 1.9rem);
+  gap: .6rem 1rem;
+  background: linear-gradient(110deg, #130e13, #0a090f);
+  border-top: 1px solid color-mix(in srgb, var(--color-accent-yellow) 23%, transparent);
+  line-height: 1.6;
+}
+.projects-area .abismo-live-footer span:first-child {
+  font-size: .6rem;
+  letter-spacing: .12em;
+}
+.projects-area .abismo-live-fallback {
+  background:
+    radial-gradient(ellipse 43% 56% at 50% 50%, color-mix(in srgb, var(--color-accent-primary) 17%, transparent), transparent 88%),
+    linear-gradient(145deg, #0a090d, var(--color-surface) 62%, #09080c);
+}
+.projects-area .abismo-live-fallback strong { letter-spacing: -.02em; }
+
+@media (max-width: 1050px) {
+  .site-header { gap: 1rem; }
+  .site-nav { gap: clamp(.85rem, 1.7vw, 1.6rem); }
+  .theme-indicator { font-size: .67rem; }
+}
+@media (max-width: 800px) {
+  .site-header { top: 9px; width: calc(100% - 20px); padding-inline: 1rem; border-radius: 15px; }
+  .site-nav { gap: .85rem; }
+  .site-nav a { font-size: .69rem; }
+  .site-terminal-button { font-size: .69rem; padding-inline: .65rem; }
+  .theme-indicator { display: none; }
+  .projects-area { padding-top: 6rem; }
+  .projects-area .spine-stage.project-carousel.is-abismo-playing { height: clamp(425px, 79vw, 675px); }
+  .projects-area .abismo-live-card { width: 99%; }
+}
+@media (max-width: 600px) {
+  .site-header { height: 58px; gap: .7rem; }
+  .site-logo { font-size: .78rem; }
+  .site-logo-mark { font-size: 1rem; }
+  .site-nav { margin-left: auto; gap: .8rem; }
+  .site-nav a { font-size: .67rem; }
+  .site-nav a:nth-child(3) { display: none; }
+  .site-terminal-button { min-height: 34px; font-size: .65rem; padding-inline: .48rem; }
+  .projects-area { padding: 5.3rem 1rem 5.5rem; }
+  .projects-area .section-heading { margin-bottom: 2.6rem; }
+  .projects-area .section-heading h2 { font-size: clamp(2rem, 7.5vw, 3.2rem); }
+  .projects-area .section-heading::after { margin-top: 2rem; }
+  .projects-area .spine-stage.project-carousel.is-abismo-playing {
+    height: clamp(320px, 80vw, 510px);
+  }
+  .projects-area .abismo-live-card { border-radius: 13px; }
+  .projects-area .abismo-live-header { min-height: 62px; padding: .65rem .7rem; }
+  .projects-area .abismo-live-actions { gap: .35rem; }
+  .projects-area .abismo-live-actions button {
+    min-height: 34px;
+    font-size: .65rem;
+    padding: .43rem .55rem;
+  }
+  .projects-area .abismo-live-actions .abismo-live-fullscreen {
+    min-width: 34px;
+    padding: .4rem;
+  }
+  .projects-area .abismo-live-kicker { font-size: .51rem; }
+  .projects-area .abismo-live-brand h3 { font-size: .84rem; }
+  .projects-area .abismo-live-brand h3 span { display: none; }
+  .projects-area .abismo-live-footer { min-height: 31px; padding: .5rem .65rem; }
+  .projects-area .abismo-live-footer span:first-child { font-size: .52rem; letter-spacing: .06em; }
+  .projects-area .carousel-controls button { width: 46px; height: 46px; }
+  .projects-area .projects-disclaimer { margin-top: 2rem; padding-top: 1.6rem; }
+}
+@media (max-width: 390px) {
+  .site-nav a:nth-child(2) { display: none; }
+  .site-terminal-button { font-size: .62rem; }
+  .projects-area .abismo-live-brand h3 { font-size: .76rem; }
+  .projects-area .abismo-live-actions button { font-size: .6rem; padding-inline: .4rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .site-nav a::after,
+  .site-terminal-button,
+  .projects-area .carousel-controls button,
+  .projects-area .abismo-live-actions button { transition: none; }
+  .site-terminal-button:hover,
+  .projects-area .carousel-controls button:not(:disabled):hover,
+  .projects-area .abismo-live-actions button:hover { transform: none; }
+}
