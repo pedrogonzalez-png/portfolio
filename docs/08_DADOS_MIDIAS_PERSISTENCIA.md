@@ -172,3 +172,9 @@ Aplicar tema ao portfólio:
  -> transição das cores CSS/uniforms Three.js
  -> manter scroll, câmera, projetos e wallpaper próprio do Studio
 ```
+
+## Persistência — versões nomeadas locais (M6, 29/10/2026)
+
+O armazenamento `portfolio-theme-studio-desktop-v1` continua com o `layouts` store e schema original. Cada slot recebe um registro `versions:<slot>` com metadados validados (ID, nome, data) e até cinco registros independentes `version:<slot>:<id>` com imagens Blob originais. O layout salvo permanece na chave `<slot>`; não há migração destrutiva.
+
+Criação só usa estado **já salvo**, com confirmação na UI para restaurar e excluir. Na restauração, a mesma transação `readwrite` guarda primeiro o layout corrente como versão de segurança e só então grava o layout restaurado. Erros, quota e exceder o limite fazem rollback integral. Não são excluídas versões automaticamente. Testes simulam commit e abort de transação, isolamento e validação de registros. Não equivale a armazenamento seguro fora do navegador — o usuário precisa exportar `.ptsbackup` para backup externo.
