@@ -3,7 +3,6 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import { HyprlandShowcase } from "../components/HyprlandShowcase";
 import { OFFICIAL_THEMES } from "../stores/themes";
 import { validatePublishedLayouts, sanitizeQuickshellProfiles } from "../services/quickshellLayoutImport";
-import { loadVisitorWidgets } from "../services/visitorDesktopWidgets";
 import published from "../data/published-widget-layouts.json";
 
 beforeEach(() => window.localStorage.clear());
@@ -47,24 +46,19 @@ describe("M6 real Quickshell wallpaper profiles — sanitized publication", () =
     expect(visualizer.height).toBeCloseTo(260/1440*100,3);
   });
 
-  it("allows choosing different layouts without replacing the other theme's visitor data", () => {
+  it("switches original variants without editing the published widget data", () => {
+    const before=JSON.stringify(data.profiles);
     const {container}=render(
       <HyprlandShowcase themes={OFFICIAL_THEMES} selectedId="changli" onChoose={vi.fn()}/>,
     );
-    const select=screen.getByRole("combobox",{name:"Escolher versão do wallpaper"});
+    const select=screen.getByRole("combobox",{name:"Outras composições prontas"});
     expect(select.querySelectorAll("option")).toHaveLength(4);
-    const original=container.querySelector(".hypr-widget-position") as HTMLElement;
-    const initial=original.style.left;
+    const first=container.querySelector(".preset-widget") as HTMLElement;
+    const initial=first.style.left;
     fireEvent.change(select,{target:{value:"changli-2"}});
-    expect((container.querySelector(".hypr-widget-position") as HTMLElement).style.left)
-      .not.toBe(initial);
-    fireEvent.click(screen.getByRole("button",{name:"Adicionar Relógio"}));
-    expect(loadVisitorWidgets("changli-changli-2")).not.toBeNull();
-    fireEvent.change(select,{target:{value:"changli-1"}});
-    expect(loadVisitorWidgets("changli-changli-1")).toBeNull();
-    fireEvent.click(screen.getByRole("button",{name:/Outros wallpapers/}));
-    expect(screen.getByRole("combobox",{name:"Escolher versão do wallpaper"}).querySelectorAll("option"))
-      .toHaveLength(5);
+    expect((container.querySelector(".preset-widget") as HTMLElement).style.left).not.toBe(initial);
+    expect(screen.queryByRole("button",{name:"Adicionar Relógio"})).not.toBeInTheDocument();
+    expect(JSON.stringify(data.profiles)).toBe(before);
   });
 
   it("imports two versions of the same named theme instead of silently replacing the first", () => {
