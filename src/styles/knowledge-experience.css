@@ -293,3 +293,85 @@
 @media (prefers-reduced-motion:reduce) {
   .kspace-stage button { transition: none; }
 }
+
+
+/* Cinematic focus hand-off. Animate the HTML cards together, not each
+   text node separately, so readability and glass alignment remain coherent. */
+.kspace-ui {
+  animation: kspace-scene-enter 690ms cubic-bezier(.18,.73,.22,1) both;
+  transform-origin: 50% 52%;
+  will-change: transform, opacity;
+}
+@keyframes kspace-scene-enter {
+  0% { opacity: .24; transform: translate3d(0, 13px, 0) scale(.984); filter: blur(6px); }
+  34% { opacity: .68; filter: blur(2px); }
+  100% { opacity: 1; transform: translate3d(0, 0, 0) scale(1); filter: blur(0); }
+}
+.kspace-focus-flare {
+  position: absolute;
+  z-index: 3;
+  top: 50%;
+  left: 50%;
+  width: min(53%, 680px);
+  height: 70%;
+  pointer-events: none;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center,
+    color-mix(in srgb, var(--color-accent-yellow) 12%, transparent) 0%,
+    color-mix(in srgb, var(--color-accent-primary) 6%, transparent) 40%,
+    transparent 71%);
+  animation: kspace-focus-flare 760ms ease-out both;
+}
+@keyframes kspace-focus-flare {
+  0% { opacity: .05; transform: translate(-50%,-50%) scale(.6); }
+  35% { opacity: .7; }
+  100% { opacity: 0; transform: translate(-50%,-50%) scale(1.2); }
+}
+.kspace-steps {
+  display: flex;
+  flex: 1 1 auto;
+  max-width: 160px;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  pointer-events: auto;
+}
+.kspace-step {
+  display: grid;
+  place-items: center;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  width: 36px;
+  height: 32px;
+  padding: 0;
+}
+.kspace-step span {
+  display: block;
+  height: 3px;
+  width: 21px;
+  border-radius: 5px;
+  background: color-mix(in srgb,var(--color-accent-yellow) 30%,var(--color-text-variant));
+  opacity: .54;
+  transition: background .35s, opacity .35s, width .45s, box-shadow .35s;
+}
+.kspace-step:hover span,
+.kspace-step:focus-visible span {
+  background: var(--color-accent-yellow);
+  opacity: .85;
+}
+.kspace-step.is-current span {
+  width: 31px;
+  background: var(--color-accent-yellow);
+  box-shadow: 0 0 12px color-mix(in srgb,var(--color-accent-yellow) 45%,transparent);
+  opacity: 1;
+}
+@media (max-width: 1050px) {
+  .kspace-instruction { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .kspace-ui, .kspace-focus-flare { animation: none; }
+  .kspace-ui { filter: none; will-change: auto; }
+  .kspace-focus-flare { display: none; }
+  .kspace-step span { transition: none; }
+}
