@@ -36,7 +36,7 @@ describe("three-panel carousel", () => {
       animationName: "abismo-card-retreat",
     });
     expect(container.querySelector(".spine-stage.is-abismo-closing")).toBeNull();
-    expect(screen.getByRole("button", { name: "Projeto anterior" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Projeto anterior" })).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Jogar Abismo no card" })).toBeInTheDocument();
   });
 
@@ -59,7 +59,7 @@ describe("three-panel carousel", () => {
 
   it("rotates the carousel then opens site-3D inside its own card", async () => {
     const { container } = render(<ProjectPanel />);
-    fireEvent.click(screen.getByRole("button", { name: "Próximo projeto" }));
+    fireEvent.keyDown(screen.getByRole("region", { name: "Carrossel de projetos" }), { key: "ArrowRight" });
     const centered = screen.getByRole("button", { name: "Explorar site-3D no card" });
     expect(centered).toHaveAttribute("data-position", "center");
     expect(screen.getByRole("button", { name: /Trazer Abismo para o centro/ }))
@@ -99,33 +99,93 @@ describe("three-panel carousel", () => {
     fireEvent.click(card);
     expect(openStudio).toHaveBeenCalledTimes(1);
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", { name: "Projeto anterior" }));
+    fireEvent.keyDown(screen.getByRole("region", { name: "Carrossel de projetos" }), { key: "ArrowLeft" });
     fireEvent.click(screen.getByRole("button", { name: "Explorar site-3D no card" }));
     expect(screen.getByRole("region", { name: "Site 3D — experiência integrada" })).toBeInTheDocument();
   });
 
-  it("responds to wheel input while centered in view and releases scrolling at the final project", () => {
+  it("wraps endlessly with wheel input and only handles scrolling while in view", () => {
     render(<ProjectPanel />);
     const carousel = screen.getByRole("region", { name: "Carrossel de projetos" });
-    vi.spyOn(carousel, "getBoundingClientRect").mockReturnValue({
+    const getBounds = vi.spyOn(carousel, "getBoundingClientRect").mockReturnValue({
       top: 180, bottom: 600, left: 0, right: 1100, width: 1100, height: 420,
       x: 0, y: 180, toJSON: () => ({}),
     });
-    const first = fireEvent.wheel(carousel, { deltaY: 110, deltaMode: 0, cancelable: true });
-    expect(first).toBe(false); // preventDefault when changing project
-    expect(screen.getByRole("button", { name: /Explorar site-3D no card/ }))
+    const clock = vi.spyOn(performance, "now");
+    let now = 1000;
+    clock.mockImplementation(() => now);
+    try {
+      const wheel = (deltaY: number) =>
+        fireEvent.wheel(carousel, { deltaY, deltaMode: 0, cancelable: true });
+      expect(wheel(110)).toBe(false);
+      expect(screen.getByRole("button", { name: "Explorar site-3D no card" }))
+        .toHaveAttribute("data-position", "center");
+
+      now += 610;
+      expect(wheel(110)).toBe(false);
+      expect(screen.getByRole("button", { name: /Abrir detalhes de Hyprland-Themes/ }))
+        .toHaveAttribute("data-position", "center");
+
+      now += 610;
+      expect(wheel(110)).toBe(false);
+      expect(screen.getByRole("button", { name: "Jogar Abismo no card" }))
+        .toHaveAttribute("data-position", "center");
+
+      now += 610;
+      expect(wheel(-110)).toBe(false);
+      expect(screen.getByRole("button", { name: /Abrir detalhes de Hyprland-Themes/ }))
+        .toHaveAttribute("data-position", "center");
+
+      getBounds.mockReturnValue({
+        top: 1200, bottom: 1700, left: 0, right: 1100, width: 1100, height: 500,
+        x: 0, y: 1200, toJSON: () => ({}),
+      });
+      now += 610;
+      expect(wheel(110)).toBe(true);
+      expect(screen.getByRole("button", { name: /Abrir detalhes de Hyprland-Themes/ }))
+        .toHaveAttribute("data-position", "center");
+    } finally {
+      clock.mockRestore();
+      getBounds.mockRestore();
+    }
+  });
+
+  it("supports circular swipe navigation on mobile without hijacking vertical gestures", () => {
+    render(<ProjectPanel />);
+    const carousel = screen.getByRole("region", { name: "Carrossel de projetos" });
+    fireEvent.touchStart(carousel, { touches: [{ clientX: 280, clientY: 200 }] });
+    fireEvent.touchEnd(carousel, { changedTouches: [{ clientX: 120, clientY: 205 }] });
+    expect(screen.getByRole("button", { name: "Explorar site-3D no card" }))
+      .toHaveAttribute("data-position", "center");
+
+    fireEvent.touchStart(carousel, { touches: [{ clientX: 170, clientY: 200 }] });
+    fireEvent.touchEnd(carousel, { changedTouches: [{ clientX: 175, clientY: 70 }] });
+    expect(screen.getByRole("button", { name: "Explorar site-3D no card" }))
+      .toHaveAttribute("data-position", "center");
+
+    fireEvent.touchStart(carousel, { touches: [{ clientX: 100, clientY: 200 }] });
+    fireEvent.touchEnd(carousel, { changedTouches: [{ clientX: 300, clientY: 205 }] });
+    expect(screen.getByRole("button", { name: "Jogar Abismo no card" }))
       .toHaveAttribute("data-position", "center");
   });
 
-  it("supports arrow-key navigation without trapping page scroll", () => {
+  it("supports endless arrow-key navigation in both directions", () => {
     render(<ProjectPanel />);
     const carousel = screen.getByRole("region", { name: "Carrossel de projetos" });
-    fireEvent.keyDown(carousel, { key: "ArrowRight" });
-    expect(screen.getByRole("button", { name: /Explorar site-3D no card/ }))
-      .toHaveAttribute("data-position", "center");
+    expect(screen.queryByRole("button", { name: "Próximo projeto" })).not.toBeInTheDocument();
+    expect(screen.queryByText(/Três projetos selecionados/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Use a rodinha do mouse sobre os painéis/)).not.toBeInTheDocument();
+
     fireEvent.keyDown(carousel, { key: "ArrowLeft" });
-    expect(screen.getByRole("button", { name: /Jogar Abismo no card/ }))
+    expect(screen.getByRole("button", { name: /Abrir detalhes de Hyprland-Themes/ }))
       .toHaveAttribute("data-position", "center");
+    fireEvent.keyDown(carousel, { key: "ArrowRight" });
+    expect(screen.getByRole("button", { name: "Jogar Abismo no card" }))
+      .toHaveAttribute("data-position", "center");
+    fireEvent.keyDown(carousel, { key: "ArrowRight" });
+    expect(screen.getByRole("button", { name: "Explorar site-3D no card" }))
+      .toHaveAttribute("data-position", "center");
+
   });
 });
 
@@ -133,6 +193,7 @@ describe("header navigation", () => {
   it("keeps Projects in the menu without a competing Themes button", () => {
     render(<MemoryRouter><ThemeProvider><TopMenu onOpenTerminal={() => {}} /></ThemeProvider></MemoryRouter>);
     expect(screen.getByRole("link", { name: "Projetos" })).toHaveAttribute("href", "#projetos");
+    expect(screen.queryByRole("link", { name: "Habilidades" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /Temas|Theme Studio/i })).not.toBeInTheDocument();
   });
 });
