@@ -102,75 +102,7 @@
   font-size:clamp(.86rem,1.12vw,.98rem);
   line-height:1.75;
 }
-/* Accent control is a quiet toolbar, not a second big feature card. */
-.preset-color-only{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  flex-wrap:wrap;
-  gap:1.2rem 2rem;
-  margin-top:clamp(2rem,4vw,4rem);
-  padding:1.35rem 0;
-  border-top:1px solid color-mix(in srgb,var(--color-outline) 28%,transparent);
-  border-bottom:1px solid color-mix(in srgb,var(--color-outline) 16%,transparent);
-}
-.preset-color-copy{display:grid;gap:.35rem}
-.preset-color-eyebrow{
-  color:var(--color-accent-yellow);
-  font:700 .59rem ui-monospace,monospace;
-  letter-spacing:.16em;
-}
-.preset-color-copy strong{font:650 1.1rem var(--font-display)}
-.preset-color-copy p{
-  max-width:480px;
-  margin:0;
-  color:var(--color-text-variant);
-  font-size:.77rem;
-  line-height:1.65;
-}
-.preset-color-control{
-  display:flex;
-  align-items:center;
-  gap:.68rem;
-  flex-wrap:wrap;
-}
-.preset-color-control label{font-size:.73rem;font-weight:650;color:var(--color-text)}
-.preset-color-control input{
-  width:42px;
-  min-width:42px;
-  height:42px;
-  padding:4px;
-  border-radius:12px;
-  border:1px solid color-mix(in srgb,var(--color-outline) 55%,transparent);
-  background:var(--color-surface);
-  cursor:pointer;
-}
-.preset-color-control input::-webkit-color-swatch-wrapper{padding:0}
-.preset-color-control input::-webkit-color-swatch{border:0;border-radius:7px}
-.preset-color-control output{
-  color:var(--color-text-variant);
-  font:.72rem ui-monospace,monospace;
-  letter-spacing:.035em;
-}
-.preset-color-control button{
-  min-height:42px;
-  padding:.65rem .85rem;
-  border:1px solid color-mix(in srgb,var(--color-outline) 35%,transparent);
-  border-radius:11px;
-  background:transparent;
-  color:var(--color-text);
-  font-size:.72rem;
-  cursor:pointer;
-  transition:background .2s,border-color .2s;
-}
-.preset-color-control button:hover:not(:disabled){
-  border-color:var(--color-accent-primary);
-  background:color-mix(in srgb,var(--color-accent-primary) 10%,transparent);
-}
-.preset-color-control button:disabled{opacity:.38;cursor:default}
-.preset-studio-exit:focus-visible,
-.preset-color-control input:focus-visible,
-.preset-color-control button:focus-visible{
+.preset-studio-exit:focus-visible{
   outline:2px solid var(--color-accent-yellow);
   outline-offset:3px;
 }
@@ -181,9 +113,7 @@
   .preset-studio-topline{gap:.5rem}
   .preset-studio-overline{font-size:.56rem}
   .preset-studio-exit{min-height:39px;padding:.55rem .75rem;font-size:.7rem}
-  .preset-color-only{align-items:start}
-  .preset-color-control{gap:.55rem}
 }
 @media(prefers-reduced-motion:reduce){
-  .preset-studio-exit,.preset-color-control button{transition:none}
+  .preset-studio-exit{transition:none}
 }
