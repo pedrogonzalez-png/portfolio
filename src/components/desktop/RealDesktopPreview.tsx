@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import type { CSSProperties } from "react";
 import type { ThemePalette } from "../../stores/themes";
-import "../styles/real-desktop-preview.css";
+import "../../styles/real-desktop-preview.css";
 
 // Public media owned by the visitor's source repository, referenced rather
 // than copied into the portfolio or mistaken for a live Linux connection.
