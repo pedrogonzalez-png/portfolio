@@ -65,3 +65,15 @@ export function resizeVisitorWidget(widget:VisitorWidget,delta:number):VisitorWi
   const height=clamp(widget.height+delta*0.66,7,45);
   return moveVisitorWidget({...widget,width,height},widget.x,widget.y);
 }
+
+/** Convert desktop drop pixels into coordinates, independent of DOM APIs. */
+export function widgetPositionFromClientPoint(
+  clientX:number,clientY:number,rect:{left:number;top:number;width:number;height:number},
+):{x:number;y:number}{
+  if(!Number.isFinite(rect.width)||!Number.isFinite(rect.height)||rect.width<=0||rect.height<=0)
+    return {x:40,y:36};
+  return {
+    x:(clientX-rect.left)/rect.width*100,
+    y:(clientY-rect.top)/rect.height*100,
+  };
+}
