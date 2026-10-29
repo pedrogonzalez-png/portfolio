@@ -146,3 +146,18 @@
 @media(prefers-reduced-motion:reduce){
  .hypr-widget-interactive,.hypr-widget-actions{transition:none}
 }
+
+
+.hypr-expanded-tray{
+  position:absolute;right:1%;top:1%;z-index:9;
+  display:flex;align-items:center;gap:.4rem;flex-wrap:wrap;
+  padding:.5rem;border:1px solid #ffffff40;border-radius:12px;
+  background:#1b1119e9;box-shadow:0 7px 26px #0008;backdrop-filter:blur(12px)
+}
+.hypr-expanded-tray label{display:flex;align-items:center;gap:.4rem;color:#fff;font-size:.72rem}
+.hypr-expanded-tray select,.hypr-expanded-tray button{
+  min-height:34px;border:1px solid #ffffff45;border-radius:8px;
+  padding:.35rem .65rem;background:#291d25;color:#fff;cursor:pointer;font-size:.72rem
+}
+.hypr-expanded-tray button:hover{border-color:#f1c58f}
+.hypr-expanded-tray .hypr-editor-close{position:static}
