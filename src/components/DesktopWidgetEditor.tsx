@@ -3,7 +3,7 @@ import type { DragEvent, KeyboardEvent, PointerEvent, ReactNode } from "react";
 import { WIDGET_KINDS, type WidgetKind, type WidgetPlacement } from "../services/quickshellLayoutImport";
 import {
   MAX_VISITOR_WIDGETS, createVisitorWidget, fromSourceWidgets, loadVisitorWidgets,
-  moveVisitorWidget, resizeVisitorWidget, saveVisitorWidgets, type VisitorWidget,
+  moveVisitorWidget, resizeVisitorWidget, saveVisitorWidgets, widgetPositionFromClientPoint, type VisitorWidget,
 } from "../services/visitorDesktopWidgets";
 
 type Gesture = {
@@ -70,11 +70,8 @@ export function DesktopWidgetEditor({
 
   const coordinate=(clientX:number,clientY:number)=>{
     const rect=canvasRef.current?.getBoundingClientRect();
-    if(!rect||!rect.width||!rect.height)return {x:40,y:36};
-    return {
-      x:(clientX-rect.left)/rect.width*100,
-      y:(clientY-rect.top)/rect.height*100,
-    };
+    if(!rect)return {x:40,y:36};
+    return widgetPositionFromClientPoint(clientX,clientY,rect);
   };
 
   const onDrop=(event:DragEvent<HTMLDivElement>)=>{
