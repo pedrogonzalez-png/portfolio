@@ -309,43 +309,19 @@
 .spine-stage.project-carousel[data-glass="true"] .cinematic-panel-visual { opacity: .27; }
 .spine-stage.project-carousel[data-glass="true"] .carousel-center .cinematic-panel-visual { opacity: .43; }
 
-/* Explicit buttons and a live position readout for keyboard/touch users. */
-.carousel-controls {
-  max-width: 500px;
-  margin: .4rem auto 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: clamp(.7rem,2vw,1.7rem);
+/* Keep guidance and the current project available to screen readers without
+   rendering the old arrow, counter, instructions and disclaimer panel. */
+.carousel-accessibility-hint {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
 }
-.carousel-controls button {
-  width: 50px;
-  height: 50px;
-  border: 1px solid rgba(235,187,180,.35);
-  border-radius: 50%;
-  background: rgba(44,24,37,.61);
-  color: var(--color-accent-yellow);
-  cursor: pointer;
-  font: 500 1.4rem/1 var(--font-body);
-  transition: background .2s ease, border-color .2s ease;
-}
-.carousel-controls button:not(:disabled):hover {
-  background: rgba(118,57,67,.5);
-  border-color: rgba(254,224,200,.8);
-}
-.carousel-controls button:disabled { cursor: default; opacity: .29; }
-.carousel-progress {
-  display: flex;
-  flex-direction: column;
-  gap: .24rem;
-  min-width: 155px;
-  text-align: center;
-  font-family: var(--font-body);
-}
-.carousel-progress span { font-size: .62rem; letter-spacing: .2em; color: var(--color-outline); }
-.carousel-progress strong { font-size: .95rem; letter-spacing: .025em; color: var(--color-text); font-weight: 500; }
-.carousel-instructions { color: var(--color-text-variant); opacity: .8; text-align: center; font-size: .74rem; margin: .9rem auto 0; }
-.projects-disclaimer { margin: 1.9rem auto 0; text-align: center; }
 
 /* Preserve all three screens horizontally at desktop widths. */
 @media (max-width: 900px) {
@@ -395,8 +371,6 @@
   .spine-stage.project-carousel .cinematic-panel-title { font-size: clamp(1.8rem,6vw,2.9rem); }
   .spine-stage.project-carousel .cinematic-panel:nth-child(3) .cinematic-panel-title { font-size: clamp(1.4rem,4.6vw,2.4rem); }
   .spine-stage.project-carousel .cinematic-panel-note { font-size: .43rem; }
-  .carousel-controls { margin-top: 1rem; }
-  .carousel-instructions { max-width: 28ch; line-height: 1.6; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -415,4 +389,3 @@
 .spine-stage.project-carousel .cinematic-panel-category,.spine-stage.project-carousel .cinematic-panel-explore{color:var(--color-accent-yellow)}
 .spine-stage.project-carousel .cinematic-panel-title{color:var(--color-text)}
 .spine-stage.project-carousel .cinematic-panel-note{color:var(--color-text-variant)}
-.carousel-controls button{color:var(--color-accent-yellow);background:var(--color-surface-container);border-color:var(--color-outline)}

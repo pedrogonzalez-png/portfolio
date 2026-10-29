@@ -36,6 +36,8 @@ describe("Hyprland-Themes on its own page",()=>{
     );
     const original=container.querySelector(".hyprland-route-home");
     expect(original).not.toBeNull();
+    expect(container.querySelector("#habilidades")).toBeNull();
+    expect(screen.queryByRole("heading", { name: /Ideias que se conectam/ })).not.toBeInTheDocument();
     expect(container.querySelector(".preset-disintegrating-idle")).not.toBeNull();
     fireEvent.click(screen.getByRole("button",{name:"Abrir Hyprland-Themes do carrossel"}));
     await screen.findByRole("region",{name:"Exposição dos temas Hyprland"});

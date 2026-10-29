@@ -4,7 +4,6 @@ import type { CSSProperties } from "react";
 import { TopMenu } from "../components/TopMenu";
 import { ProjectPanel } from "../components/ProjectPanel";
 import SceneIntegration from "../components/SceneIntegration";
-import { KnowledgeTree } from "../components/KnowledgeTree";
 import { ThemeDisintegration } from "../components/desktop/ThemeDisintegration";
 import { OFFICIAL_THEMES } from "../stores/themes";
 import "../styles/hyprland-entry-transition.css";
@@ -70,18 +69,9 @@ function HomePage({onOpenHyprland}:{onOpenHyprland:()=>void}) {
           <ProjectPanel onOpenThemeStudio={onOpenHyprland} />
         </section>
 
-        <section id="habilidades" className="knowledge-area" aria-label="Habilidades e conhecimentos">
-          <div className="section-heading">
-            <p className="eyebrow">03 / ÁRVORE DE CONHECIMENTOS</p>
-            <h2>Ideias que se <em>conectam.</em></h2>
-            <p>Tecnologias utilizadas nos três repositórios selecionados. Explore as conexões e veja as evidências no código.</p>
-          </div>
-          <KnowledgeTree />
-        </section>
-
         <section id="sobre" className="about-area" aria-label="Sobre e contato">
           <div className="about-copy">
-            <p className="eyebrow">04 / SOBRE & CONTATO</p>
+            <p className="eyebrow">03 / SOBRE & CONTATO</p>
             <h2>O código conta <em>uma história.</em></h2>
             <p>A apresentação pessoal e os canais de contato serão adicionados após confirmação. Por enquanto, conheça os trabalhos pelo GitHub.</p>
             <a className="text-action" href="https://github.com/pedrogonzalez-png" target="_blank" rel="noopener noreferrer">Ver perfil no GitHub ↗</a>
