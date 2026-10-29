@@ -83,6 +83,21 @@ describe("redesigned spatial knowledge experience", () => {
     clock.mockRestore();
   });
 
+  it("navigates all three glass projects with clickable progress indicators", () => {
+    render(<TestHarness />);
+    const first = screen.getByRole("button", { name: "Ir para projeto: Abismo" });
+    const third = screen.getByRole("button", { name: "Ir para projeto: Hyprland-Themes" });
+    expect(first).toHaveAttribute("aria-current", "step");
+    expect(third).not.toHaveAttribute("aria-current");
+    fireEvent.click(third);
+    expect(screen.getByRole("button", { name: "Destacar projeto: Hyprland-Themes" })).toBeInTheDocument();
+    expect(third).toHaveAttribute("aria-current", "step");
+    expect(screen.getByRole("button", { name: /QML, ver conexões/ })).toBeInTheDocument();
+    fireEvent.click(first);
+    expect(screen.getByRole("button", { name: "Destacar projeto: Abismo" })).toBeInTheDocument();
+    expect(first).toHaveAttribute("aria-current", "step");
+  });
+
   it("puts nodes in separate arcs without repeating positions", () => {
     const nodes = KNOWLEDGE_NODES.filter((node) => node.projects.includes("abismo"));
     const orbit = arrangeOrbitSkills(nodes);
