@@ -1,7 +1,8 @@
 /**
- * Sanitized, display-only projection of the owner's Quickshell
- * WallpaperLayouts.qml JsonAdapter. We NEVER retain paths, text, notes,
- * media files, system info or the source file itself. Import is local only.
+ * Public, geometry-only projection of WallpaperLayouts.qml.
+ * No original path, note, image, custom text or machine data is persisted.
+ * Each original wallpaper has an independent variant; do not merge multiple
+ * wallpapers of the same theme into one layout.
  */
 export const WIDGET_KINDS = [
   "clock", "weather", "calendar", "worldClock", "media", "visualizer",
@@ -12,13 +13,15 @@ export const WIDGET_KINDS = [
 export type WidgetKind = typeof WIDGET_KINDS[number];
 export type WidgetPlacement = {
   kind: WidgetKind;
-  x: number;
-  y: number;
-  width: number;
-  height: number;
+  x: number; y: number; width: number; height: number;
+  z?: number;
+  sizeMode?: string;
+  vertical?: boolean;
 };
 export type SanitizedProfile = {
   themeId: string;
+  variantId?: string;
+  label?: string;
   widgets: WidgetPlacement[];
 };
 export type SanitizedDesktopLayouts = {
@@ -26,103 +29,147 @@ export type SanitizedDesktopLayouts = {
   source: "sanitized-quickshell";
   profiles: SanitizedProfile[];
 };
-const kindSet = new Set<string>(WIDGET_KINDS);
-const themeNames = ["changli", "hiyuki", "hsin", "emilia", "furina", "hotline-miami"];
-const isObject = (value: unknown): value is Record<string, unknown> =>
-  value !== null && typeof value === "object" && !Array.isArray(value);
-const reasonable = (n: unknown): n is number => typeof n === "number" &&
-  Number.isFinite(n) && n >= -6000 && n <= 6000;
-const clamp = (n: number, min: number, max: number) => Math.min(max, Math.max(min, n));
 
-function themeForFile(path: string): string | null {
-  const file = path.replaceAll("\\", "/").split("/").pop()?.toLowerCase() ?? "";
-  const basename = file.replace(/\.(?:mp4|webm|mov|png|jpg|jpeg|webp)$/i, "");
-  if (basename.includes("changli")) return "changli";
-  if (basename.includes("hiyuki") || basename.includes("hutuki")) return "hiyuki";
-  if (basename.includes("hsin")) return "hsin";
-  if (basename.includes("emilia")) return "emilia";
-  if (basename.includes("furina")) return "furina";
-  if (basename.includes("hotline")) return "hotline-miami";
-  return null;
+const validKinds = new Set<string>(WIDGET_KINDS);
+const themes = ["changli", "hiyuki", "hsin", "emilia", "furina", "hotline-miami", "outros"];
+const object = (value: unknown): value is Record<string, unknown> =>
+  value !== null && typeof value === "object" && !Array.isArray(value);
+const numeric = (v: unknown): v is number => typeof v === "number" && Number.isFinite(v);
+const range = (value: number, min: number, max: number) => Math.min(max, Math.max(min,value));
+const normalized = (px: number, max: number) => Math.round(px / max * 1000000) / 10000;
+const validMode = (v: unknown): v is string =>
+  typeof v === "string" && /^[123]x[123]$/.test(v);
+
+/** Use filenames ONLY during parsing. Never put them in published output. */
+function themeForPath(path: string): string | null {
+  const lower = path.replaceAll("\\", "/").toLowerCase();
+  if (!/\.(?:mp4|webm|mov|png|jpe?g|webp)$/.test(lower)) return null;
+  if (lower.includes("changli")) return "changli";
+  if (lower.includes("hiyuki") || lower.includes("hutuki")) return "hiyuki";
+  if (lower.includes("hsin")) return "hsin";
+  if (lower.includes("emilia")) return "emilia";
+  if (lower.includes("furina")) return "furina";
+  if (lower.includes("hotline-miami")) return "hotline-miami";
+  return "outros";
 }
 
-/**
- * Parses the REAL wallpaper_widget_layouts.json from end4-pC. Positions in
- * Quickshell are pixels, relative to the source desktop, not percentages.
- * Assumes the owner's 3440x1440 monitor for display projection; the original
- * file does not record monitor resolution. The site does not publish raw paths.
+/** All pixel positions reference the owner's 3440x1440 monitor.
+ *  Dimensions are exact ONLY for cards with cardWidth/cardHeight; other
+ *  types rely on QML runtime sizeMode and display-only fallback dimensions.
  */
 export function sanitizeQuickshellProfiles(json: unknown): SanitizedDesktopLayouts {
-  if (!isObject(json) || !isObject(json.profiles)) {
+  if (!object(json) || !object(json.profiles)) {
     throw new Error("O arquivo precisa conter profiles do wallpaper_widget_layouts.json.");
   }
-  const result = new Map<string, WidgetPlacement[]>();
+  const counts: Record<string,number> = {};
+  const profiles: SanitizedProfile[] = [];
   let files = 0;
   for (const [path, raw] of Object.entries(json.profiles)) {
     if (++files > 100) throw new Error("Quantidade de perfis excede o limite de segurança.");
-    if (!isObject(raw)) continue;
-    const theme = themeForFile(path);
-    if (!theme) continue;
+    if (!object(raw)) continue;
+    const themeId = themeForPath(path);
+    if (!themeId) continue;
+    const number = counts[themeId] = (counts[themeId] ?? 0) + 1;
     const widgets: WidgetPlacement[] = [];
+
     for (const kind of WIDGET_KINDS) {
-      const value = raw[kind];
-      if (!isObject(value) || value.enable !== true) continue;
-      if (!reasonable(value.x) || !reasonable(value.y)) continue;
-      const width = reasonable(value.cardWidth) ? value.cardWidth :
-        reasonable(value.width) ? value.width : kind.startsWith("imageCard") ? 276 : 260;
-      const height = reasonable(value.cardHeight) ? value.cardHeight :
-        reasonable(value.height) ? value.height : kind === "clock" ? 140 : 125;
-      widgets.push({
-        kind,
-        x: clamp(value.x / 3440 * 100, 0, 96),
-        y: clamp(value.y / 1440 * 100, 0, 91),
-        width: clamp(width / 3440 * 100, 4, 28),
-        height: clamp(height / 1440 * 100, 7, 34),
-      });
+      const item = raw[kind];
+      if (!object(item) || item.enable !== true ||
+          !numeric(item.x) || !numeric(item.y) ||
+          item.x < -6000 || item.x > 6000 || item.y < -6000 || item.y > 6000) continue;
+      const isCard = kind.startsWith("imageCard");
+      const widthPx = numeric(item.cardWidth) ? item.cardWidth :
+        numeric(item.width) ? item.width :
+        kind === "visualizer" && numeric(item.ringSize) ? item.ringSize :
+        isCard ? 276 : 260;
+      const heightPx = numeric(item.cardHeight) ? item.cardHeight :
+        numeric(item.height) ? item.height : kind === "clock" ? 140 : 125;
+      const widget: WidgetPlacement = {
+        kind, x: normalized(item.x, 3440), y: normalized(item.y, 1440),
+        width: range(normalized(widthPx, 3440), 4, 40),
+        height: range(normalized(heightPx, 1440), 6, 40),
+      };
+      if (numeric(item.z) && Math.abs(item.z) <= 5000) widget.z = item.z;
+      if (validMode(item.sizeMode)) widget.sizeMode = item.sizeMode;
+      if (typeof item.vertical === "boolean") widget.vertical = item.vertical;
+      widgets.push(widget);
     }
-    result.set(theme, widgets);
+    profiles.push({
+      themeId,
+      variantId: themeId + "-" + number,
+      label: themeId === "outros" ? "Wallpaper extra " + number : "Layout " + number,
+      widgets,
+    });
   }
-  if (!result.size) throw new Error("Nenhum perfil de tema conhecido foi encontrado. Confira o arquivo QML.");
-  return {
-    schemaVersion: 1,
-    source: "sanitized-quickshell",
-    profiles: Array.from(result, ([themeId, widgets]) => ({ themeId, widgets })),
-  };
+  if (!profiles.length) throw new Error("Nenhum perfil de wallpaper reconhecido foi encontrado.");
+  return { schemaVersion: 1, source: "sanitized-quickshell", profiles };
 }
 
-/** Published version has NO paths or private content, just geometry. */
+/** Refuse unknown keys/IDs, control chars, invalid coordinates and media paths. */
 export function validatePublishedLayouts(value: unknown): SanitizedDesktopLayouts {
-  if (!isObject(value) || value.schemaVersion !== 1 ||
-    value.source !== "sanitized-quickshell" || !Array.isArray(value.profiles) ||
-    value.profiles.length > themeNames.length) {
+  if (!object(value) || value.schemaVersion !== 1 ||
+      value.source !== "sanitized-quickshell" ||
+      !Array.isArray(value.profiles) || value.profiles.length > 100) {
     throw new Error("Snapshot público inválido.");
   }
   const seen = new Set<string>();
   const profiles: SanitizedProfile[] = [];
-  for (const p of value.profiles) {
-    if (!isObject(p) || typeof p.themeId !== "string" ||
-      !themeNames.includes(p.themeId) || seen.has(p.themeId) ||
-      !Array.isArray(p.widgets) || p.widgets.length > 30) {
-      throw new Error("Perfil público inválido.");
+  for (const record of value.profiles) {
+    if (!object(record) || typeof record.themeId !== "string" ||
+        !themes.includes(record.themeId) || !Array.isArray(record.widgets) ||
+        record.widgets.length > 30) throw new Error("Perfil público inválido.");
+    const variant = record.variantId;
+    if (variant !== undefined &&
+        (typeof variant !== "string" || !/^[a-z0-9-]{3,64}$/.test(variant))) {
+      throw new Error("ID da variante inválido.");
     }
-    seen.add(p.themeId);
+    const key = record.themeId + ":" + (variant ?? "default");
+    if (seen.has(key)) throw new Error("Variante repetida.");
+    seen.add(key);
+    const label = record.label;
+    if (label !== undefined &&
+        (typeof label !== "string" || label.length > 40 ||
+         !/^[A-Za-zÀ-ÿ0-9 \-]+$/.test(label))) {
+      throw new Error("Rótulo da variante inválido.");
+    }
     const widgets: WidgetPlacement[] = [];
-    for (const raw of p.widgets) {
-      if (!isObject(raw) || typeof raw.kind !== "string" || !kindSet.has(raw.kind) ||
-        ![raw.x,raw.y,raw.width,raw.height].every((n) => typeof n === "number" && Number.isFinite(n)) ||
-        (raw.x as number) < 0 || (raw.x as number) > 100 ||
-        (raw.y as number) < 0 || (raw.y as number) > 100 ||
-        (raw.width as number) < 0 || (raw.width as number) > 40 ||
-        (raw.height as number) < 0 || (raw.height as number) > 40) {
+    const usedKinds = new Set<string>();
+    for (const raw of record.widgets) {
+      if (!object(raw) || typeof raw.kind !== "string" ||
+          !validKinds.has(raw.kind) || usedKinds.has(raw.kind) ||
+          ![raw.x,raw.y,raw.width,raw.height].every(numeric) ||
+          (raw.x as number) < -10 || (raw.x as number) > 120 ||
+          (raw.y as number) < -10 || (raw.y as number) > 120 ||
+          (raw.width as number) < 4 || (raw.width as number) > 40 ||
+          (raw.height as number) < 6 || (raw.height as number) > 40) {
         throw new Error("Geometria de widget inválida.");
       }
-      widgets.push({
+      usedKinds.add(raw.kind);
+      const widget: WidgetPlacement = {
         kind: raw.kind as WidgetKind,
         x: raw.x as number, y: raw.y as number,
         width: raw.width as number, height: raw.height as number,
-      });
+      };
+      if (raw.z !== undefined) {
+        if (!numeric(raw.z) || Math.abs(raw.z) > 5000) throw new Error("Camada inválida.");
+        widget.z = raw.z;
+      }
+      if (raw.sizeMode !== undefined) {
+        if (!validMode(raw.sizeMode)) throw new Error("Tamanho de QML inválido.");
+        widget.sizeMode = raw.sizeMode;
+      }
+      if (raw.vertical !== undefined) {
+        if (typeof raw.vertical !== "boolean") throw new Error("Orientação inválida.");
+        widget.vertical = raw.vertical;
+      }
+      widgets.push(widget);
     }
-    profiles.push({ themeId:p.themeId, widgets });
+    profiles.push({
+      themeId: record.themeId,
+      ...(typeof variant === "string" ? { variantId: variant } : {}),
+      ...(typeof label === "string" ? { label } : {}),
+      widgets,
+    });
   }
-  return { schemaVersion:1, source:"sanitized-quickshell", profiles };
+  return { schemaVersion: 1, source: "sanitized-quickshell", profiles };
 }
