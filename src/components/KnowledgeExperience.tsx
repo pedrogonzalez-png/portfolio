@@ -110,7 +110,7 @@ export default function KnowledgeExperience({
 
     stage.addEventListener("wheel", handleWheel, { passive: false });
     return () => stage.removeEventListener("wheel", handleWheel);
-  }, [activeProject, navigate]);
+  }, [activeProject, navigate, projects]);
 
   const onCarouselKeys = (event: ReactKeyboardEvent<HTMLDivElement>) => {
     if (event.target !== event.currentTarget) return;
