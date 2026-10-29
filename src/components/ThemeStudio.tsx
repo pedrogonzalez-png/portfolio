@@ -28,7 +28,7 @@ export function ThemeStudio({ onClose }: { onClose: () => void }) {
             <span className="preset-studio-glow-dot" aria-hidden="true" />
             Coleção de desktops
           </span>
-          <h2>Seu desktop, <em>outros universos.</em></h2>
+          <h1>Seu desktop, <em>outros universos.</em></h1>
           <p>Uma coleção dos temas que construí no Hyprland. Cinco identidades, cada uma com sua própria atmosfera.</p>
         </div>
       </header>
