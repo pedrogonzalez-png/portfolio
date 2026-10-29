@@ -15,11 +15,6 @@ export const CHANGLI_THEME_SOURCE_URL =
 
 const GITHUB_MEDIA: Record<string, { image: string; video?: string; size?: string }> = {
   changli: { image: CHANGLI_WALLPAPER_URL, video: CHANGLI_VIDEO_URL, size: "36 MB" },
-  hiyuki: {
-    image: "https://raw.githubusercontent.com/pedrogonzalez-png/dotfiles-Arch/main/hypr/custom/scripts/mpvpaper_thumbnails/hutuki.mp4.jpg",
-    video: "https://raw.githubusercontent.com/pedrogonzalez-png/dotfiles-Arch/main/wallpapers/hutuki.mp4",
-    size: "63 MB",
-  },
   hsin: {
     image: "https://raw.githubusercontent.com/pedrogonzalez-png/dotfiles-Arch/main/wallpapers/hsin.png",
     video: "https://raw.githubusercontent.com/pedrogonzalez-png/dotfiles-Arch/main/wallpapers/hsin.mp4",
@@ -34,11 +29,12 @@ function currentClock() {
 }
 
 export function RealDesktopPreview({
-  palette, themeName, animationEnabled = true,
+  palette, themeName, animationEnabled = true, localWallpaper,
 }: {
   palette: ThemePalette;
   themeName: string;
   animationEnabled?: boolean;
+  localWallpaper?: { url: string; type: "video" | "image" };
 }) {
   const slug = themeName.trim().toLowerCase();
   const media = GITHUB_MEDIA[slug];
@@ -75,12 +71,21 @@ export function RealDesktopPreview({
     <div className="real-desktop-preview" style={variables}
       aria-label={media ? "Prévia do desktop " + themeName + " com wallpaper do GitHub" :
         "Prévia de cores do tema " + themeName}>
-      {media && !wallpaperError ? (
+      {localWallpaper?.type === "image" ? (
+        <img className="real-desktop-wallpaper" src={localWallpaper.url}
+          alt="" aria-hidden="true" />
+      ) : media && !wallpaperError ? (
         <img className="real-desktop-wallpaper" src={media.image}
           alt="" aria-hidden="true" decoding="async"
           onError={() => setWallpaperError(true)} />
       ) : (
         <div className="real-desktop-wallpaper-fallback" aria-hidden="true" />
+      )}
+      {animationEnabled && localWallpaper?.type === "video" && (
+        <video className="real-desktop-wallpaper" autoPlay loop muted playsInline
+          preload="metadata" src={localWallpaper.url}
+          aria-label={"Wallpaper local de " + themeName}
+          onError={() => setVideoError(true)} />
       )}
       {animationEnabled && media?.video && videoEnabled && !videoError && (
         <video className="real-desktop-wallpaper" autoPlay loop muted playsInline
@@ -105,7 +110,7 @@ export function RealDesktopPreview({
         <time className="real-desktop-time">{time}</time>
       </div>
 
-      {!media && (
+      {!media && !localWallpaper && (
         <p className="real-desktop-no-wallpaper">
           A paleta {themeName} está ativa nesta prévia. O wallpaper Changli não é aplicado a outros temas.
         </p>
