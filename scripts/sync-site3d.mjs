@@ -20,7 +20,7 @@ import process from "node:process";
 const ROOT = resolve(fileURLToPath(new URL("..", import.meta.url)));
 const DEST = join(ROOT, "public", "site-3d");
 const REPO = "https://github.com/pedrogonzalez-png/site-3D.git";
-const REVISION = "25db8b7898d1365901aad236837e3a9bd8edf64f";
+const REVISION = "40aca5535d0b2366d1b9899df3ca58a815fb3d81";
 
 const run = (cmd, args, cwd) => execFileSync(cmd, args, {
   cwd, stdio: "inherit", shell: false, env: { ...process.env, CI: "true" },
