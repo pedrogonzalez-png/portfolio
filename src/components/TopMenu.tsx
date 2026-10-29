@@ -12,7 +12,6 @@ export function TopMenu({ onOpenTerminal }: { onOpenTerminal: () => void }) {
       <nav className="site-nav" aria-label="Navegação principal">
         <a href="#inicio">Início</a>
         <a href="#projetos">Projetos</a>
-        <a href="#habilidades">Habilidades</a>
         <a href="#sobre">Sobre / Contato</a>
       </nav>
       <button type="button" className="site-terminal-button" onClick={onOpenTerminal} title="Abrir terminal (Ctrl + `)">⌘_ Terminal</button>
