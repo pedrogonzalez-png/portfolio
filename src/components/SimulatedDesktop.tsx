@@ -3,6 +3,7 @@ import type { ChangeEvent, KeyboardEvent } from "react";
 import { DesktopClockWidget } from "./desktop/DesktopClockWidget";
 import { DesktopCharacterCard } from "./desktop/DesktopCharacterCard";
 import { DesktopMovable } from "./desktop/DesktopMovable";
+import { RealDesktopPreview, CHANGLI_THEME_SOURCE_URL } from "./desktop/RealDesktopPreview";
 import {
   isSupportedCardImage, MAX_SESSION_CARDS, type DesktopImageCard, type DesktopPosition,
 } from "../services/desktopElements";
@@ -22,14 +23,11 @@ import {
 } from "../services/desktopHistory";
 import type { PositionSnapshot } from "../services/desktopHistory";
 
-type DesktopPanel = "inicio" | "paleta" | "sobre";
-
 
 export function SimulatedDesktop({ palette, themeName }: {
   palette: ThemePalette; themeName: string;
 }) {
   const [screenMode, setScreenMode] = useState<DesktopScreenMode>("ultrawide");
-  const [panel, setPanel] = useState<DesktopPanel>("inicio");
   const [portraitConfirmed, setPortraitConfirmed] = useState(false);
   const [clockVisible, setClockVisible] = useState(false);
   const [clockPosition, setClockPosition] = useState<DesktopPosition>({ x: 62, y: 7 });
@@ -483,18 +481,13 @@ export function SimulatedDesktop({ palette, themeName }: {
     markEdited();
   };
 
-  const swatches = [
-    ["Principal", palette.accentPrimary], ["Secundária", palette.accentRed],
-    ["Destaque", palette.accentYellow], ["Superfície", palette.surface],
-    ["Fundo", palette.bg], ["Texto", palette.text],
-  ] as const;
 
   return (
     <section className="theme-desktop-section" aria-label="Desktop simulado" onKeyDown={handleKeyboard}>
       <header className="theme-desktop-controls">
         <div>
           <h3>Desktop simulado</h3>
-          <p>Prévia 2D das cores e estrutura. Não é o seu Arch real nem executa Quickshell.</p>
+          <p>Wallpaper e paleta do GitHub do proprietário, com barra e dock ilustrativos. Não executa Quickshell nem acessa seu Arch ao vivo.</p>
         </div>
         <div className="theme-desktop-resolutions" role="group" aria-label="Formato da prévia">
           <button type="button" aria-pressed={screenMode === "ultrawide"}
@@ -641,75 +634,7 @@ export function SimulatedDesktop({ palette, themeName }: {
               palette.accentPrimary + "48, transparent 40%), radial-gradient(ellipse at 22% 73%, " +
               palette.accentRed + "28, transparent 47%)",
           }}>
-          <div className="theme-desktop-bar"
-            style={{ backgroundColor: palette.surfaceContainerHigh, borderColor: palette.outline }}>
-            <span className="theme-desktop-mark" style={{ color: palette.accentYellow }}>◈</span>
-            <span>ARCH · HYPRLAND / VISUALIZAÇÃO</span>
-            <span className="theme-desktop-bar-right">THEME / {themeName}</span>
-          </div>
-
-          <div className="theme-desktop-content">
-            <nav className="theme-desktop-side"
-              aria-label="Navegação do desktop simulado"
-              style={{ backgroundColor: palette.surfaceContainer, borderColor: palette.outline }}>
-              {([
-                ["inicio", "Visão geral"],
-                ["paleta", "Paleta"],
-                ["sobre", "Sobre"],
-              ] as const).map(([id, label]) => (
-                <button type="button" key={id} aria-pressed={panel === id}
-                  onClick={() => setPanel(id)}
-                  style={panel === id ? { backgroundColor: palette.accentPrimary, color: palette.bg } : undefined}>
-                  {label}
-                </button>
-              ))}
-            </nav>
-            <div className="theme-desktop-window" role="group"
-              aria-label={"Janela de prévia: " + (panel === "inicio" ? "Visão geral" : panel === "paleta" ? "Paleta" : "Sobre")}
-              style={{ backgroundColor: palette.surface, borderColor: palette.outline }}>
-              <div className="theme-desktop-window-title"
-                style={{ borderColor: palette.outline }}>
-                <span className="theme-desktop-window-dot" style={{ backgroundColor: palette.accentRed }} />
-                <span>{panel === "inicio" ? "VISÃO GERAL" : panel === "paleta" ? "CORES DO TEMA" : "SOBRE A PRÉVIA"}</span>
-              </div>
-              {panel === "inicio" && (
-                <div className="theme-desktop-overview">
-                  <div className="theme-desktop-hero"
-                    style={{ background: palette.surfaceContainer, borderColor: palette.outline }}>
-                    <span style={{ color: palette.accentYellow }}>THEME STUDIO / PREVIEW</span>
-                    <strong>{themeName}</strong>
-                    <p style={{ color: palette.textVariant }}>Uma simulação de desktop com estrutura de barra, painéis e dock.</p>
-                  </div>
-                  <div className="theme-desktop-tiles" aria-hidden="true">
-                    {[palette.accentPrimary, palette.accentRed, palette.accentYellow].map((color, index) =>
-                      <div key={index} style={{
-                        background: palette.surfaceContainer,
-                        border: "1px solid " + palette.outline,
-                      }}>
-                        <span style={{ backgroundColor: color }} />
-                        <i style={{ backgroundColor: palette.textVariant }} />
-                      </div>)}
-                  </div>
-                </div>
-              )}
-              {panel === "paleta" && (
-                <div className="theme-desktop-swatch-grid">
-                  {swatches.map(([label, color]) =>
-                    <div key={label}>
-                      <span style={{ backgroundColor: color }} />
-                      <strong>{label}</strong><code>{color}</code>
-                    </div>)}
-                </div>
-              )}
-              {panel === "sobre" && (
-                <div className="theme-desktop-about">
-                  <strong>Uma base para o futuro editor</strong>
-                  <p>Nesta prévia há quatro organizações locais independentes, com imagens e posições no IndexedDB. Desfazer e refazer movimentos funciona durante a sessão. Wallpapers pessoais, layouts vinculados a wallpaper, mais widgets e agrupamentos ainda não estão implementados.</p>
-                  <p>Trocar as abas da prévia não modifica nem salva o seu tema.</p>
-                </div>
-              )}
-            </div>
-          </div>
+          <RealDesktopPreview palette={palette} themeName={themeName} />
           <div className="theme-desktop-elements-layer" ref={areaRef}
             aria-label="Elementos posicionáveis do desktop simulado">
             {clockVisible && (
@@ -735,17 +660,10 @@ export function SimulatedDesktop({ palette, themeName }: {
               </DesktopMovable>
             ))}
           </div>
-          <div className="theme-desktop-dock" style={{
-            backgroundColor: palette.surfaceContainerHigh,
-            borderColor: palette.outline,
-          }} aria-hidden="true">
-            {[palette.accentPrimary,palette.accentRed,palette.accentYellow].map((color,i) =>
-              <span key={i} style={{ backgroundColor: color }} />)}
-          </div>
         </div>
       </div>
       <p className="theme-desktop-footnote">
-        Relógio com horário local real; até quatro layouts locais com imagens e posições no IndexedDB. Sem upload, dados fictícios de hardware ou execução de QML.
+        Changli usa o wallpaper verdadeiro do repositório dotfiles-Arch e a paleta oficial do Hyprland-Themes. Barra e dock são uma reprodução HTML/CSS, não o desktop conectado. Versões, cards e relógio ficam apenas no seu navegador.{" "} <a href={CHANGLI_THEME_SOURCE_URL} target="_blank" rel="noopener noreferrer">Ver configuração Changli no GitHub</a>.
       </p>
     </section>
   );
