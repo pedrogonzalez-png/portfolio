@@ -471,3 +471,56 @@
   .projects-area .abismo-live-back,
   .projects-area .abismo-live-back span { transition: none; }
 }
+
+
+/* Site 3D: reuse the exact cinematic opening/return motion from Abismo.
+   The original React app is isolated in its iframe, including its video CSS. */
+.projects-area .spine-stage.project-carousel:is(.is-site3d-playing, .is-site3d-closing) {
+  height: clamp(585px, 68vw, 865px);
+}
+.projects-area .spine-stage.project-carousel:is(.is-site3d-playing, .is-site3d-closing) .spine-world {
+  opacity: .2;
+}
+.spine-stage.project-carousel:is(.is-site3d-playing, .is-site3d-closing) .arc-carousel {
+  transform-style: flat;
+}
+.projects-area .spine-stage.project-carousel.is-site3d-playing .arc-carousel .cinematic-panel {
+  visibility: visible;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 480ms ease, transform 720ms cubic-bezier(.22, 1, .36, 1);
+}
+.projects-area .spine-stage.project-carousel.is-site3d-closing .arc-carousel .cinematic-panel {
+  pointer-events: none;
+  animation: abismo-neighbors-return 620ms ease-out both;
+}
+.projects-area .spine-stage.project-carousel.is-site3d-playing .site3d-live-card {
+  animation: abismo-card-unfold 820ms cubic-bezier(.22, 1, .36, 1) both;
+  transform-origin: center;
+  will-change: transform, opacity;
+}
+.projects-area .spine-stage.project-carousel.is-site3d-closing .site3d-live-card {
+  animation: abismo-card-retreat 660ms cubic-bezier(.4, 0, .75, 1) both;
+  transform-origin: center;
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+.projects-area .site3d-live-card .abismo-live-viewport { background: #0b0c10; }
+.projects-area .site3d-live-card .abismo-live-brand h3 { letter-spacing: .06em; }
+@media (max-width: 800px) {
+  .projects-area .spine-stage.project-carousel:is(.is-site3d-playing, .is-site3d-closing) {
+    height: clamp(425px, 79vw, 675px);
+  }
+}
+@media (max-width: 600px) {
+  .projects-area .spine-stage.project-carousel:is(.is-site3d-playing, .is-site3d-closing) {
+    height: clamp(320px, 80vw, 510px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .projects-area .spine-stage.project-carousel.is-site3d-playing .site3d-live-card,
+  .projects-area .spine-stage.project-carousel.is-site3d-closing .site3d-live-card,
+  .projects-area .spine-stage.project-carousel.is-site3d-closing .arc-carousel .cinematic-panel {
+    animation: none;
+  }
+}
