@@ -17,14 +17,14 @@ function hash(n: number): number {
   return value - Math.floor(value);
 }
 
-export type FragmentCell = {
+type FragmentCell = {
   x: number;
   y: number;
   delayMs: number;
   durationMs: number;
 };
 
-export function disintegrationCells(): FragmentCell[] {
+function disintegrationCells(): FragmentCell[] {
   return Array.from({ length: COLUMNS * ROWS }, (_, index) => {
     const x = index % COLUMNS;
     const y = Math.floor(index / COLUMNS);
@@ -41,7 +41,7 @@ export function disintegrationCells(): FragmentCell[] {
   });
 }
 
-export type FloatingShard = {
+type FloatingShard = {
   x: number;
   y: number;
   delayMs: number;
@@ -52,7 +52,7 @@ export type FloatingShard = {
   shade: number;
 };
 
-export function disintegrationShards(): FloatingShard[] {
+function disintegrationShards(): FloatingShard[] {
   return Array.from({ length: 260 }, (_, i) => {
     // Deliberately distribute pieces over the entire scene, not on a
     // narrow vertical curtain or along a single leading line.
