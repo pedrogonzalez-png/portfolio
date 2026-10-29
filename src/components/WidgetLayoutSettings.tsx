@@ -1,21 +1,11 @@
 import { useState } from "react";
 import type { ChangeEvent } from "react";
 import {
-  sanitizeQuickshellProfiles, validatePublishedLayouts,
-  type SanitizedDesktopLayouts,
+  sanitizeQuickshellProfiles, type SanitizedDesktopLayouts,
 } from "../services/quickshellLayoutImport";
-
-export const WIDGET_LAYOUT_STORAGE_KEY = "portfolio.hyprland.sanitized.layout.v1";
-export const WIDGET_LAYOUT_CHANGED = "portfolio-hyprland-layout-changed";
-
-export function readLocalWidgetLayouts(): SanitizedDesktopLayouts | null {
-  try {
-    const value = window.localStorage.getItem(WIDGET_LAYOUT_STORAGE_KEY);
-    return value ? validatePublishedLayouts(JSON.parse(value)) : null;
-  } catch {
-    return null;
-  }
-}
+import {
+  WIDGET_LAYOUT_STORAGE_KEY, WIDGET_LAYOUT_CHANGED, readLocalWidgetLayouts,
+} from "../services/widgetLayoutLocal";
 
 /** Settings-only: never transmits the user's raw Quickshell JSON anywhere. */
 export function WidgetLayoutSettings() {
