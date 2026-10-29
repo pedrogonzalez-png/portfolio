@@ -129,7 +129,7 @@ export function validatePublishedLayouts(value: unknown): SanitizedDesktopLayout
     const label = record.label;
     if (label !== undefined &&
         (typeof label !== "string" || label.length > 40 ||
-         !/^[A-Za-zÀ-ÿ0-9 \-]+$/.test(label))) {
+         !/^[A-Za-zÀ-ÿ0-9 -]+$/.test(label))) {
       throw new Error("Rótulo da variante inválido.");
     }
     const widgets: WidgetPlacement[] = [];
