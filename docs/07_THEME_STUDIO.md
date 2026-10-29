@@ -303,3 +303,17 @@ A reprodução usa **11 regiões absolutas** seguindo a captura (notas, perfil, 
 **Fidelidade visual:** a estrutura, as posições proporcionais e os vidros foram reconstruídos a partir da captura, mas o resultado **não pode ser pixel-perfect até o usuário fornecer as imagens e o vídeo** e até a validação real em 3440×1440. Para outras resoluções, os widgets escalam com a largura do canvas e o modo 16:9 ainda está disponível. Os layouts QML anteriores permanecem no dataset histórico intacto; a seleção de variantes Changli ficou oculta porque este novo layout é **a composição de referência única** decidida pelo proprietário. A criação/edição de temas por visitantes continua desabilitada.
 
 Arquivos de implementação: `src/components/desktop/ChangliDesktop.tsx`, `src/styles/changli-desktop.css`, `src/data/changliDesktop.ts`, `src/components/HyprlandShowcase.tsx`, `src/styles/preset-theme-gallery.css`. Testes: `src/__tests__/changli-desktop-reference.test.tsx` e atualização dos testes de galeria. QA visual em navegador Arch pendente.
+
+## Correção do efeito de troca — desintegração de verdade (29/10/2026)
+
+A animação anterior `preset-wipe` usava `clip-path: inset(...)` e apagava o desktop inteiro como uma **cortina reta**, mesmo com 90 partículas decorativas. Isso **não** corresponde ao efeito solicitado.
+
+A troca agora usa `ThemeDisintegration.tsx` e `theme-disintegration.css`:
+- O desktop **novo** está inteiramente montado por trás desde o início.
+- O desktop **antigo** é preservado numa camada HTML com máscara SVG dinâmica e **720 células independentes**, cada uma desaparecendo com atraso e duração distintos. A ordenação favorece o lado direito primeiro, mas ruído e variações por linha abrem **buracos espalhados**, sem uma borda vertical contínua.
+- **260 fragmentos coloridos** surgem aproximadamente nas mesmas regiões e se desprendem, giram, dispersam-se e somem. São utilizadas quatro tonalidades derivadas das paletas envolvidas, incluindo luz quente; não é um efeito de partículas uniformes.
+- Transição completa em cerca de 1,85 s, com limpeza via `animationend`. A máscara usa `mask-image: url(#...)`, suportada pelos navegadores modernos. Não exige screenshot de DOM, downloads externos ou novos pacotes.
+- Para `prefers-reduced-motion`, a troca é imediata; não renderizamos as camadas animadas.
+- A galeria permanece readonly e os wallpapers locais opcionais de Changli continuam sem alterações. Não substituir por `clip-path: inset(...)` novamente.
+
+**Validação:** testes verificam 720 máscaras, variação dos tempos por linha, preferência temporal da direita para a esquerda, 260 peças em quatro tonalidades, remoção do DOM ao terminar, e ausência do `preset-wipe` antigo. A inspeção visual com GPU no navegador real ainda deve ser feita antes de considerar o efeito artisticamente finalizado.
