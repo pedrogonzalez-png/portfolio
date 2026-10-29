@@ -82,13 +82,13 @@
   background:var(--color-accent-primary);
   box-shadow:0 0 15px var(--color-accent-primary);
 }
-.preset-studio-heading h2{
+.preset-studio-heading h1{
   margin:.85rem 0 1rem;
   font:700 clamp(2.55rem,5.35vw,5.35rem)/1.055 var(--font-display);
   letter-spacing:-.068em;
   text-wrap:balance;
 }
-.preset-studio-heading h2 em{
+.preset-studio-heading h1 em{
   font-style:normal;
   background:linear-gradient(115deg,var(--color-accent-primary),var(--color-accent-yellow));
   -webkit-background-clip:text;
@@ -177,7 +177,7 @@
 @media(max-width:730px){
   .hyprland-dedicated-page{padding:1.15rem 1rem 3rem}
   .preset-studio-heading{gap:1.75rem;margin-bottom:2rem}
-  .preset-studio-heading h2{font-size:clamp(2.4rem,8.1vw,3.6rem)}
+  .preset-studio-heading h1{font-size:clamp(2.4rem,8.1vw,3.6rem)}
   .preset-studio-topline{gap:.5rem}
   .preset-studio-overline{font-size:.56rem}
   .preset-studio-exit{min-height:39px;padding:.55rem .75rem;font-size:.7rem}
