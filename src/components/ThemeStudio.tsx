@@ -3,6 +3,7 @@ import { useTheme } from "../stores/themeContext";
 import type { Theme, ThemePalette } from "../stores/themes";
 import { ThemeContrastAudit } from "./ThemeContrastAudit";
 import { SimulatedDesktop } from "./SimulatedDesktop";
+import { HyprlandShowcase } from "./HyprlandShowcase";
 import { suggestReadableText } from "../services/themeContrast";
 import "../styles/theme-studio.css";
 
@@ -32,6 +33,7 @@ export function ThemeStudio({ onClose }: { onClose: () => void }) {
   const [notice, setNotice] = useState("");
   const [error, setError] = useState("");
   const [desktopOpen, setDesktopOpen] = useState(false);
+  const [studioTab, setStudioTab] = useState<"hyprland" | "settings">("hyprland");
   const dialogRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
 
@@ -159,6 +161,18 @@ export function ThemeStudio({ onClose }: { onClose: () => void }) {
             onClick={onClose} aria-label="Fechar Theme Studio">✕</button>
         </header>
 
+        <div className="theme-studio-tabs" role="tablist" aria-label="Seções do Theme Studio">
+          <button type="button" role="tab" aria-selected={studioTab === "hyprland"}
+            onClick={() => setStudioTab("hyprland")}>Hyprland</button>
+          <button type="button" role="tab" aria-selected={studioTab === "settings"}
+            onClick={() => setStudioTab("settings")}>Configurações</button>
+        </div>
+        {studioTab === "hyprland" ? (
+          <div role="tabpanel" aria-label="Hyprland">
+            <HyprlandShowcase themes={availableThemes} selectedId={previewId} onChoose={choose}/>
+          </div>
+        ) : (
+          <div role="tabpanel" aria-label="Configurações">
         <h3 className="theme-studio-section-title">Temas oficiais <span>originais protegidos</span></h3>
         <div className="theme-studio-gallery" role="group" aria-label="Cinco temas oficiais">
           {availableThemes.filter((item) => item.kind === "official").map(renderOption)}
@@ -285,6 +299,8 @@ export function ThemeStudio({ onClose }: { onClose: () => void }) {
             </button>
           </div>
         </footer>
+          </div>
+        )}
       </div>
     </div>
   );
