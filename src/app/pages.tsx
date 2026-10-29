@@ -61,7 +61,7 @@ function HomePage() {
             openStudio();
             window.requestAnimationFrame(() => {
               document.getElementById("theme-studio")?.scrollIntoView({
-                behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
+                behavior: window.matchMedia?.("(prefers-reduced-motion: reduce)").matches
                   ? "auto" : "smooth", block: "start",
               });
             });
