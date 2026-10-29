@@ -59,14 +59,6 @@ function ProfileDesktop({ view, active, accent }: { view:View; active:boolean; a
   );
 }
 
-const DUST = Array.from({length:90},(_,i)=>({
-  top: ((i*73+29)%94)+"%",
-  left: (98-(i%15)*6.6)+"%",
-  delay: ((i%15)*50+((i*13)%67))+"ms",
-  size: (2+(i%5)*1.15)+"px",
-  drift: ((i*19%75)-39)+"px",
-}));
-
 export function HyprlandShowcase({
   themes = OFFICIAL_THEMES, selectedId = "changli", onChoose, accentColor = null,
 }:{
