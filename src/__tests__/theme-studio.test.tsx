@@ -53,7 +53,7 @@ describe("preset-only theme experience",()=>{
   it("presents one clear exhibition headline and a compact, accent-only control",()=>{
     const {container}=render(<ThemeProvider><ThemeStudio onClose={()=>{}}/></ThemeProvider>);
     expect(screen.getByRole("heading",{name:/Seu desktop, outros universos/})).toBeInTheDocument();
-    expect(container.querySelectorAll(".preset-studio-heading h2")).toHaveLength(1);
+    expect(container.querySelectorAll(".preset-studio-heading h1")).toHaveLength(1);
     expect(container.querySelectorAll(".preset-gallery-intro h3")).toHaveLength(0);
     expect(container.querySelector(".preset-studio-topline .preset-studio-exit")).not.toBeNull();
     expect(container.querySelector(".preset-color-only .preset-color-control")).not.toBeNull();
