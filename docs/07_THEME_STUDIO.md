@@ -216,3 +216,20 @@ Foi acrescentada a seção **Versões do layout** dentro do desktop simulado. Ca
 Os dados existentes usam a **mesma database, store e versão de schema**, com chaves novas prefixedas por `versions:` / `version:`. O layout principal `default`, os três slots adicionais e seus Blobs permanecem inalterados. A funcionalidade exige IndexedDB local; limpar os dados do navegador apaga essas versões e não equivale a backup portátil. O formato `.ptsbackup` existente continua útil para arquivo externo, e não mudou.
 
 Evidências: `src/__tests__/desktop-versions.test.ts` (isolamento dos slots, transações atômicas, limite/corrupção, restauração), `src/__tests__/desktop-versions-ui.test.tsx` (confirmação, bloqueio de mudanças não salvas). **Ainda ausentes:** perfis por wallpaper, snapshots automáticos periódicos, várias resoluções independentes, biblioteca compartilhada de mídia, MP4 e integração Linux real. Não declarar M5/M6 concluídos.
+
+
+## M6 — Prévia visual Changli conectada aos arquivos públicos do autor (29/10/2026)
+
+**Ajuste solicitado a partir de uma captura da prévia anterior:** a janela genérica "Visão geral / Paleta / Sobre", os cartões abstratos e as três bolinhas de dock foram **removidos** do desktop ampliado. Esse mockup não correspondia ao Arch personalizado do proprietário.
+
+**Fontes reais e verificadas no GitHub:**
+- `pedrogonzalez-png/dotfiles-Arch/wallpapers/changli.png` — imagem original do wallpaper estático, usada como fundo da simulação. Arquivo é referenciado por URL pública, **não copiado** ao repositório do portfólio.
+- `pedrogonzalez-png/dotfiles-Arch/wallpapers/changli.mp4` — wallpaper animado original, com cerca de 36 MB. **Opt-in**: nenhum `<video>` é montado nem baixado até o visitante clicar em **Ativar wallpaper animado**. Falha de vídeo volta à imagem.
+- `pedrogonzalez-png/Hyprland-Themes/end4-pC/changli.json` — fonte dos tons oficiais do Changli já incorporados ao `src/data/official-theme-schemes.json`.
+- `pedrogonzalez-png/dotfiles-Arch/quickshell/ii/modules/ii/bar/BarContent.qml` e `.../dock/Dock.qml` — referência estrutural da barra e dock, representados por **HTML/CSS, não QML executado**.
+
+Implementação em `src/components/desktop/RealDesktopPreview.tsx` e `src/styles/real-desktop-preview.css`, montada em `SimulatedDesktop.tsx`. A imagem usa cover e respeita ultrawide/16:9; a barra superior usa relógio local real, os indicadores de workspace são apenas ilustrativos, e o dock não finge abrir apps. Os **cards importados, relógio movível, layouts, versões e backup** continuam ativos na camada do editor.
+
+**Limitações transparentes:** isto é uma **prévia visual** do Changli usando mídia e cores originais do autor, e não um espelhamento em tempo real do Arch/Hyprland/Quickshell, nem reprodução pixel-perfect do QML em produção. Outro tema selecionado **não recebe** indevidamente o wallpaper Changli; fica com a própria paleta até haver mídia aprovada para ele. A origem pública das imagens é informada na interface. Se o GitHub estiver indisponível, mostra mensagem e fallback — não afirma que carregou o wallpaper.
+
+Evidências: `src/__tests__/real-desktop-preview.test.tsx` verifica URL real, carregamento opcional de vídeo, fallback em erros e isolamento de outros temas. `src/__tests__/theme-contrast-desktop.test.tsx` verifica ausência dos painéis genéricos antigos. **QA visual no Arch ainda pendente**. Nenhuma configuração real foi alterada nos repositórios de origem.
