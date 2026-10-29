@@ -7,7 +7,7 @@ import {
   validatePublishedLayouts, WIDGET_KINDS, type WidgetKind,
   type SanitizedDesktopLayouts, type WidgetPlacement,
 } from "../services/quickshellLayoutImport";
-import { readLocalWidgetLayouts, WIDGET_LAYOUT_CHANGED } from "./WidgetLayoutSettings";
+import { readLocalWidgetLayouts, WIDGET_LAYOUT_CHANGED } from "../services/widgetLayoutLocal";
 import "../styles/hyprland-showcase.css";
 
 const WIDGET_NAMES: Record<WidgetKind, string> = {
