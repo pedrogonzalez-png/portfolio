@@ -36,7 +36,27 @@ describe("Abismo embedded inside its own carousel card", () => {
     await waitFor(() => expect(screen.getByTitle("Abismo — jogo Phaser integrado ao card")).toBeInTheDocument());
   });
 
-  it("closes and unmounts its iframe when the card is exited", async () => {
+  it("offers fullscreen for the verified game without navigating away from the card", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({
+      ok: true,
+      headers: { get: () => "application/json" },
+      json: async () => ({ build: "abismo", base: "/abismo/" }),
+    }));
+    const requestFullscreen = vi.fn().mockResolvedValue(undefined);
+    const original = HTMLDivElement.prototype.requestFullscreen;
+    HTMLDivElement.prototype.requestFullscreen = requestFullscreen;
+    try {
+      const { container } = render(<AbismoGameCard onClose={vi.fn()} />);
+      await screen.findByTitle("Abismo — jogo Phaser integrado ao card");
+      fireEvent.click(screen.getByRole("button", { name: "Abrir Abismo em tela cheia" }));
+      expect(requestFullscreen).toHaveBeenCalledOnce();
+      expect(container.querySelector(".abismo-live-viewport")).toBeInTheDocument();
+    } finally {
+      HTMLDivElement.prototype.requestFullscreen = original;
+    }
+  });
+
+    it("closes and unmounts its iframe when the card is exited", async () => {
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue({
       ok:true,headers:{get:()=>"application/json"},
       json:async()=>({build:"abismo",base:"/abismo/"})
