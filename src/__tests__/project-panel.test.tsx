@@ -49,7 +49,7 @@ describe("three-panel carousel", () => {
     render(<ProjectPanel onOpenThemeStudio={openStudio} />);
     fireEvent.click(screen.getByRole("button", { name: /Trazer Hyprland-Themes para o centro/ }));
     expect(openStudio).not.toHaveBeenCalled();
-    const card = screen.getByRole("button", { name: "Abrir Theme Studio de Hyprland-Themes" });
+    const card = screen.getByRole("button", { name: "Abrir página de Hyprland-Themes" });
     expect(card).toHaveAttribute("data-position", "center");
     fireEvent.click(card);
     expect(openStudio).toHaveBeenCalledTimes(1);
