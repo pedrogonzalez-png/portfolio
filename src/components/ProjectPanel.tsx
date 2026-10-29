@@ -199,7 +199,7 @@ export function ProjectPanel({ onOpenThemeStudio }: { onOpenThemeStudio?: () => 
                 }}
                 aria-label={index === activeIndex
                   ? (project.id === "hyprland-themes" && onOpenThemeStudio
-                      ? "Abrir Theme Studio de " + project.title
+                      ? "Abrir página de " + project.title
                       : "Abrir detalhes de " + project.title)
                   : "Trazer " + project.title + " para o centro"}
               >
