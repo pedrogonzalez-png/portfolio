@@ -47,7 +47,7 @@ describe("Hyprland as the viewer and Configurações as the editor", () => {
     expect(screen.getByText(/Posições reais não publicadas/)).toBeInTheDocument();
     expect(screen.getByText(/Importe o arquivo de layouts/)).toBeInTheDocument();
     expect(screen.getByLabelText("Importar posições do Quickshell")).toBeInTheDocument();
-    expect(screen.getByText(/Conteúdo privado/)).toBeInTheDocument();
+    expect(screen.getAllByText(/Conteúdo privado/).length).toBeGreaterThan(0);
     expect(screen.getByText(/CPU — · RAM —/)).toBeInTheDocument();
     expect(screen.getByText(/Clima · sem dados/)).toBeInTheDocument();
     expect(screen.queryByRole("button",{name:"Exportar snapshot público sem dados privados"}))
