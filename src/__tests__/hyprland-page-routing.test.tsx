@@ -42,7 +42,7 @@ describe("Hyprland-Themes on its own page",()=>{
     expect(container.querySelector("main.hyprland-dedicated-page")).not.toBeNull();
     // The home page is the outgoing DOM, not a copy of a wallpaper.
     expect(container.querySelector(".hyprland-route-home.is-leaving")).toBe(original);
-    expect(container.querySelector(".preset-fractured-desktop .project-carousel")).not.toBeNull();
+    expect(container.querySelector(".preset-fractured-desktop .site-main")).not.toBeNull();
     expect(container.querySelectorAll(".hyprland-route-home .preset-fracture-cell")).toHaveLength(720);
     expect(container.querySelectorAll(".hyprland-route-home .preset-fragment")).toHaveLength(260);
     expect(container.querySelector(".hyprland-dedicated-page .preset-fracture-cell")).toBeNull();
