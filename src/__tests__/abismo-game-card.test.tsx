@@ -70,9 +70,11 @@ describe("Abismo embedded inside its own carousel card", () => {
 
   it("notifies parent when the return animation finishes", () => {
     const complete = vi.fn();
-    render(<AbismoGameCard onClose={vi.fn()} onExitComplete={complete} />);
+    render(<AbismoGameCard onClose={vi.fn()} closing onExitComplete={complete} />);
     const card = screen.getByRole("region", { name: "Abismo — jogo integrado" });
-    fireEvent.animationEnd(card, { animationName: "abismo-card-unfold" });
+    fireEvent.animationEnd(screen.getByRole("button", { name: "Voltar aos projetos" }), {
+      animationName: "abismo-card-unfold",
+    });
     expect(complete).not.toHaveBeenCalled();
     fireEvent.animationEnd(card, { animationName: "abismo-card-retreat" });
     expect(complete).toHaveBeenCalledOnce();
