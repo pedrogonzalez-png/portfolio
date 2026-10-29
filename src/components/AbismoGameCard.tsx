@@ -7,7 +7,13 @@ type LoadState = "checking" | "available" | "missing" | "failed";
  * A ready.json file is emitted ONLY after npm run sync:abismo succeeds.
  * This avoids displaying the portfolio's SPA fallback as if it were a game.
  */
-export function AbismoGameCard({ onClose }: { onClose: () => void }) {
+export function AbismoGameCard({
+  onClose,
+  onExitComplete,
+}: {
+  onClose: () => void;
+  onExitComplete?: () => void;
+}) {
   const [state, setState] = useState<LoadState>("checking");
   const [reload, setReload] = useState(0);
   const [check, setCheck] = useState(0);
@@ -59,8 +65,24 @@ export function AbismoGameCard({ onClose }: { onClose: () => void }) {
   };
 
   return (
-    <section className="abismo-live-card" aria-label="Abismo — jogo integrado">
+    <section
+      className="abismo-live-card"
+      aria-label="Abismo — jogo integrado"
+      onAnimationEnd={(event) => {
+        if (event.target === event.currentTarget && event.animationName === "abismo-card-retreat") {
+          onExitComplete?.();
+        }
+      }}
+    >
       <header className="abismo-live-header">
+        <button
+          type="button"
+          className="abismo-live-back"
+          onClick={onClose}
+          aria-label="Voltar aos projetos"
+        >
+          <span aria-hidden="true">←</span> Voltar
+        </button>
         <div className="abismo-live-brand">
           <span className="abismo-live-kicker">JOGO ORIGINAL / PHASER</span>
           <h3>ABISMO <span>· EXPERIÊNCIA INTERATIVA</span></h3>
@@ -72,9 +94,6 @@ export function AbismoGameCard({ onClose }: { onClose: () => void }) {
               Reiniciar jogo
             </button>
           )}
-          <button type="button" className="abismo-live-close" onClick={onClose}>
-            Fechar jogo <span aria-hidden="true">×</span>
-          </button>
           {state === "available" && (
             <button
               type="button"
