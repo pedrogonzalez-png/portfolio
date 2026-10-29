@@ -57,6 +57,9 @@ export function RealDesktopPreview({
     setVideoError(false);
     setWallpaperError(false);
   }, [slug]);
+  useEffect(() => {
+    if (!animationEnabled) setVideoEnabled(false);
+  }, [animationEnabled]);
 
   const variables = {
     "--real-desktop-surface": palette.surface,
