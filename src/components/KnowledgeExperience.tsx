@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import type { KeyboardEvent as ReactKeyboardEvent } from "react";
 import { KNOWLEDGE_PROJECTS, type KnowledgeNode, type KnowledgeProjectId } from "../data/knowledge";
 import { PLACEHOLDER_PROJECTS } from "./PlaceholderCatalog";
@@ -41,6 +41,9 @@ export default function KnowledgeExperience({
   activeProject, visibleNodes, selection, onSelect, onProjectChange, onContextLost,
 }: Props) {
   const projects = KNOWLEDGE_PROJECTS.map(({ id }) => id);
+  const stageRef = useRef<HTMLDivElement>(null);
+  const wheelGesture = useRef({ lastAt: 0, delta: 0, consumed: false });
+
   const currentIndex = projects.indexOf(activeProject);
   const previous = projects[(currentIndex + projects.length - 1) % projects.length];
   const next = projects[(currentIndex + 1) % projects.length];
@@ -57,6 +60,56 @@ export default function KnowledgeExperience({
     onSelect({ kind: "project", id });
   };
 
+  // Native, non-passive wheel handler: React's delegated wheel listeners
+  // can be passive, making preventDefault ineffective in Chromium.
+  // Only intercept when most of the scene is visible AND another project
+  // exists in the requested direction. At the endpoints normal page scroll
+  // continues, so the portfolio never traps the user in this gallery.
+  useEffect(() => {
+    const stage = stageRef.current;
+    if (!stage) return;
+
+    const handleWheel = (event: WheelEvent) => {
+      if (event.ctrlKey || event.metaKey || event.altKey || event.shiftKey) return;
+      if (!event.cancelable || Math.abs(event.deltaX) > Math.abs(event.deltaY)) return;
+      if (event.deltaY === 0) return;
+
+      const rect = stage.getBoundingClientRect();
+      const heightVisible = Math.min(rect.bottom, window.innerHeight)
+        - Math.max(rect.top, 0);
+      if (heightVisible < Math.min(rect.height * 0.58, window.innerHeight * 0.55)) return;
+
+      const direction = event.deltaY > 0 ? 1 : -1;
+      const index = projects.indexOf(activeProject);
+      const target = index + direction;
+      if (index < 0 || target < 0 || target >= projects.length) return;
+
+      // Scrolling within the gallery changes a project instead of moving
+      // the document; line/page wheel modes also work on Linux mice.
+      event.preventDefault();
+      const now = performance.now();
+      const gesture = wheelGesture.current;
+      if (now - gesture.lastAt > 190) {
+        gesture.delta = 0;
+        gesture.consumed = false;
+      }
+      gesture.lastAt = now;
+      if (gesture.consumed) return;
+
+      const unit = event.deltaMode === 1 ? 16
+        : event.deltaMode === 2 ? window.innerHeight : 1;
+      gesture.delta += Math.min(160, Math.abs(event.deltaY * unit));
+      if (gesture.delta < 38) return;
+
+      gesture.consumed = true;
+      gesture.delta = 0;
+      navigate(projects[target]);
+    };
+
+    stage.addEventListener("wheel", handleWheel, { passive: false });
+    return () => stage.removeEventListener("wheel", handleWheel);
+  }, [activeProject, onProjectChange, onSelect]);
+
   const onCarouselKeys = (event: ReactKeyboardEvent<HTMLDivElement>) => {
     if (event.target !== event.currentTarget) return;
     if (event.key === "ArrowLeft") {
@@ -72,6 +125,7 @@ export default function KnowledgeExperience({
   return (
     <div
       id="knowledge-spatial-stage"
+      ref={stageRef}
       className="kspace-stage"
       role="region"
       aria-label="Ambiente tridimensional de habilidades"
@@ -165,7 +219,7 @@ export default function KnowledgeExperience({
 
       <div className="kspace-footer">
         <span className="kspace-progress">{META[activeProject].index} <span>/ 03</span></span>
-        <span className="kspace-instruction">Selecione um vidro para explorar as conexões</span>
+        <span className="kspace-instruction">Role para alternar projetos · clique para explorar</span>
         <div className="kspace-arrows" role="group" aria-label="Navegar entre projetos">
           <button type="button" onClick={() => navigate(previous)} aria-label="Projeto anterior">←</button>
           <button type="button" onClick={() => navigate(next)} aria-label="Próximo projeto">→</button>
