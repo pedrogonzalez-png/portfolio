@@ -20,7 +20,7 @@ export function validVisitorWidgets(value: unknown): value is VisitorWidget[] {
         typeof p.kind !== "string" || !known.has(p.kind) ||
         ![p.x,p.y,p.width,p.height].every(finite) ||
         p.x! < -10 || p.x! > 110 || p.y! < -10 || p.y! > 110 ||
-        p.width! < 4 || p.width! > 40 || p.height! < 6 || p.height! > 55) return false;
+        p.width! < 4 || p.width! > 40 || p.height! < 6 || p.height! > 100) return false;
     ids.add(p.id);
   }
   return true;
@@ -54,7 +54,7 @@ export function fromSourceWidgets(widgets: WidgetPlacement[]|undefined): Visitor
   return (widgets??[]).slice(0,MAX_VISITOR_WIDGETS).map((item,i)=>({
     ...item,id:"widget-imported-"+i,
     x:clamp(item.x,-10,110),y:clamp(item.y,-10,110),
-    width:clamp(item.width,4,40),height:clamp(item.height,6,55),
+    width:clamp(item.width,4,40),height:clamp(item.height,6,100),
   }));
 }
 export function moveVisitorWidget(widget: VisitorWidget,x: number,y: number): VisitorWidget {
@@ -62,7 +62,7 @@ export function moveVisitorWidget(widget: VisitorWidget,x: number,y: number): Vi
 }
 export function resizeVisitorWidget(widget:VisitorWidget,delta:number):VisitorWidget {
   const width=clamp(widget.width+delta,6,38);
-  const height=clamp(widget.height+delta*0.66,7,45);
+  const height=clamp(widget.height+delta*0.66,7,95);
   return moveVisitorWidget({...widget,width,height},widget.x,widget.y);
 }
 
