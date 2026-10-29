@@ -184,3 +184,11 @@ Criação só usa estado **já salvo**, com confirmação na UI para restaurar e
 O QML `WallpaperLayouts.qml` usa um JSON **local** por wallpaper (`wallpaper_widget_layouts.json`); nenhum sincronizador automático está autorizado. O viewer do portfólio aceita importação **local**, limitada a 1 MiB, extrai somente 21 IDs de widgets aprovados e campos numéricos `x,y,width,height,cardWidth,cardHeight` de até 100 perfis. Não preserva `path`, `text`, notas, tokens ou conteúdo pessoal. Os perfis higienizados podem ser guardados em `localStorage["portfolio.hyprland.sanitized.layout.v1"]` e exportados manualmente. Não há envio silencioso ao repositório.
 
 Para publicar posições para todos, o proprietário precisa revisar o arquivo gerado `widget-layouts-publico.json` e aprovar sua inclusão em `src/data/published-widget-layouts.json`. Essa versão começa com `profiles: []`, porque as posições pessoais atuais **não estão acessíveis no GitHub** e não devem ser inventadas. Coordenadas QML livres são aproximadas à proporção de 3440×1440 e o editor de quatro layouts IndexedDB permanece separado e não é modificado por essa importação.
+
+## Layouts sanitizados publicados — atualização de 29/10/2026
+
+O proprietário enviou `wallpaper_widget_layouts.json` real; extraímos **19 perfis / 268 widgets ativos** para `src/data/published-widget-layouts.json`, sem publicar o JSON bruto, paths locais, nomes de imagens ou conteúdos de widgets. A fonte de layouts foi encontrada em `~/.config/illogical-impulse/wallpaper_widget_layouts.json`, e não na pasta `quickshell/end4-pC` sugerida inicialmente.
+
+Cada perfil sanitizado é endereçado por `themeId + variantId` (incluindo categoria `outros` para cinco wallpapers não classificados), com `label` genérico. Os widgets têm posição relativa à resolução 3440×1440, dimensões de cards quando fornecidas, `z`, `sizeMode` e `vertical` quando registrados. Tamanhos QML não registrados são aproximados. Perfis independentes são selecionáveis na vitrine, e alterações de visitantes são armazenadas separadamente no localStorage por variante.
+
+**Privacidade:** apenas geometria e tipos. Não publicar o JSON original. O dono deve revisar o resultado e confirmar fidelidade visual antes de mesclar a branch na main; o snapshot está numa PR draft.
