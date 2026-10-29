@@ -36,7 +36,7 @@ jobs:
           grep -q '/site-3d/assets/' public/site-3d/index.html
           test "$(find public/site-3d/assets -name '*.webm' | wc -l)" -ge 10
           test "$(find public/site-3d/assets -name '*.png' | wc -l)" -ge 18
-          node -e 'const fs=require("node:fs");const x=JSON.parse(fs.readFileSync("public/site-3d/ready.json"));if(x.build!=="site-3d" || x.base!=="/site-3d/" || x.revision!=="40aca5535d0b2366d1b9899df3ca58a815fb3d81") process.exit(1)'
+          node -e 'const fs=require("node:fs");const x=JSON.parse(fs.readFileSync("public/site-3d/ready.json"));if(x.build!=="site-3d" || x.base!=="/site-3d/" || x.revision!=="79383df1b00b6f7b2eaf9d46ef5496563868cc79") process.exit(1)'
       - name: Build portfolio including Site 3D
         run: npm run build
       - name: Verify bundled project on deploy output
