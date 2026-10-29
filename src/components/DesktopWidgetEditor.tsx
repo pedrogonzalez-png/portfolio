@@ -170,6 +170,7 @@ export function DesktopWidgetEditor({
                 style={{
                   left:widget.x+"%",top:widget.y+"%",width:widget.width+"%",
                   height:widget.height+"%",
+                  zIndex: Math.max(0,Math.min(2500,(widget.z ?? 0) + 1000)),
                 }}>
                 {renderWidget(widget.kind)}
                 <div className="hypr-widget-actions" aria-label={"Ações do widget "+widgetNames[widget.kind]}>
