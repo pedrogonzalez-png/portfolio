@@ -45,6 +45,7 @@ describe("M4 official palettes", () => {
   });
   it("keeps preview isolated until visitor clicks Apply", () => {
     render(<ThemeProvider><Probe /><ThemeStudio onClose={() => {}} /></ThemeProvider>);
+    fireEvent.click(screen.getByRole("tab", { name: "Configurações" }));
     fireEvent.click(within(screen.getByRole("group", { name: "Cinco temas oficiais" }))
       .getByRole("button", { name: /Hiyuki/ }));
     expect(screen.getByTestId("active-theme")).toHaveTextContent("Changli");
