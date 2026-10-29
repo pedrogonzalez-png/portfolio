@@ -5,6 +5,7 @@ import { AdditiveBlending, BufferAttribute, BufferGeometry, CatmullRomCurve3, Co
 import type { Group, ShaderMaterial } from "three";
 import { useTheme } from "../stores/themeContext";
 import RibbonParticles from "./RibbonParticles";
+import WaterVeil from "./WaterVeil";
 import type { KnowledgeProjectId } from "../data/knowledge";
 
 export type KnowledgeSelection =
@@ -94,6 +95,7 @@ const lensFragment = [
   "  float fresnel = pow(1.0 - abs(dot(normalize(vViewNormal), normalize(vViewDirection))), 2.3);",
   "  vec2 bend = -p * (0.004 + rim * 0.010);",
   "  bend += vec2(sin(vUv.y * 11.0 + uTime * 0.15), cos(vUv.x * 9.0 - uTime * 0.11)) * 0.0006;",
+  "  bend += vec2(sin(vUv.y*19.0 + uTime*0.36), cos(vUv.x*17.0-uTime*0.31))*0.00028;",
   "  vec2 uv = clamp(gl_FragCoord.xy/uResolution + bend, vec2(0.002), vec2(0.998));",
   "  vec2 dispersion = normalize(p + vec2(0.0001)) * rim * (0.00045 + 0.00045*uFocus);",
   "  float r = texture2D(uBackdrop, clamp(uv+dispersion, vec2(0.002), vec2(0.998))).r;",
@@ -362,6 +364,7 @@ export default function KnowledgeWorld(props: KnowledgeWorldProps) {
     >
       <color attach="background" args={["#090b15"]} />
       <Backdrop />
+      <WaterVeil />
       <AmbientRings />
       <FlowingLight />
       <RibbonParticles />
