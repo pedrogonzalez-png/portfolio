@@ -73,7 +73,7 @@ describe("Hyprland as the viewer and Configurações as the editor", () => {
     const {container}=render(<ThemeProvider><ThemeStudio onClose={()=>{}}/></ThemeProvider>);
     expect(screen.getByRole("region",{name:"Hyprland — temas e widgets do autor"}))
       .toBeInTheDocument();
-    expect(screen.queryByLabelText("Importar posições do Quickshell")).not.toBeInTheDocument();
+    expect(screen.getByLabelText("Importar posições do Quickshell")).not.toBeVisible();
     fireEvent.click(screen.getByRole("tab",{name:"Configurações"}));
 
     const raw={
