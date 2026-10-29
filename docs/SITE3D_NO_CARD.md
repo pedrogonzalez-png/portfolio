@@ -35,7 +35,7 @@ Caso os dois projetos sejam publicados:
 npm run sync:abismo && npm run sync:site3d && npm run build
 ```
 
-O script clona uma revisão fixada (`40aca5535d0b2366d1b9899df3ca58a815fb3d81`)
+O script clona uma revisão fixada (`79383df1b00b6f7b2eaf9d46ef5496563868cc79`)
 em diretório temporário, instala as dependências usando `npm ci`, usa
 `vite build --base=/site-3d/` e copia `dist/` para `public/site-3d/`.
 O repositório original não é modificado. Os arquivos resultantes são ignorados
