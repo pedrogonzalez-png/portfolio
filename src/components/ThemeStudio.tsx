@@ -168,7 +168,8 @@ export function ThemeStudio({ onClose }: { onClose: () => void }) {
             onClick={() => setStudioTab("settings")}>Configurações</button>
         </div>
         <div role="tabpanel" aria-label="Hyprland" hidden={studioTab !== "hyprland"}>
-          <HyprlandShowcase themes={availableThemes} selectedId={previewId} onChoose={choose}/>
+          <HyprlandShowcase themes={availableThemes} selectedId={previewId} onChoose={choose}
+            active={studioTab === "hyprland"}/>
         </div>
         <div role="tabpanel" aria-label="Configurações" hidden={studioTab !== "settings"}>
         <h3 className="theme-studio-section-title">Temas oficiais <span>originais protegidos</span></h3>
