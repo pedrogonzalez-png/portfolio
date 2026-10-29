@@ -54,6 +54,21 @@ describe("Hyprland as the viewer and Configurações as the editor", () => {
       .not.toBeInTheDocument();
   });
 
+  it("keeps unsaved personal color edits when switching between the two tabs", () => {
+    render(<ThemeProvider><ThemeStudio onClose={()=>{}}/></ThemeProvider>);
+    fireEvent.click(screen.getByRole("tab",{name:"Configurações"}));
+    const options=within(screen.getByRole("group",{name:"Cinco temas oficiais"}));
+    fireEvent.click(options.getByRole("button",{name:/Changli/}));
+    fireEvent.click(screen.getByRole("button",{name:"Duplicar Changli"}));
+    const input=screen.getByRole("textbox",{name:"Nome do meu tema"});
+    fireEvent.change(input,{target:{value:"Meu layout experimental"}});
+    fireEvent.click(screen.getByRole("tab",{name:"Hyprland"}));
+    fireEvent.click(screen.getByRole("tab",{name:"Configurações"}));
+    expect(screen.getByRole("textbox",{name:"Nome do meu tema"}))
+      .toHaveValue("Meu layout experimental");
+    expect(screen.getByRole("button",{name:"Salvar alterações"})).toBeEnabled();
+  });
+
   it("limits animated wallpaper to the Hyprland viewer, not Settings", () => {
     render(<ThemeProvider><ThemeStudio onClose={()=>{}}/></ThemeProvider>);
     expect(screen.getByRole("button",{name:"Ativar wallpaper animado"})).toBeInTheDocument();
