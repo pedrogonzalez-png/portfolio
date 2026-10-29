@@ -45,11 +45,12 @@ describe("finished Hyprland gallery and dissolving transition",()=>{
     expect(link).toHaveAttribute("href",expect.stringContaining("hiyuki-entrust-your-wishes-to-me"));
     expect(container.querySelector("video")).toBeNull();
   });
-  it("offers layout variants but not a visitor widget builder",()=>{
+  it("shows one fixed Changli reference and retains variants for other finished themes",()=>{
     render(<HyprlandShowcase selectedId="changli"/>);
+    expect(screen.queryByRole("combobox",{name:"Outras composições prontas"})).not.toBeInTheDocument();
+    expect(screen.getByText(/Reprodução da referência/)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button",{name:"Hiyuki"}));
     const combo=screen.getByRole("combobox",{name:"Outras composições prontas"});
-    expect(combo.querySelectorAll("option")).toHaveLength(4);
-    fireEvent.change(combo,{target:{value:"changli-2"}});
-    expect(combo).toHaveValue("changli-2");
+    expect(combo.querySelectorAll("option")).toHaveLength(3);
   });
 });
