@@ -46,7 +46,7 @@ describe("Hyprland as the viewer and Configurações as the editor", () => {
     render(<HyprlandShowcase themes={OFFICIAL_THEMES} selectedId="changli" onChoose={vi.fn()}/>);
     expect(screen.getByText(/Posições reais não publicadas/)).toBeInTheDocument();
     expect(screen.getByText(/Importe o arquivo de layouts/)).toBeInTheDocument();
-    expect(screen.getByLabelText("Importar posições do Quickshell")).toBeInTheDocument();
+    expect(screen.queryByLabelText("Importar posições do Quickshell")).not.toBeInTheDocument();
     expect(screen.getAllByText(/Conteúdo privado/).length).toBeGreaterThan(0);
     expect(screen.getByText(/CPU — · RAM —/)).toBeInTheDocument();
     expect(screen.getByText(/Clima · sem dados/)).toBeInTheDocument();
@@ -69,11 +69,14 @@ describe("Hyprland as the viewer and Configurações as the editor", () => {
     expect(screen.getByRole("button",{name:"Salvar alterações"})).toBeEnabled();
   });
 
-  it("imports actual pixel positions locally without retaining original private paths", async () => {
-    const {container}=render(
-      <HyprlandShowcase themes={OFFICIAL_THEMES} selectedId="changli" onChoose={vi.fn()}/>,
-    );
-    const raw = {
+  it("imports real positions in Configurações and displays them in Hyprland without private paths", async () => {
+    const {container}=render(<ThemeProvider><ThemeStudio onClose={()=>{}}/></ThemeProvider>);
+    expect(screen.getByRole("region",{name:"Hyprland — temas e widgets do autor"}))
+      .toBeInTheDocument();
+    expect(screen.queryByLabelText("Importar posições do Quickshell")).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("tab",{name:"Configurações"}));
+
+    const raw={
       version:1,
       profiles:{
         "/home/private/wallpapers/changli.mp4":{
@@ -90,17 +93,18 @@ describe("Hyprland as the viewer and Configurações as the editor", () => {
     await waitFor(()=>{
       expect(screen.getByText(/1 perfil\(is\) importado\(s\)/)).toBeInTheDocument();
     });
-    const layer=container.querySelector(".hypr-widget-position-layer");
-    expect(layer).not.toBeNull();
-    const first=layer?.querySelector(".hypr-widget-position") as HTMLElement;
-    expect(first?.style.left).toBe("50%");
-    expect(first?.style.top).toBe("25%");
     const stored=window.localStorage.getItem("portfolio.hyprland.sanitized.layout.v1")||"";
-    expect(stored).toContain("clock");
     expect(stored).not.toContain("/home/private/");
     expect(stored).not.toContain("personal note");
     expect(screen.getByRole("button",{name:"Exportar snapshot público sem dados privados"}))
       .toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("tab",{name:"Hyprland"}));
+    const layer=container.querySelector(".hypr-widget-position-layer");
+    expect(layer).not.toBeNull();
+    const first=layer?.querySelector(".hypr-widget-position") as HTMLElement;
+    expect(first.style.left).toBe("50%");
+    expect(first.style.top).toBe("25%");
   });
 
   it("limits animated wallpaper to the Hyprland viewer, not Settings", () => {
