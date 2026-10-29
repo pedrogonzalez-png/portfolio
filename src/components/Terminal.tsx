@@ -15,6 +15,7 @@ import {
 } from "../services/githubReadonly";
 import type { RepoSnapshot } from "../services/githubReadonly";
 import { isRetryableGitHubError } from "../services/githubRetry";
+import { formatGrepResult, searchRepoText } from "../services/githubGrep";
 import "../styles/terminal.css";
 
 type TerminalLine = { command: string; output: string; error?: boolean };
@@ -22,10 +23,11 @@ type TerminalLine = { command: string; output: string; error?: boolean };
 const HELP = [
   "Terminal virtual — somente leitura; nenhum comando roda no seu computador.",
   "help | repos | open <id> | pwd | ls [path] | cd <path> | tree [path]",
-  "cat <arquivo> | code <arquivo> | find <nome> | git log [página 1-10]",
+  "cat <arquivo> | code <arquivo> | find <nome> | grep \"termo\" [pasta] | git log [página 1-10]",
   "git show <SHA> | git diff <SHA-A> <SHA-B> | whoami | neofetch",
   "goto projects|about|contact | history | clear",
   "Exemplo: open jogo-site → ls src → code src/main.js",
+  "grep \"game\" src procura texto REAL em até 6 arquivos por vez (resultado parcial).",
 ].join("\n");
 
 function parseCommand(command: string): string[] {
@@ -216,6 +218,12 @@ export function Terminal({ onClose }: { onClose: () => void }) {
         output = "Indo para " + target;
       } else if (verb === "pwd") {
         output = repoId ? "/" + repoId + "/" + (cwd ? cwd + "/" : "") : "/workspace";
+      } else if (verb === "grep") {
+        if (!repoId) throw new Error("Escolha um repositório antes: repos → open <id>");
+        if (!rest[0] || rest.length > 2) throw new Error("Uso: grep \"texto literal\" [pasta ou arquivo]");
+        const root = normalizeRepoPath(cwd, rest[1] ?? ".");
+        const search = await searchRepoText(repoId, rest[0], root);
+        output = formatGrepResult(search);
       } else if (verb === "ls" || verb === "cd" || verb === "cat" ||
         verb === "code" || verb === "tree" || verb === "find") {
         if (!repoId) throw new Error("Escolha um repositório antes: repos → open <id>");
