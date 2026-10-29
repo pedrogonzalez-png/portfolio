@@ -634,7 +634,7 @@ export function SimulatedDesktop({ palette, themeName }: {
               palette.accentPrimary + "48, transparent 40%), radial-gradient(ellipse at 22% 73%, " +
               palette.accentRed + "28, transparent 47%)",
           }}>
-          <RealDesktopPreview palette={palette} themeName={themeName} />
+          <RealDesktopPreview palette={palette} themeName={themeName} animationEnabled={false} />
           <div className="theme-desktop-elements-layer" ref={areaRef}
             aria-label="Elementos posicionáveis do desktop simulado">
             {clockVisible && (
