@@ -87,7 +87,7 @@ export function sanitizeQuickshellProfiles(json: unknown): SanitizedDesktopLayou
       const widget: WidgetPlacement = {
         kind, x: normalized(item.x, 3440), y: normalized(item.y, 1440),
         width: range(normalized(widthPx, 3440), 4, 40),
-        height: range(normalized(heightPx, 1440), 6, 40),
+        height: range(normalized(heightPx, 1440), 6, 100),
       };
       if (numeric(item.z) && Math.abs(item.z) <= 5000) widget.z = item.z;
       if (validMode(item.sizeMode)) widget.sizeMode = item.sizeMode;
@@ -141,7 +141,7 @@ export function validatePublishedLayouts(value: unknown): SanitizedDesktopLayout
           (raw.x as number) < -10 || (raw.x as number) > 120 ||
           (raw.y as number) < -10 || (raw.y as number) > 120 ||
           (raw.width as number) < 4 || (raw.width as number) > 40 ||
-          (raw.height as number) < 6 || (raw.height as number) > 40) {
+          (raw.height as number) < 6 || (raw.height as number) > 100) {
         throw new Error("Geometria de widget inválida.");
       }
       usedKinds.add(raw.kind);
