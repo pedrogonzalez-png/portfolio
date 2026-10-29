@@ -317,11 +317,11 @@ export async function createDesktopVersion(slot: DesktopLayoutSlot, name: string
           }
           store.put({ ...record, layout }, versionKey(key, record.id));
           store.put([...list, record], versionListKey(key));
-        } catch (cause) { tx.abort(); fail(cause); }
+        } catch (cause) { fail(cause); tx.abort(); }
       };
       listRequest.onsuccess = () => {
         try { list = checkedVersionList(listRequest.result); write(); }
-        catch (cause) { tx.abort(); fail(cause); }
+        catch (cause) { fail(cause); tx.abort(); }
       };
       layoutRequest.onsuccess = () => { layout = layoutRequest.result as StoredDesktopLayout | null; write(); };
       tx.oncomplete = () => { db.close(); if (!failed) resolve(record); };
@@ -379,11 +379,11 @@ export async function restoreDesktopVersion(slot: DesktopLayoutSlot, id: string)
           store.put({ ...backup, layout: active }, versionKey(key, backup.id));
           store.put([...list, backup], versionListKey(key));
           store.put(result, key);
-        } catch (cause) { tx.abort(); fail(cause); }
+        } catch (cause) { fail(cause); tx.abort(); }
       };
       listRequest.onsuccess = () => {
         try { list = checkedVersionList(listRequest.result); write(); }
-        catch (cause) { tx.abort(); fail(cause); }
+        catch (cause) { fail(cause); tx.abort(); }
       };
       activeRequest.onsuccess = () => { active = activeRequest.result as StoredDesktopLayout | null; write(); };
       versionRequest.onsuccess = () => { target = versionRequest.result; write(); };
@@ -416,7 +416,7 @@ export async function deleteDesktopVersion(slot: DesktopLayoutSlot, id: string):
           if (!list.some((item) => item.id === id)) throw new Error("Versão não encontrada.");
           store.delete(versionKey(key, id));
           store.put(list.filter((item) => item.id !== id), versionListKey(key));
-        } catch (cause) { tx.abort(); fail(cause); }
+        } catch (cause) { fail(cause); tx.abort(); }
       };
       tx.oncomplete = () => { db.close(); if (!failed) resolve(); };
       tx.onerror = () => fail(new Error("Falha no IndexedDB. Versão não excluída."));
