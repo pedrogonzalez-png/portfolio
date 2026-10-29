@@ -100,7 +100,7 @@ export function ThemeDisintegration({
         focusable="false">
         <defs>
           <mask id={maskId} maskUnits="objectBoundingBox" maskContentUnits="objectBoundingBox"
-            maskType="luminance" x="0" y="0" width="1" height="1">
+            x="0" y="0" width="1" height="1">
             {CELLS.map((cell, i) => (
               <rect key={i} className="preset-fracture-cell"
                 x={cell.x / COLUMNS - 0.0006}
