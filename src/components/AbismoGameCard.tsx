@@ -10,9 +10,11 @@ type LoadState = "checking" | "available" | "missing" | "failed";
 export function AbismoGameCard({
   onClose,
   onExitComplete,
+  closing = false,
 }: {
   onClose: () => void;
   onExitComplete?: () => void;
+  closing?: boolean;
 }) {
   const [state, setState] = useState<LoadState>("checking");
   const [reload, setReload] = useState(0);
@@ -69,7 +71,7 @@ export function AbismoGameCard({
       className="abismo-live-card"
       aria-label="Abismo — jogo integrado"
       onAnimationEnd={(event) => {
-        if (event.target === event.currentTarget && event.animationName === "abismo-card-retreat") {
+        if (closing && event.target === event.currentTarget) {
           onExitComplete?.();
         }
       }}
