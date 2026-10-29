@@ -158,24 +158,24 @@ export function ProjectPanel({ onOpenThemeStudio }: { onOpenThemeStudio?: () => 
     };
   }, [selected]);
 
-  const finishCloseAbismo = () => {
+  const finishCloseAbismo = useCallback(() => {
     setAbismoOpen(false);
     setAbismoClosing(false);
     window.requestAnimationFrame(() => {
       document.querySelector<HTMLButtonElement>('[data-project-id="abismo"]')?.focus();
     });
-  };
+  }, []);
 
   // Retain the playable panel until its closing animation has completed.
   // In reduced-motion mode close immediately without waiting for animationend.
-  const closeAbismo = () => {
+  const closeAbismo = useCallback(() => {
     if (abismoClosing) return;
     if (window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches) {
       finishCloseAbismo();
     } else {
       setAbismoClosing(true);
     }
-  };
+  }, [abismoClosing, finishCloseAbismo]);
 
   useEffect(() => {
     if (!abismoOpen) return;
@@ -187,7 +187,7 @@ export function ProjectPanel({ onOpenThemeStudio }: { onOpenThemeStudio?: () => 
     };
     window.addEventListener("keydown", onEscape);
     return () => window.removeEventListener("keydown", onEscape);
-  }, [abismoOpen, abismoClosing]);
+  }, [abismoOpen, closeAbismo]);
 
   const close = () => {
     setShowDemo(false);
