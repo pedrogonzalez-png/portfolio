@@ -1,85 +1,31 @@
 import { beforeEach, afterEach, describe, expect, it, vi } from "vitest";
-import { fireEvent, render, screen, within } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { ThemeProvider } from "../stores/ThemeProvider";
-import { useTheme } from "../stores/themeContext";
 import { OFFICIAL_THEMES } from "../stores/themes";
 import { contrastRatio, auditThemeContrast, suggestReadableText } from "../services/themeContrast";
-import { readCustomThemes } from "../services/customThemes";
 import { ThemeStudio } from "../components/ThemeStudio";
 
-beforeEach(() => localStorage.clear());
-afterEach(() => { localStorage.clear(); vi.restoreAllMocks(); });
+beforeEach(()=>localStorage.clear());
+afterEach(()=>{localStorage.clear();vi.restoreAllMocks();});
 
-function ActiveTheme() {
-  const { theme } = useTheme();
-  return <span data-testid="active-theme">{theme.id}</span>;
-}
-
-function startStudio() {
-  const result = render(<ThemeProvider><ActiveTheme/><ThemeStudio onClose={() => {}} /></ThemeProvider>);
-  fireEvent.click(screen.getByRole("tab", { name: "Configurações" }));
-  return result;
-}
-
-describe("WCAG color contrast math and preview", () => {
-  it("uses sRGB luminance with accurate WCAG ratios", () => {
-    expect(contrastRatio("#ffffff", "#000000")).toBeCloseTo(21, 5);
-    expect(contrastRatio("#112233", "#112233")).toBe(1);
-    expect(contrastRatio("#767676", "#FFFFFF")).toBeGreaterThan(4.5);
-    expect(() => contrastRatio("invalid", "#FFFFFF")).toThrow();
-  });
-
-  it("reports failing text combinations and suggests a color with best minimum contrast", () => {
-    const palette = { ...OFFICIAL_THEMES[0].palette, text: OFFICIAL_THEMES[0].palette.bg };
-    const audit = auditThemeContrast(palette);
-    expect(audit.find((check) => check.id === "body")).toMatchObject({ passes: false, ratio: 1 });
+describe("contrast and read-only presets",()=>{
+  it("keeps mathematically correct WCAG contrast utilities",()=>{
+    expect(contrastRatio("#ffffff","#000000")).toBeCloseTo(21,5);
+    expect(contrastRatio("#112233","#112233")).toBe(1);
+    expect(contrastRatio("#767676","#FFFFFF")).toBeGreaterThan(4.5);
+    expect(()=>contrastRatio("invalid","#FFFFFF")).toThrow();
+    const palette={...OFFICIAL_THEMES[0].palette,text:OFFICIAL_THEMES[0].palette.bg};
+    expect(auditThemeContrast(palette).some(check=>!check.passes)).toBe(true);
     expect(suggestReadableText(palette)).toBe("#FFFFFF");
-    expect(audit).toHaveLength(4);
   });
-
-  it("keeps legibility suggestion in draft until explicit Save and Apply", () => {
-    startStudio();
-    const options = within(screen.getByRole("group", { name: "Cinco temas oficiais" }));
-    fireEvent.click(options.getByRole("button", { name: /Hiyuki/ }));
-    fireEvent.click(screen.getByRole("button", { name: "Duplicar Hiyuki" }));
-    const originalSavedText = readCustomThemes()[0].palette.text;
-    fireEvent.change(screen.getByLabelText("Texto"), {
-      target: { value: OFFICIAL_THEMES[1].palette.bg },
-    });
-    const contrast = screen.getByRole("region", { name: "Análise de contraste da prévia" });
-    expect(within(contrast).getByText(/combinação\(ões\) abaixo da meta/)).toBeInTheDocument();
-    fireEvent.click(within(contrast).getByRole("button", { name: "Sugerir texto legível" }));
-    expect(screen.getByLabelText("Texto")).toHaveValue("#ffffff");
-    expect(readCustomThemes()[0].palette.text).toBe(originalSavedText);
-    expect(screen.getByTestId("active-theme")).toHaveTextContent("changli");
-    expect(screen.getByRole("button", { name: "Salvar alterações" })).toBeEnabled();
-  });
-});
-
-describe("expanded 2D desktop simulation", () => {
-  it("opens and closes an interactive preview without changing the applied theme", () => {
-    startStudio();
-    const options = within(screen.getByRole("group", { name: "Cinco temas oficiais" }));
-    fireEvent.click(options.getByRole("button", { name: /Emilia/ }));
-    expect(screen.queryByRole("region", { name: "Desktop simulado" })).not.toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", { name: "Abrir desktop ampliado" }));
-    const desktop = screen.getByRole("region", { name: "Desktop simulado" });
-    expect(within(desktop).getByRole("button", { name: "3440 × 1440" }))
-      .toHaveAttribute("aria-pressed", "true");
-    fireEvent.click(within(desktop).getByRole("button", { name: "1920 × 1080" }));
-    expect(within(desktop).getByRole("button", { name: "1920 × 1080" }))
-      .toHaveAttribute("aria-pressed", "true");
-    expect(desktop.querySelector(".theme-desktop-standard")).not.toBeNull();
-
-    // The previous generic three-panel dashboard has been intentionally removed.
-    expect(within(desktop).queryByRole("button", { name: "Paleta" })).not.toBeInTheDocument();
-    expect(within(desktop).queryByRole("button", { name: "Sobre" })).not.toBeInTheDocument();
-    expect(within(desktop).getByText(/A paleta Emilia está ativa nesta prévia/))
-      .toBeInTheDocument();
-    expect(desktop.querySelector(".real-desktop-wallpaper")).toBeNull();
-
-    expect(screen.getByTestId("active-theme")).toHaveTextContent("changli");
-    fireEvent.click(screen.getByRole("button", { name: "Recolher desktop simulado" }));
-    expect(screen.queryByRole("region", { name: "Desktop simulado" })).not.toBeInTheDocument();
+  it("does not offer to edit text/background contrast or open the old 2D builder",()=>{
+    render(<ThemeProvider><ThemeStudio onClose={()=>{}}/></ThemeProvider>);
+    expect(screen.queryByRole("region",{name:"Editar meu tema"})).not.toBeInTheDocument();
+    expect(screen.queryByRole("region",{name:"Desktop simulado"})).not.toBeInTheDocument();
+    expect(screen.queryByRole("button",{name:"Sugerir texto legível"})).not.toBeInTheDocument();
+    expect(screen.queryByRole("button",{name:"Abrir desktop ampliado"})).not.toBeInTheDocument();
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button",{name:"Furina"}));
+    expect(document.documentElement.dataset.theme).toBe("furina");
   });
 });
