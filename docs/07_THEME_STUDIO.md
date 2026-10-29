@@ -285,3 +285,9 @@ O projeto Hyprland-Themes agora abre uma **exposição inserida na própria pág
 **Limites de fidelidade:** os wallpapers públicos Changli e outros verificados são referenciados conforme disponibilidade; o vídeo Hiyuki correto no MoeWalls não foi copiado, pois não existe URL direta validada e autorizada. Cards usam símbolos quando as imagens originais são privadas. Widgets QML têm posicionamento documentado, mas seus corpos visuais são aproximações HTML/CSS, não componentes QML executados.
 
 **Verificação:** testes atuais cobrem ausência de interfaces de criação/edição, opção de cor, cinco presets, alternância de variantes, efeito de desintegração e fallback para movimento reduzido. Validação visual em navegador real ainda pendente.
+
+## Correção de navegação — página exclusiva Hyprland-Themes (29/10/2026)
+
+**Substitui a seção inline descrita acima.** A exposição de cinco temas prontos passa a existir em **`/hyprland-themes`**, rota própria no React Router, acessível diretamente por URL ou pelo projeto Hyprland-Themes no carrossel. **Não** aparece como card, modal, janela ou seção inserida na home. O retorno `Voltar aos projetos` navega para `/#projetos`, sem retirar o histórico de navegação do navegador. A página tem área principal própria com largura ampliada e animação de entrada por revelação da direita para a esquerda.
+
+Continuam válidos: transição de desintegração da direita para a esquerda **entre temas**, cinco presets oficiais readonly e apenas seleção de cor de destaque. Widgets e layouts originais são somente visualização. Testes de rota cobrem acesso direto, entrada pelo carrossel e retorno. QA manual em produção deve confirmar que o servidor/CDN oferece fallback de SPA ao abrir `/hyprland-themes` diretamente (BrowserRouter).
