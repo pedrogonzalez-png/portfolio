@@ -1,5 +1,6 @@
-/* Expands within the project section; nothing floats in front of the page. */
-.preset-studio-inline{position:relative;margin:clamp(1.5rem,4vw,4rem) 0 3rem;padding:clamp(1rem,2vw,2rem) 0;border-top:1px solid var(--color-outline);scroll-margin-top:6rem;animation:preset-studio-arrive 900ms ease-out both;color:var(--color-text)}
+/* Dedicated route /hyprland-themes; a full page, not an inline expansion or modal. */
+.hyprland-dedicated-page{min-height:100svh;width:100%;padding:clamp(1rem,4vw,4rem) clamp(1rem,5vw,6rem) clamp(3rem,7vw,7rem);background:radial-gradient(circle at 70% 13%,color-mix(in srgb,var(--color-accent-primary) 12%,transparent),transparent 42%),var(--color-bg)}
+.preset-studio-inline{position:relative;width:100%;max-width:1800px;margin:0 auto;padding:0;animation:preset-studio-arrive 900ms ease-out both;color:var(--color-text)}
 .preset-studio-heading{display:flex;justify-content:space-between;align-items:start;gap:1.5rem;flex-wrap:wrap;margin:0 0 clamp(1rem,3vw,3rem)}
 .preset-studio-overline{font:700 .67rem ui-monospace,monospace;letter-spacing:.18em;color:var(--color-accent-yellow)}
 .preset-studio-heading h2{font:700 clamp(2.1rem,6vw,5.5rem)/.97 var(--font-display);letter-spacing:-.065em;margin:.8rem 0}
