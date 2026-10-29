@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { fireEvent, render, screen, within } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { ThemeProvider } from "../stores/ThemeProvider";
 import { OFFICIAL_THEMES } from "../stores/themes";
 import { ThemeStudio } from "../components/ThemeStudio";
@@ -67,6 +67,40 @@ describe("Hyprland as the viewer and Configurações as the editor", () => {
     expect(screen.getByRole("textbox",{name:"Nome do meu tema"}))
       .toHaveValue("Meu layout experimental");
     expect(screen.getByRole("button",{name:"Salvar alterações"})).toBeEnabled();
+  });
+
+  it("imports actual pixel positions locally without retaining original private paths", async () => {
+    const {container}=render(
+      <HyprlandShowcase themes={OFFICIAL_THEMES} selectedId="changli" onChoose={vi.fn()}/>,
+    );
+    const raw = {
+      version:1,
+      profiles:{
+        "/home/private/wallpapers/changli.mp4":{
+          clock:{enable:true,x:1720,y:360},
+          notes:{enable:true,x:250,y:380,text:"Do not publish this personal note"},
+        },
+      },
+    };
+    const file=new File([JSON.stringify(raw)],"wallpaper_widget_layouts.json",{type:"application/json"});
+    Object.defineProperty(file,"text",{value:async()=>JSON.stringify(raw)});
+    fireEvent.change(screen.getByLabelText("Importar posições do Quickshell"),{
+      target:{files:[file]},
+    });
+    await waitFor(()=>{
+      expect(screen.getByText(/1 perfil\(is\) importado\(s\)/)).toBeInTheDocument();
+    });
+    const layer=container.querySelector(".hypr-widget-position-layer");
+    expect(layer).not.toBeNull();
+    const first=layer?.querySelector(".hypr-widget-position") as HTMLElement;
+    expect(first?.style.left).toBe("50%");
+    expect(first?.style.top).toBe("25%");
+    const stored=window.localStorage.getItem("portfolio.hyprland.sanitized.layout.v1")||"";
+    expect(stored).toContain("clock");
+    expect(stored).not.toContain("/home/private/");
+    expect(stored).not.toContain("personal note");
+    expect(screen.getByRole("button",{name:"Exportar snapshot público sem dados privados"}))
+      .toBeInTheDocument();
   });
 
   it("limits animated wallpaper to the Hyprland viewer, not Settings", () => {
