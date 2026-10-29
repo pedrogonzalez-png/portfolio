@@ -49,7 +49,7 @@ export function WidgetLayoutSettings() {
     <section className="hypr-layout-import" aria-label="Configurar layouts importados do Quickshell">
       <div>
         <strong>Posições reais dos widgets no Hyprland</strong>
-        <p>Importe <code>~/.config/quickshell/end4-pC/wallpaper_widget_layouts.json</code>.
+        <p>Importe <code>~/.config/illogical-impulse/wallpaper_widget_layouts.json</code>.
           A importação é local: caminhos, notas, textos, imagens e conteúdo pessoal são descartados;
           somente coordenadas e nomes de widgets aprovados ficam no navegador.</p>
       </div>
