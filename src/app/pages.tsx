@@ -6,7 +6,7 @@ import { ProjectPanel } from "../components/ProjectPanel";
 import SceneIntegration from "../components/SceneIntegration";
 import { KnowledgeTree } from "../components/KnowledgeTree";
 import { ThemeDisintegration } from "../components/desktop/ThemeDisintegration";
-import { useTheme } from "../stores/themeContext";
+import { OFFICIAL_THEMES } from "../stores/themes";
 import "../styles/hyprland-entry-transition.css";
 
 const Terminal = lazy(() => import("../components/Terminal").then((module) => ({ default: module.Terminal })));
@@ -21,7 +21,7 @@ function HomePage({onOpenHyprland}:{onOpenHyprland:()=>void}) {
   useEffect(() => {
     if (location.hash !== "#projetos") return;
     const frame = window.requestAnimationFrame(() =>
-      document.getElementById("projetos")?.scrollIntoView({ behavior: "instant", block: "start" }));
+      document.getElementById("projetos")?.scrollIntoView?.({ behavior: "instant", block: "start" }));
     return () => window.cancelAnimationFrame(frame);
   }, [location.hash]);
 
@@ -130,8 +130,7 @@ function HyprlandThemesPage() {
 export default function Pages() {
   const location = useLocation();
   const navigate = useNavigate();
-  const {theme} = useTheme();
-  const [leavingHome,setLeavingHome] = useState<{scrollY:number}|null>(null);
+  const [leavingHome,setLeavingHome] = useState<{scrollY:number;accent:string;secondary:string}|null>(null);
 
   const openHyprland = useCallback(() => {
     if (location.pathname !== "/") return;
@@ -139,7 +138,12 @@ export default function Pages() {
       navigate("/hyprland-themes");
       return;
     }
-    setLeavingHome({scrollY:window.scrollY});
+    const css = getComputedStyle(document.documentElement);
+    setLeavingHome({
+      scrollY:window.scrollY,
+      accent:css.getPropertyValue("--color-accent-primary").trim() || OFFICIAL_THEMES[0].palette.accentPrimary,
+      secondary:css.getPropertyValue("--color-accent-yellow").trim() || OFFICIAL_THEMES[0].palette.accentYellow,
+    });
     navigate("/hyprland-themes");
   }, [location.pathname,navigate]);
 
@@ -150,9 +154,9 @@ export default function Pages() {
       <div className={"hyprland-route-home" + (leavingHome ? " is-leaving" : "")}
         style={leavingHome ? {"--exit-scroll-y": leavingHome.scrollY+"px"} as CSSProperties : undefined}>
         <ThemeDisintegration active={leavingHome !== null}
-          oldAccent={theme.palette.accentPrimary}
-          oldSecondary={theme.palette.accentYellow}
-          newAccent={theme.palette.accentPrimary}
+          oldAccent={leavingHome?.accent ?? OFFICIAL_THEMES[0].palette.accentPrimary}
+          oldSecondary={leavingHome?.secondary ?? OFFICIAL_THEMES[0].palette.accentYellow}
+          newAccent={OFFICIAL_THEMES[0].palette.accentPrimary}
           onFinished={() => setLeavingHome(null)}>
           <div className="hyprland-route-home-content">
             <HomePage onOpenHyprland={openHyprland}/>
