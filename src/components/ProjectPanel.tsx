@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import type { KeyboardEvent as ReactKeyboardEvent, PointerEvent as ReactPointerEvent } from "react";
+import type { KeyboardEvent as ReactKeyboardEvent, PointerEvent as ReactPointerEvent, TouchEvent as ReactTouchEvent } from "react";
 import { PLACEHOLDER_PROJECTS, type Project } from "./PlaceholderCatalog";
 import { EmbeddedDemo } from "./EmbeddedDemo";
 import { AbismoGameCard } from "./AbismoGameCard";
@@ -38,9 +38,8 @@ const WHEEL_THRESHOLD = 36;
 const WHEEL_COOLDOWN_MS = 530;
 
 /**
- * Consume the wheel only while the project stage is actually centered on
- * screen. At the first/last project the visitor is free to scroll out in the
- * same direction; the carousel never traps page navigation.
+ * Cycle indefinitely while the user scrolls over the project stage.
+ * Outside this stage, wheel scrolling continues through the normal page.
  */
 function useCarouselWheel(
   stageRef: React.RefObject<HTMLDivElement | null>,
@@ -67,16 +66,7 @@ function useCarouselWheel(
       const current = activeRef.current;
       const direction = Math.sign(event.deltaY);
       if (!direction || !Number.isFinite(event.deltaY)) return;
-      const next = current + direction;
-      if (next < 0 || next >= count) {
-        accumulation = 0;
-        // Absorb leftover trackpad inertia from the last change, then let
-        // a subsequent wheel gesture leave the carousel naturally.
-        if (performance.now() - lastChangeAt < WHEEL_COOLDOWN_MS) {
-          event.preventDefault();
-        }
-        return;
-      }
+      const next = (current + direction + count) % count;
 
       event.preventDefault();
       const now = performance.now();
@@ -112,16 +102,38 @@ export function ProjectPanel({ onOpenThemeStudio }: { onOpenThemeStudio?: () => 
   const stageRef = useRef<HTMLDivElement>(null);
   const closeButton = useRef<HTMLButtonElement>(null);
   const trigger = useRef<HTMLButtonElement | null>(null);
+  const touchStart = useRef<{ x: number; y: number } | null>(null);
+  const suppressSwipeClick = useRef(false);
   const projects = useMemo(
     () => PLACEHOLDER_PROJECTS.filter((p) => p.featured && p.status !== "hidden"),
     [],
   );
 
   const activate = useCallback((index: number) => {
-    const next = Math.max(0, Math.min(projects.length - 1, index));
+    if (!projects.length) return;
+    const next = ((index % projects.length) + projects.length) % projects.length;
     activeRef.current = next;
     setActiveIndex(next);
   }, [projects.length]);
+
+  const onCarouselTouchStart = (event: ReactTouchEvent<HTMLDivElement>) => {
+    if (abismoOpen || site3dOpen || selected || event.touches.length !== 1) return;
+    suppressSwipeClick.current = false;
+    touchStart.current = { x: event.touches[0].clientX, y: event.touches[0].clientY };
+  };
+
+  const onCarouselTouchEnd = (event: ReactTouchEvent<HTMLDivElement>) => {
+    const start = touchStart.current;
+    touchStart.current = null;
+    if (!start || abismoOpen || site3dOpen || selected || !event.changedTouches.length) return;
+    const dx = event.changedTouches[0].clientX - start.x;
+    const dy = event.changedTouches[0].clientY - start.y;
+    // Horizontal swipe changes project; vertical swipes keep normal page scroll.
+    if (Math.abs(dx) >= 55 && Math.abs(dx) > Math.abs(dy) * 1.3) {
+      suppressSwipeClick.current = true;
+      activate(activeRef.current + (dx < 0 ? 1 : -1));
+    }
+  };
 
   useCarouselWheel(stageRef, activeRef, projects.length, activate, selected !== null || abismoOpen || site3dOpen);
 
@@ -233,7 +245,17 @@ export function ProjectPanel({ onOpenThemeStudio }: { onOpenThemeStudio?: () => 
         aria-roledescription="carrossel"
         aria-label="Carrossel de projetos"
         tabIndex={0}
+        aria-describedby="project-carousel-help"
         onKeyDown={onCarouselKeyDown}
+        onTouchStart={onCarouselTouchStart}
+        onTouchEnd={onCarouselTouchEnd}
+        onTouchCancel={() => { touchStart.current = null; }}
+        onClickCapture={(event) => {
+          if (!suppressSwipeClick.current) return;
+          suppressSwipeClick.current = false;
+          event.preventDefault();
+          event.stopPropagation();
+        }}
       >
         <SpineWorld />
         <div className="project-grid orbit-grid immersive-panels arc-carousel" aria-label="Projetos em destaque">
@@ -306,24 +328,12 @@ export function ProjectPanel({ onOpenThemeStudio }: { onOpenThemeStudio?: () => 
           })}
         </div>
       </div>
-      {!abismoOpen && !site3dOpen && (
-        <>
-          <div className="carousel-controls" aria-label="Navegação dos projetos">
-            <button type="button" aria-label="Projeto anterior" onClick={() => activate(activeIndex - 1)} disabled={activeIndex === 0}>←</button>
-            <div className="carousel-progress" role="status" aria-live="polite">
-              <span>{String(activeIndex + 1).padStart(2, "0")} / {String(projects.length).padStart(2, "0")}</span>
-              <strong>{projects[activeIndex]?.title}</strong>
-            </div>
-            <button type="button" aria-label="Próximo projeto" onClick={() => activate(activeIndex + 1)} disabled={activeIndex === projects.length - 1}>→</button>
-          </div>
-          <p className="carousel-instructions">Use a rodinha do mouse sobre os painéis ou as setas para alternar projetos.</p>
-        </>
-      )}
-      {!abismoOpen && !site3dOpen && (
-        <p className="projects-disclaimer">
-          Três projetos selecionados · Abismo e site-3D podem ser explorados nos cards após instalar as builds locais
-        </p>
-      )}
+      <p id="project-carousel-help" className="carousel-accessibility-hint">
+        Role o mouse sobre os cards, use as setas do teclado ou deslize horizontalmente no celular para percorrer os projetos em ciclo.
+      </p>
+      <span className="carousel-accessibility-hint" role="status" aria-live="polite">
+        Projeto ${activeIndex + 1} de ${projects.length}: ${projects[activeIndex]?.title}
+      </span>
       {selected && (
         <div className="modal-backdrop" onMouseDown={(event) => {
           if (event.target === event.currentTarget) close();
