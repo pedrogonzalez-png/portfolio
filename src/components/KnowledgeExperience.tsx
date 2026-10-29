@@ -44,7 +44,7 @@ export default function KnowledgeExperience({
 }: Props) {
   const projects = PROJECT_IDS;
   const stageRef = useRef<HTMLDivElement>(null);
-  const wheelGesture = useRef({ lastAt: 0, delta: 0, consumed: false });
+  const wheelGesture = useRef({ lastAt: 0, delta: 0, consumed: false, changedAt: -10000 });
 
   const currentIndex = projects.indexOf(activeProject);
   const previous = projects[(currentIndex + projects.length - 1) % projects.length];
@@ -91,9 +91,14 @@ export default function KnowledgeExperience({
       event.preventDefault();
       const now = performance.now();
       const gesture = wheelGesture.current;
-      if (now - gesture.lastAt > 190) {
-        gesture.delta = 0;
+      // Match the 690ms glass arrival animation: do not skip a second
+      // project while the first one is still moving into place.
+      if (gesture.consumed && now - gesture.changedAt >= 620) {
         gesture.consumed = false;
+        gesture.delta = 0;
+      }
+      if (!gesture.consumed && now - gesture.lastAt > 220) {
+        gesture.delta = 0;
       }
       gesture.lastAt = now;
       if (gesture.consumed) return;
@@ -104,6 +109,7 @@ export default function KnowledgeExperience({
       if (gesture.delta < 38) return;
 
       gesture.consumed = true;
+      gesture.changedAt = now;
       gesture.delta = 0;
       navigate(projects[target]);
     };
