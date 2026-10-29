@@ -332,7 +332,7 @@ export function ProjectPanel({ onOpenThemeStudio }: { onOpenThemeStudio?: () => 
         Role o mouse sobre os cards, use as setas do teclado ou deslize horizontalmente no celular para percorrer os projetos em ciclo.
       </p>
       <span className="carousel-accessibility-hint" role="status" aria-live="polite">
-        Projeto ${activeIndex + 1} de ${projects.length}: ${projects[activeIndex]?.title}
+        Projeto {activeIndex + 1} de {projects.length}: {projects[activeIndex]?.title}
       </span>
       {selected && (
         <div className="modal-backdrop" onMouseDown={(event) => {
