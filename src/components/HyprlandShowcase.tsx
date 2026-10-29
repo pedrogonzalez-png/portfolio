@@ -56,6 +56,7 @@ export function HyprlandShowcase({
   active?: boolean;
 }) {
   const [selected, setSelected] = useState(selectedId);
+  const [variantChoice, setVariantChoice] = useState<string>("");
   useEffect(() => { setSelected(selectedId); }, [selectedId]);
   const [localProfiles, setLocalProfiles] = useState<SanitizedDesktopLayouts | null>(readLocalWidgetLayouts);
   const [previewFormat, setPreviewFormat] = useState<"ultrawide"|"standard">("ultrawide");
@@ -86,12 +87,20 @@ export function HyprlandShowcase({
 
   const theme = themes.find((t) => t.id === selected) ?? OFFICIAL_THEMES[0];
   const hsin = selected === "hsin";
-  const palette: ThemePalette = hsin ? OFFICIAL_THEMES[0].palette : theme.palette;
-  const themeName = hsin ? "Hsin" : theme.name;
-  const profileId = hsin ? "hsin" : theme.kind === "custom" ? theme.basedOnThemeId ?? theme.id : theme.id;
+  const extras = selected === "outros";
+  const palette: ThemePalette = hsin || extras ? OFFICIAL_THEMES[0].palette : theme.palette;
+  const themeName = extras ? "Wallpapers extras" : hsin ? "Hsin" : theme.name;
+  const profileId = extras ? "outros" : hsin ? "hsin" :
+    theme.kind === "custom" ? theme.basedOnThemeId ?? theme.id : theme.id;
   const publishedProfiles = useMemo(() => validatePublishedLayouts(published), []);
-  const activeLayout = (localProfiles?.profiles ?? []).find((p) => p.themeId === profileId) ??
-    publishedProfiles.profiles.find((p) => p.themeId === profileId) ?? null;
+  // Keep individual wallpapers for the same theme independent. Never merge
+  // Changli variants or overwrite the owner's originals with visitor edits.
+  const localForTheme = (localProfiles?.profiles ?? []).filter(p => p.themeId === profileId);
+  const profilesForTheme = localForTheme.length
+    ? localForTheme : publishedProfiles.profiles.filter(p => p.themeId === profileId);
+  const activeLayout = profilesForTheme.find(p => (p.variantId ?? "default") === variantChoice) ??
+    profilesForTheme[0] ?? null;
+  const activeVariantId = activeLayout?.variantId ?? "default";
   const hasLayout = activeLayout !== null;
 
   return (
@@ -119,8 +128,30 @@ export function HyprlandShowcase({
           style={{ "--hypr-swatch": "#86b8b3" } as CSSProperties}>
           <i aria-hidden="true" />Hsin <small>Paleta ainda não publicada</small>
         </button>
+        {publishedProfiles.profiles.some(p => p.themeId === "outros") && (
+          <button type="button" className={extras ? "is-selected" : ""}
+            aria-pressed={extras} onClick={() => setSelected("outros")}
+            style={{ "--hypr-swatch": "#c1a89c" } as CSSProperties}>
+            <i aria-hidden="true" />Outros wallpapers
+          </button>
+        )}
       </div>
 
+      {profilesForTheme.length > 0 && (
+        <div className="hypr-variant-selector">
+          <label htmlFor="hypr-wallpaper-version">Organização original por wallpaper</label>
+          <select id="hypr-wallpaper-version" value={activeVariantId}
+            onChange={(event) => setVariantChoice(event.target.value)}
+            aria-label="Escolher versão do wallpaper">
+            {profilesForTheme.map(p => (
+              <option key={p.variantId ?? "default"} value={p.variantId ?? "default"}>
+                {p.label ?? "Layout padrão"} · {p.widgets.length} widgets ativados
+              </option>
+            ))}
+          </select>
+          <small>Posições do arquivo Quickshell original, sem caminhos pessoais</small>
+        </div>
+      )}
       <div className="hypr-view-options" role="group" aria-label="Proporção do desktop Hyprland">
         <button type="button" aria-pressed={previewFormat==="ultrawide"}
           onClick={() => setPreviewFormat("ultrawide")}>3440 × 1440</button>
@@ -149,7 +180,8 @@ export function HyprlandShowcase({
           {hiyukiMessage&&<p role="status">{hiyukiMessage}</p>}
         </div>
       )}
-      <DesktopWidgetEditor themeId={profileId}
+      <DesktopWidgetEditor key={profileId + ":" + activeVariantId}
+        themeId={profileId + "-" + activeVariantId}
         sourceWidgets={activeLayout?.widgets} format={previewFormat}
         background={<RealDesktopPreview palette={palette} themeName={themeName}
           animationEnabled={active} localWallpaper={profileId==="hiyuki"?(hiyukiWallpaper??undefined):undefined} />}
@@ -164,9 +196,11 @@ export function HyprlandShowcase({
         <p className="hypr-source-warning">A paleta {themeName} é original do repositório Hyprland-Themes,
           mas ainda não há wallpaper próprio desse tema nos arquivos públicos consultados.</p>}
 
-      <p className="hypr-source-warning">Quer mostrar suas posições reais?
-        Importe o arquivo `wallpaper_widget_layouts.json` na aba <strong>Configurações</strong>.
-        O desktop usa os dados sanitizados automaticamente, sem acessar seu PC ao vivo.</p>
+      <p className="hypr-source-warning">
+        {hasLayout
+          ? "Os posicionamentos exibidos vêm do snapshot sanitizado do Quickshell. Os widgets de outros visitantes são cópias editáveis, não uma conexão ao seu computador."
+          : "Sem posições disponíveis. Importe o arquivo wallpaper_widget_layouts.json em Configurações para usar sua própria referência."}
+      </p>
     </section>
   );
 }
