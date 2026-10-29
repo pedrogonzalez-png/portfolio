@@ -291,7 +291,7 @@ export async function createDesktopVersion(slot: DesktopLayoutSlot, name: string
   const key = ensureSlot(slot);
   const label = validateDesktopLayoutName(name);
   const db = await openDatabase();
-  return new Promise((resolve, reject) => {
+  return new Promise<DesktopLayoutVersion>((resolve, reject) => {
     const record: DesktopLayoutVersion = { id: newVersionId(), name: label, createdAt: Date.now() };
     let failed = false;
     const fail = (cause: unknown) => {
@@ -340,7 +340,7 @@ export async function restoreDesktopVersion(slot: DesktopLayoutSlot, id: string)
   const key = ensureSlot(slot);
   if (!/^v-[a-z0-9-]{6,80}$/i.test(id)) throw new Error("ID de versão inválido.");
   const db = await openDatabase();
-  return new Promise((resolve, reject) => {
+  return new Promise<StoredDesktopLayout>((resolve, reject) => {
     let result: StoredDesktopLayout | null = null;
     let failed = false;
     const fail = (cause: unknown) => {
@@ -399,7 +399,7 @@ export async function deleteDesktopVersion(slot: DesktopLayoutSlot, id: string):
   const key = ensureSlot(slot);
   if (!/^v-[a-z0-9-]{6,80}$/i.test(id)) throw new Error("ID de versão inválido.");
   const db = await openDatabase();
-  return new Promise((resolve, reject) => {
+  return new Promise<void>((resolve, reject) => {
     let failed = false;
     const fail = (cause: unknown) => {
       if (failed) return;
