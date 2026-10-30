@@ -9,6 +9,7 @@ import { ThemeDisintegration } from "../components/desktop/ThemeDisintegration";
 import { OFFICIAL_THEMES } from "../stores/themes";
 import "../styles/hyprland-entry-transition.css";
 import "../styles/cinematic-polish.css";
+import "../styles/wuwa-art-direction.css";
 
 const Terminal = lazy(() => import("../components/Terminal").then((module) => ({ default: module.Terminal })));
 const ThemeStudio = lazy(() => import("../components/ThemeStudio").then((module) => ({ default: module.ThemeStudio })));
@@ -44,7 +45,7 @@ function HomePage({onOpenHyprland}:{onOpenHyprland:()=>void}) {
         <section id="inicio" className="hero" aria-label="Apresentação">
           <div className="hero-content">
             <div className="eyebrow"><span className="eyebrow-line" /> PORTFÓLIO / EXPERIÊNCIA INTERATIVA</div>
-            <p className="hero-overline">Uma jornada por projetos, código e criatividade</p>
+            <p className="hero-overline">Phaser · React · Hyprland</p>
             <div className="hero-name-stage"><h1 id="hero-name" className="hero-title"><span className="hero-title-fallback">PORTFÓLIO 3D</span></h1><SceneIntegration /></div>
             <p className="hero-placeholder">WEB · JOGOS · LINUX</p>
             <p className="hero-description">
@@ -65,7 +66,7 @@ function HomePage({onOpenHyprland}:{onOpenHyprland:()=>void}) {
           <div className="section-heading">
             <p className="eyebrow">02 / PROJETOS SELECIONADOS</p>
             <h2>Um universo de <em>possibilidades.</em></h2>
-            <p>Três experiências em construção, reunidas em um só lugar. Explore cada projeto e entre no universo do Abismo.</p>
+            <p>Abismo em Phaser, site-3D em React e uma galeria de temas Hyprland. Três projetos para explorar diretamente.</p>
           </div>
           <ProjectPanel onOpenThemeStudio={onOpenHyprland} />
         </section>
@@ -74,7 +75,7 @@ function HomePage({onOpenHyprland}:{onOpenHyprland:()=>void}) {
           <div className="about-copy">
             <p className="eyebrow">03 / SOBRE & CONTATO</p>
             <h2>O código conta <em>uma história.</em></h2>
-            <p>A apresentação pessoal e os canais de contato serão adicionados após confirmação. Por enquanto, conheça os trabalhos pelo GitHub.</p>
+            <p>Abismo, site-3D e Hyprland-Themes são projetos disponíveis para exploração. Repositórios e histórico de desenvolvimento no GitHub.</p>
             <a className="text-action" href="https://github.com/pedrogonzalez-png" target="_blank" rel="noopener noreferrer">Ver perfil no GitHub ↗</a>
           </div>
           <div className="about-orbit" aria-hidden="true"><span>DESIGN</span><span>CODE</span><span>LINUX</span></div>
@@ -87,7 +88,7 @@ function HomePage({onOpenHyprland}:{onOpenHyprland:()=>void}) {
       )}
       <footer className="site-footer">
         <span>PORTFÓLIO / PROJETOS</span>
-        <span>Portfólio em evolução · Abismo jogável com a build local</span>
+        <span>Abismo · site-3D · Hyprland-Themes</span>
         <a href="#inicio">Voltar ao início ↑</a>
       </footer>
     </>
