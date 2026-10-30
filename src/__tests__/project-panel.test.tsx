@@ -169,6 +169,30 @@ describe("three-panel carousel", () => {
       .toHaveAttribute("data-position", "center");
   });
 
+  it("starts an accessible directional reveal on each project change", () => {
+    const { container } = render(<ProjectPanel />);
+    const carousel = screen.getByRole("region", { name: "Carrossel de projetos" });
+    expect(carousel).toHaveAttribute("data-carousel-switched", "false");
+    expect(container.querySelector(".carousel-change-trail")).toBeNull();
+
+    fireEvent.keyDown(carousel, { key: "ArrowRight" });
+    expect(carousel).toHaveAttribute("data-carousel-direction", "next");
+    expect(carousel).toHaveAttribute("data-carousel-switched", "true");
+    expect(container.querySelectorAll(".carousel-change-trail")).toHaveLength(1);
+    expect(screen.getByRole("button", { name: "Explorar site-3D no card" }))
+      .toHaveClass("carousel-center");
+
+    fireEvent.keyDown(carousel, { key: "ArrowLeft" });
+    expect(carousel).toHaveAttribute("data-carousel-direction", "previous");
+    expect(screen.getByRole("button", { name: "Jogar Abismo no card" }))
+      .toHaveClass("carousel-center");
+
+    fireEvent.keyDown(carousel, { key: "ArrowLeft" });
+    expect(carousel).toHaveAttribute("data-carousel-direction", "previous");
+    expect(screen.getByRole("button", { name: /Abrir detalhes de Hyprland-Themes/ }))
+      .toHaveClass("carousel-center");
+  });
+
   it("supports endless arrow-key navigation in both directions", () => {
     render(<ProjectPanel />);
     const carousel = screen.getByRole("region", { name: "Carrossel de projetos" });
