@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import "../styles/abismo-card.css";
+import { LandscapeExperience } from "./LandscapeExperience";
 
 type LoadState = "checking" | "available" | "missing" | "failed";
 
@@ -67,6 +68,7 @@ export function AbismoGameCard({
   };
 
   return (
+    <LandscapeExperience title="Abismo em modo horizontal" closing={closing}>
     <section
       className="abismo-live-card"
       aria-label="Abismo — jogo integrado"
@@ -142,5 +144,6 @@ export function AbismoGameCard({
           : "Clique na área do jogo para usar mouse e teclado. O progresso é salvo pelo Abismo."}</span>
       </footer>
     </section>
+    </LandscapeExperience>
   );
 }

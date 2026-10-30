@@ -8,6 +8,28 @@ afterEach(() => {
 });
 
 describe("Site 3D real project embedded in the carousel", () => {
+  it("opens the Site 3D experience inside a mobile landscape viewport", async () => {
+    vi.stubGlobal("matchMedia", vi.fn((query: string) => ({
+      matches: query === "(pointer: coarse)",
+      media: query,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+    })));
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({
+      ok: true,
+      headers: { get: () => "application/json" },
+      json: async () => ({ build: "site-3d", base: "/site-3d/" }),
+    }));
+    const { unmount } = render(<Site3DCard onClose={vi.fn()}/>);
+    expect(screen.getByRole("dialog", { name: "Site 3D em modo horizontal" })).toBeInTheDocument();
+    expect(await screen.findByTitle("Site 3D — projeto React original integrado ao card"))
+      .toHaveAttribute("src", "/site-3d/index.html");
+    expect(document.body.querySelector(".mobile-landscape-stage .site3d-live-card")).toBeInTheDocument();
+    unmount();
+    expect(document.body.querySelector(".mobile-landscape-experience")).toBeNull();
+  });
+
+
   it("never displays an HTML SPA fallback as the original site", async () => {
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue({
       ok: true,

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import "../styles/abismo-card.css";
+import { LandscapeExperience } from "./LandscapeExperience";
 
 /** The original React/Vite site is built separately into public/site-3d/.
  * Never show the portfolio's SPA fallback as though it were the project.
@@ -63,6 +64,7 @@ export function Site3DCard({
   };
 
   return (
+    <LandscapeExperience title="Site 3D em modo horizontal" closing={closing}>
     <section
       className="abismo-live-card site3d-live-card"
       aria-label="Site 3D — experiência integrada"
@@ -127,5 +129,6 @@ export function Site3DCard({
           "Explore os personagens com mouse, rolagem e pesquisa dentro da experiência."}</span>
       </footer>
     </section>
+    </LandscapeExperience>
   );
 }
