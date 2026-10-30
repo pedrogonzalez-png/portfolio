@@ -446,3 +446,74 @@
       rotateY(12deg) scale(.82);
   }
 }
+
+/*
+ * Passing-project choreography. Each change of carousel-left/center/right
+ * interpolates in one continuous sweep, while captions settle after the
+ * incoming glass card arrives. Keep actual card positioning in transforms.
+ */
+.spine-stage.project-carousel .arc-carousel .cinematic-panel {
+  transition:
+    transform 1020ms cubic-bezier(.19,.77,.18,1),
+    opacity 760ms cubic-bezier(.25,.6,.2,1),
+    filter 800ms ease,
+    box-shadow 800ms ease,
+    border-color 720ms ease;
+}
+.spine-stage.project-carousel .arc-carousel .cinematic-panel.carousel-left,
+.spine-stage.project-carousel .arc-carousel .cinematic-panel.carousel-right {
+  filter: saturate(.75) brightness(.76) blur(.65px);
+}
+.spine-stage.project-carousel .cinematic-panel-visual {
+  transition: opacity 950ms cubic-bezier(.22,.8,.2,1), filter 950ms ease;
+}
+.spine-stage.project-carousel .arc-carousel .cinematic-panel:not(.carousel-center) .cinematic-panel-visual {
+  opacity: .24;
+  filter: blur(1.4px);
+}
+.spine-stage.project-carousel .cinematic-panel.carousel-center .cinematic-panel-hero {
+  animation: carousel-caption-arrive 850ms cubic-bezier(.16,1,.3,1) both;
+}
+.spine-stage.project-carousel .cinematic-panel.carousel-center .cinematic-panel-top,
+.spine-stage.project-carousel .cinematic-panel.carousel-center .cinematic-panel-bottom {
+  animation: carousel-meta-arrive 840ms ease-out both;
+}
+@keyframes carousel-caption-arrive {
+  from { opacity: .15; transform: translateY(calc(-50% + 15px)) translateZ(8px) scale(.96); }
+  to { opacity: 1; transform: translateY(-50%) translateZ(25px) scale(1); }
+}
+@keyframes carousel-meta-arrive {
+  from { opacity: .22; }
+  to { opacity: 1; }
+}
+/* Light passes over the card once on selection rather than continuously. */
+.spine-stage.project-carousel .cinematic-panel.carousel-center .cinematic-panel-reflection {
+  animation: carousel-reflection-arrive 1050ms cubic-bezier(.25,.68,.21,1) both;
+}
+@keyframes carousel-reflection-arrive {
+  0% { opacity: .35; transform: translateX(-72%) rotate(-12deg); }
+  55% { opacity: .65; }
+  100% { opacity: .05; transform: translateX(62%) rotate(-12deg); }
+}
+@media (max-width: 600px) {
+  .spine-stage.project-carousel .arc-carousel .cinematic-panel {
+    transition:
+      transform 760ms cubic-bezier(.2,.82,.2,1),
+      opacity 650ms ease,
+      filter 650ms ease,
+      box-shadow 650ms ease,
+      border-color 650ms ease;
+  }
+  .spine-stage.project-carousel .arc-carousel .cinematic-panel.carousel-left,
+  .spine-stage.project-carousel .arc-carousel .cinematic-panel.carousel-right {
+    filter: saturate(.78) brightness(.83);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .spine-stage.project-carousel .arc-carousel .cinematic-panel,
+  .spine-stage.project-carousel .cinematic-panel-visual { transition: none; }
+  .spine-stage.project-carousel .cinematic-panel.carousel-center .cinematic-panel-hero,
+  .spine-stage.project-carousel .cinematic-panel.carousel-center .cinematic-panel-top,
+  .spine-stage.project-carousel .cinematic-panel.carousel-center .cinematic-panel-bottom,
+  .spine-stage.project-carousel .cinematic-panel.carousel-center .cinematic-panel-reflection { animation: none; }
+}

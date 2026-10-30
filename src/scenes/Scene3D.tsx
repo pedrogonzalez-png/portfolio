@@ -24,7 +24,7 @@ function sampleHeading(width: number, height: number): ParticleData {
     context.textAlign = "center";
     context.textBaseline = "middle";
     context.fillStyle = "#fff";
-    context.fillText(fallback.textContent || "PORTFÓLIO 3D", width / 2, height / 2, Math.min(width * 0.9, element.getBoundingClientRect().width * 0.96));
+    context.fillText(fallback.textContent || "PEDRO GONZALEZ", width / 2, height / 2, Math.min(width * 0.9, element.getBoundingClientRect().width * 0.96));
     const pixels = context.getImageData(0, 0, canvas.width, canvas.height).data;
     const stride = width < 650 ? 2 : 3;
     for (let y = 0; y < canvas.height; y += stride) {
