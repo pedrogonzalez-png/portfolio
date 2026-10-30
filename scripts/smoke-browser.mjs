@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-/* global process, setTimeout, fetch, console, URL */
+/* global process, setTimeout, fetch, console, URL, document */
 /**
  * Test actual production Vite assets running in Chromium.
  * A successful tsc, npm run build or jsdom unit test does NOT prove that
