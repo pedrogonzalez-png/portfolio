@@ -495,3 +495,76 @@
     animation: none;
   }
 }
+
+
+/* Compact and readable landing section on narrow phones.
+   The project title remains a fallback for the particle-name experience. */
+@media (max-width: 600px) {
+  .hero {
+    width: 100%;
+    padding: 6.7rem 1rem 4.2rem;
+    min-height: 100svh;
+  }
+
+  .hero-content {
+    width: 100%;
+    max-width: 29rem;
+    margin: auto 0;
+    min-width: 0;
+  }
+
+  .hero .eyebrow {
+    font-size: clamp(.55rem, 2.4vw, .7rem);
+    letter-spacing: .13em;
+    line-height: 1.5;
+  }
+
+  .hero .eyebrow-line { display: none; }
+  .hero-overline {
+    margin-top: 1.15rem;
+    font-size: clamp(.76rem, 3.3vw, .88rem);
+    line-height: 1.55;
+  }
+  .hero-name-stage { margin: .85rem 0 .5rem; }
+  .hero .hero-title {
+    font-size: clamp(2.1rem, 9.1vw, 3.5rem);
+    line-height: 1.18;
+    letter-spacing: -.06em;
+    overflow-wrap: normal;
+  }
+  .hero-placeholder {
+    margin: .45rem 0 1.1rem;
+    font-size: .61rem;
+    letter-spacing: .17em;
+    line-height: 1.5;
+  }
+  .hero-description {
+    max-width: 35ch;
+    margin-bottom: 1.7rem;
+    font-size: clamp(.8rem, 3.45vw, .94rem);
+    line-height: 1.65;
+  }
+  .hero .primary-action {
+    width: min(100%, 250px);
+    min-height: 48px;
+    padding: .85rem 1.15rem;
+  }
+  .hero-bottom {
+    bottom: 1.5rem;
+    left: 1rem;
+    right: 1rem;
+    font-size: .54rem;
+    letter-spacing: .1em;
+  }
+  .projects-area {
+    overflow-x: clip;
+  }
+  .projects-area .section-heading {
+    max-width: 100%;
+  }
+  .projects-area .section-heading h2 {
+    font-size: clamp(1.95rem, 7.35vw, 3rem);
+    line-height: 1.15;
+    overflow-wrap: break-word;
+  }
+}
