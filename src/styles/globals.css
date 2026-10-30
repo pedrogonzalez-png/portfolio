@@ -86,25 +86,6 @@ body::before {
   transition: opacity .3s ease;
 }
 .hero-title.particles-ready .hero-title-fallback { opacity: 0; }
-
-/* Canvas typography is a sibling of the real h1; the headline remains
-   accessible while the actual visible glyphs are made of circular dots. */
-.particle-name-canvas {
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  display: block;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-}
-@media (prefers-reduced-motion: reduce) {
-  /* Reduced-motion still gets STATIC dots, not a duplicate solid heading. */
-  .hero-title.particles-ready.has-canvas-particles .hero-title-fallback {
-    opacity: 0;
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
   .hero-title.particles-ready .hero-title-fallback { opacity: 1; }
 }

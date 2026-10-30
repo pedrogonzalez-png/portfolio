@@ -75,27 +75,6 @@ try {
       if (!root.includes("PORTFÓLIO") || !root.includes("Abismo")) {
         throw new Error("React mounted but page content missing: " + root);
       }
-      // Real creator typography must be dots on mobile, not a plain h1.
-      if (variant.mobile) {
-        const particleCanvas = page.locator('canvas[data-particle-name="2d"]');
-        await particleCanvas.waitFor({ state: "visible", timeout: 12000 });
-        await page.waitForFunction(() => document.querySelector("#hero-name")?.classList.contains("has-canvas-particles"), null, { timeout: 12000 });
-        await page.waitForTimeout(1700); // Let the initial particles assemble.
-        const dots = await particleCanvas.evaluate(canvas => {
-          const context = canvas.getContext("2d");
-          if (!context || canvas.width < 100) return 0;
-          const pixels = context.getImageData(0, 0, canvas.width, canvas.height).data;
-          let occupied = 0;
-          for (let i = 3; i < pixels.length; i += 4) {
-            if (pixels[i] > 65) occupied++;
-          }
-          return occupied;
-        });
-        if (dots < 80) throw new Error("Creator name did not render visible particles: " + dots);
-        const label = await page.locator("#hero-name").textContent();
-        if (!label?.includes("PEDRO GONZALEZ")) throw new Error("Creator heading missing: " + label);
-        console.log(JSON.stringify({ variant: variant.name, particlePixels: dots, creator: label.trim() }));
-      }
       // Geometry regression: a centered project must be fully readable on a
       // phone, including in reduced-motion mode. A previous global
       // transform:none!important kept the card at left:50% with no centering,
