@@ -92,6 +92,36 @@ try {
         throw new Error("Résumé-backed full author name missing from About");
       }
       console.log(JSON.stringify({ variant: variant.name, author: nameLayout, about: "verified" }));
+      // Visual regression for the desktop screenshot: the animated WebGL
+      // backdrop must not end with a hard rectangular border, and three
+      // translucent screens must not compete for the same foreground.
+      const glassVisual = await page.locator(".spine-stage.project-carousel").evaluate(stage => {
+        const center = stage.querySelector(".arc-carousel .cinematic-panel.carousel-center");
+        const right = stage.querySelector(".arc-carousel .cinematic-panel.carousel-right");
+        const atmosphere = stage.querySelector(".spine-world");
+        const centerStyle = center && getComputedStyle(center);
+        const sideStyle = right && getComputedStyle(right);
+        const worldStyle = atmosphere && getComputedStyle(atmosphere);
+        return {
+          centerBackground: centerStyle?.backgroundImage || "",
+          centerOpacity: centerStyle?.opacity || "",
+          sideOpacity: Number(sideStyle?.opacity || "1"),
+          worldMask: worldStyle?.maskImage || worldStyle?.webkitMaskImage || "",
+          worldOpacity: Number(worldStyle?.opacity || "0"),
+          webglActive: Boolean(atmosphere),
+          glassEnabled: stage.dataset.glass === "true",
+        };
+      });
+      if (!glassVisual.centerBackground.includes("linear-gradient") ||
+          glassVisual.centerOpacity !== "1" || glassVisual.sideOpacity > .55) {
+        throw new Error("Carousel focus materials not applied: " + JSON.stringify(glassVisual));
+      }
+      if (glassVisual.webglActive && (glassVisual.worldMask === "none" ||
+          !glassVisual.worldMask.includes("radial-gradient") ||
+          glassVisual.worldOpacity > .52)) {
+        throw new Error("WebGL atmosphere still has a hard rectangular edge: " + JSON.stringify(glassVisual));
+      }
+      console.log(JSON.stringify({ variant: variant.name, visualCompositing: glassVisual }));
       // Geometry regression: a centered project must be fully readable on a
       // phone, including in reduced-motion mode. A previous global
       // transform:none!important kept the card at left:50% with no centering,
