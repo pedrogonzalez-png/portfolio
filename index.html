@@ -5,6 +5,66 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Portfólio interativo 3D — Antigravity. Projeto em construção." />
     <title>Portfólio Antigravity — Em construção</title>
+    <!-- Diagnóstico opt-in: abra ?diagnostico=1 no celular para capturar erros sem DevTools. -->
+    <script>
+      (function () {
+        if (!/[?&]diagnostico=1(?:&|$)/.test(location.search)) return;
+        var errors = [];
+        window.addEventListener("error", function (event) {
+          var resource = event.target && event.target !== window ? event.target : null;
+          var message = resource
+            ? "Recurso não carregado: " + (resource.src || resource.href || resource.tagName)
+            : "Erro JS: " + (event.message || "desconhecido") + " — " + (event.filename || "") + ":" + (event.lineno || 0);
+          errors.push(message);
+        }, true);
+        window.addEventListener("unhandledrejection", function (event) {
+          errors.push("Promise rejeitada: " + String(event.reason && (event.reason.stack || event.reason.message || event.reason)));
+        });
+        document.addEventListener("DOMContentLoaded", function () {
+          var panel = document.createElement("pre");
+          panel.id = "portfolio-diagnostico";
+          panel.setAttribute("role", "status");
+          panel.style.cssText = [
+            "position:fixed", "top:0", "left:0", "right:0", "z-index:2147483647",
+            "max-height:60dvh", "overflow:auto", "margin:0", "padding:14px",
+            "color:#f7e7d8", "background:rgba(10,8,12,.97)",
+            "border-bottom:2px solid #e3b37a", "font:12px/1.5 monospace",
+            "white-space:pre-wrap", "overflow-wrap:anywhere", "text-align:left",
+            "box-sizing:border-box", "user-select:text"
+          ].join(";");
+          document.body.appendChild(panel);
+          function describe(element) {
+            if (!element) return "NÃO ENCONTRADO";
+            var style = window.getComputedStyle(element);
+            var rect = element.getBoundingClientRect();
+            return "encontrado | display=" + style.display +
+              " | visibility=" + style.visibility +
+              " | opacity=" + style.opacity +
+              " | caixa=" + Math.round(rect.width) + "x" + Math.round(rect.height) +
+              " | mask=" + (style.webkitMaskImage || style.maskImage || "none");
+          }
+          function update() {
+            var root = document.getElementById("root");
+            var header = document.querySelector(".site-header");
+            var masked = document.querySelector(".preset-fractured-desktop");
+            panel.textContent = [
+              "DIAGNÓSTICO DO PORTFÓLIO — envie uma captura desta tela",
+              "URL: " + location.pathname,
+              "Navegador: " + navigator.userAgent.slice(0, 160),
+              "Documento: " + document.readyState,
+              "React / #root: " + (root ? root.childElementCount + " elementos diretos" : "NÃO ENCONTRADO"),
+              "Menu: " + describe(header),
+              "Camada visual: " + describe(masked),
+              "Scripts de módulo: " + Array.from(document.querySelectorAll('script[type="module"]')).map(function (el) { return el.src || "inline"; }).join(", "),
+              "Erros capturados (" + errors.length + "):",
+              errors.slice(-8).join("\n") || "Nenhum erro capturado"
+            ].join("\n");
+          }
+          update();
+          setInterval(update, 1000);
+        });
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>
