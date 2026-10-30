@@ -31,7 +31,7 @@ describe("Hyprland-Themes on its own page",()=>{
       .toBeInTheDocument();
     expect(document.body.querySelector(".mobile-landscape-stage > .hyprland-dedicated-page"))
       .toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /Voltar aos projetos/ })).toBeInTheDocument();
+    expect(await screen.findByRole("button", { name: /Voltar aos projetos/ })).toBeInTheDocument();
     unmount();
     expect(document.body.querySelector(".mobile-landscape-experience")).toBeNull();
   });
