@@ -726,39 +726,8 @@
   }
 }
 
-/* Respect the OS setting until visitors explicitly opt into animation. */
-@media (prefers-reduced-motion: reduce) {
-  .spine-stage.project-carousel .arc-carousel .cinematic-panel.carousel-entering,
-  .spine-stage.project-carousel .arc-carousel .cinematic-panel.carousel-exiting,
-  .spine-stage.project-carousel .arc-carousel .cinematic-panel.carousel-wrapping {
-    animation: none;
-  }
-  .spine-stage.project-carousel[data-force-motion="true"] .arc-carousel .cinematic-panel.carousel-entering {
-    animation: carousel-panel-enter 650ms cubic-bezier(.16,.82,.18,1) both;
-  }
-  .spine-stage.project-carousel[data-force-motion="true"] .arc-carousel .cinematic-panel.carousel-exiting {
-    animation: carousel-panel-exit 650ms cubic-bezier(.24,.75,.26,1) both;
-  }
-  .spine-stage.project-carousel[data-force-motion="true"] .arc-carousel .cinematic-panel.carousel-wrapping {
-    animation: carousel-panel-wrap 650ms cubic-bezier(.22,.72,.22,1) both;
-  }
-}
-
-/* Appears only when the operating system has reduced motion enabled. */
-.spine-stage.project-carousel .carousel-motion-toggle {
-  position: absolute;
-  z-index: 12;
-  top: 1px;
-  right: clamp(12px, 4vw, 28px);
-  padding: 7px 12px;
-  border: 1px solid color-mix(in srgb, var(--color-accent-yellow) 40%, transparent);
-  border-radius: 999px;
-  color: var(--color-text);
-  background: color-mix(in srgb, var(--color-surface) 88%, transparent);
-  font: 600 11px var(--font-body);
-  cursor: pointer;
-}
-.spine-stage.project-carousel .carousel-motion-toggle:focus-visible {
-  outline: 2px solid var(--color-accent-yellow);
-  outline-offset: 3px;
-}
+/*
+ * The project cards always animate when changing selection, including on
+ * phones whose system requests reduced motion. This is a deliberate
+ * carousel-only preference; other page animations retain their own rules.
+ */
