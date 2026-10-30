@@ -100,8 +100,6 @@ export function ProjectPanel({ onOpenThemeStudio }: { onOpenThemeStudio?: () => 
   const [activeIndex, setActiveIndex] = useState(0);
   const [previousIndex, setPreviousIndex] = useState<number | null>(null);
   const [isChanging, setIsChanging] = useState(false);
-  const [systemReducedMotion, setSystemReducedMotion] = useState(false);
-  const [forceCarouselMotion, setForceCarouselMotion] = useState(false);
   const [carouselDirection, setCarouselDirection] = useState<"next" | "previous">("next");
   const [hasSwitched, setHasSwitched] = useState(false);
   const activeRef = useRef(0);
@@ -110,15 +108,6 @@ export function ProjectPanel({ onOpenThemeStudio }: { onOpenThemeStudio?: () => 
   const trigger = useRef<HTMLButtonElement | null>(null);
   const touchStart = useRef<{ x: number; y: number } | null>(null);
   const suppressSwipeClick = useRef(false);
-  useEffect(() => {
-    const query = window.matchMedia?.("(prefers-reduced-motion: reduce)");
-    if (!query) return;
-    const refresh = () => setSystemReducedMotion(query.matches);
-    refresh();
-    query.addEventListener?.("change", refresh);
-    return () => query.removeEventListener?.("change", refresh);
-  }, []);
-
   const projects = useMemo(
     () => PLACEHOLDER_PROJECTS.filter((p) => p.featured && p.status !== "hidden"),
     [],
@@ -272,7 +261,6 @@ export function ProjectPanel({ onOpenThemeStudio }: { onOpenThemeStudio?: () => 
         id="spine-stage"
         data-carousel-direction={carouselDirection}
         data-carousel-switched={hasSwitched ? "true" : "false"}
-        data-force-motion={forceCarouselMotion ? "true" : "false"}
         className={"spine-stage project-carousel" + (hasSwitched ? " has-switched" : "") + (abismoOpen ? (abismoClosing ? " is-abismo-closing" : " is-abismo-playing") : site3dOpen ? (site3dClosing ? " is-site3d-closing" : " is-site3d-playing") : "")}
         ref={stageRef}
         role="region"
@@ -291,16 +279,6 @@ export function ProjectPanel({ onOpenThemeStudio }: { onOpenThemeStudio?: () => 
           event.stopPropagation();
         }}
       >
-        {systemReducedMotion && !abismoOpen && !site3dOpen && (
-          <button
-            className="carousel-motion-toggle"
-            type="button"
-            aria-pressed={forceCarouselMotion}
-            onClick={() => setForceCarouselMotion((value) => !value)}
-          >
-            {forceCarouselMotion ? "Desativar animação" : "Animar troca de cards"}
-          </button>
-        )}
         <SpineWorld />
         <div className="immersive-panels arc-carousel" aria-label="Projetos em destaque">
           {projects.map((project, index) => {
