@@ -517,3 +517,107 @@
   .spine-stage.project-carousel .cinematic-panel.carousel-center .cinematic-panel-bottom,
   .spine-stage.project-carousel .cinematic-panel.carousel-center .cinematic-panel-reflection { animation: none; }
 }
+
+
+/* A genuine per-switch directional reveal, not just a hover animation.
+   The moving glass card keeps its own positioning transform; the contents
+   and warm trail provide a readable arrival on touch and keyboard too. */
+.spine-stage.project-carousel[data-carousel-direction="next"] {
+  --carousel-arrival-x: 36px;
+  --carousel-trail-from: 68%;
+  --carousel-trail-to: -68%;
+}
+.spine-stage.project-carousel[data-carousel-direction="previous"] {
+  --carousel-arrival-x: -36px;
+  --carousel-trail-from: -68%;
+  --carousel-trail-to: 68%;
+}
+.spine-stage.project-carousel.has-switched .cinematic-panel.carousel-center .cinematic-panel-visual {
+  animation: carousel-art-reveal 850ms cubic-bezier(.19,.88,.25,1) both;
+}
+.spine-stage.project-carousel.has-switched .cinematic-panel.carousel-center .cinematic-panel-hero {
+  animation: carousel-title-reveal 800ms cubic-bezier(.16,1,.3,1) both;
+}
+.spine-stage.project-carousel.has-switched .cinematic-panel.carousel-center .cinematic-panel-top,
+.spine-stage.project-carousel.has-switched .cinematic-panel.carousel-center .cinematic-panel-bottom {
+  animation: carousel-meta-arrive 900ms ease-out both;
+}
+.spine-stage.project-carousel .arc-carousel .carousel-change-trail {
+  position: absolute;
+  z-index: 7;
+  inset: 12% 21%;
+  border-radius: 24px;
+  pointer-events: none;
+  opacity: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 9%,
+    color-mix(in srgb, var(--color-accent-primary) 17%, transparent) 37%,
+    color-mix(in srgb, var(--color-accent-yellow) 40%, transparent) 50%,
+    transparent 68%
+  );
+  filter: blur(17px);
+  mix-blend-mode: screen;
+  animation: carousel-light-trail 820ms cubic-bezier(.22,.75,.26,1) both;
+}
+@keyframes carousel-art-reveal {
+  0% {
+    opacity: .14;
+    filter: blur(8px) brightness(.75);
+    transform: translateX(var(--carousel-arrival-x)) scale(.965);
+  }
+  50% { opacity: .55; filter: blur(2px) brightness(1.13); }
+  100% { opacity: .59; filter: none; transform: translateX(0) scale(1); }
+}
+@keyframes carousel-title-reveal {
+  0% {
+    opacity: .08;
+    transform: translateX(var(--carousel-arrival-x)) translateY(calc(-50% + 12px)) translateZ(25px) scale(.97);
+    filter: blur(5px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0) translateY(-50%) translateZ(25px) scale(1);
+    filter: blur(0);
+  }
+}
+@keyframes carousel-light-trail {
+  0% { opacity: 0; transform: translateX(var(--carousel-trail-from)) scaleX(.72); }
+  25% { opacity: .8; }
+  70% { opacity: .42; }
+  100% { opacity: 0; transform: translateX(var(--carousel-trail-to)) scaleX(1.1); }
+}
+@media (max-width: 600px) {
+  .spine-stage.project-carousel[data-carousel-direction] {
+    --carousel-arrival-x: 24px;
+  }
+  .spine-stage.project-carousel[data-carousel-direction="previous"] {
+    --carousel-arrival-x: -24px;
+  }
+  .spine-stage.project-carousel .arc-carousel .carousel-change-trail {
+    inset: 20% 9%;
+    filter: blur(12px);
+    animation-duration: 710ms;
+  }
+  .spine-stage.project-carousel.has-switched .cinematic-panel.carousel-center .cinematic-panel-visual {
+    animation-duration: 690ms;
+  }
+  .spine-stage.project-carousel.has-switched .cinematic-panel.carousel-center .cinematic-panel-hero {
+    animation-duration: 660ms;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .spine-stage.project-carousel .arc-carousel .carousel-change-trail { display: none; }
+  .spine-stage.project-carousel.has-switched .cinematic-panel.carousel-center .cinematic-panel-visual {
+    animation: none;
+  }
+  .spine-stage.project-carousel.has-switched .cinematic-panel.carousel-center .cinematic-panel-hero,
+  .spine-stage.project-carousel.has-switched .cinematic-panel.carousel-center .cinematic-panel-top,
+  .spine-stage.project-carousel.has-switched .cinematic-panel.carousel-center .cinematic-panel-bottom {
+    animation: carousel-quiet-fade 150ms ease-out both;
+  }
+}
+@keyframes carousel-quiet-fade {
+  from { opacity: .7; }
+  to { opacity: 1; }
+}

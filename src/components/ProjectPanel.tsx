@@ -98,6 +98,8 @@ export function ProjectPanel({ onOpenThemeStudio }: { onOpenThemeStudio?: () => 
   const [site3dOpen, setSite3dOpen] = useState(false);
   const [site3dClosing, setSite3dClosing] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
+  const [carouselDirection, setCarouselDirection] = useState<"next" | "previous">("next");
+  const [hasSwitched, setHasSwitched] = useState(false);
   const activeRef = useRef(0);
   const stageRef = useRef<HTMLDivElement>(null);
   const closeButton = useRef<HTMLButtonElement>(null);
@@ -110,8 +112,15 @@ export function ProjectPanel({ onOpenThemeStudio }: { onOpenThemeStudio?: () => 
   );
 
   const activate = useCallback((index: number) => {
-    if (!projects.length) return;
+    if (projects.length < 2) return;
     const next = ((index % projects.length) + projects.length) % projects.length;
+    const current = activeRef.current;
+    if (next === current) return;
+    // Determine the shortest circular direction, including last -> first.
+    const stepsForward = (next - current + projects.length) % projects.length;
+    const stepsBackward = (current - next + projects.length) % projects.length;
+    setCarouselDirection(stepsForward <= stepsBackward ? "next" : "previous");
+    setHasSwitched(true);
     activeRef.current = next;
     setActiveIndex(next);
   }, [projects.length]);
@@ -239,7 +248,9 @@ export function ProjectPanel({ onOpenThemeStudio }: { onOpenThemeStudio?: () => 
     <>
       <div
         id="spine-stage"
-        className={"spine-stage project-carousel" + (abismoOpen ? (abismoClosing ? " is-abismo-closing" : " is-abismo-playing") : site3dOpen ? (site3dClosing ? " is-site3d-closing" : " is-site3d-playing") : "")}
+        data-carousel-direction={carouselDirection}
+        data-carousel-switched={hasSwitched ? "true" : "false"}
+        className={"spine-stage project-carousel" + (hasSwitched ? " has-switched" : "") + (abismoOpen ? (abismoClosing ? " is-abismo-closing" : " is-abismo-playing") : site3dOpen ? (site3dClosing ? " is-site3d-closing" : " is-site3d-playing") : "")}
         ref={stageRef}
         role="region"
         aria-roledescription="carrossel"
@@ -326,6 +337,9 @@ export function ProjectPanel({ onOpenThemeStudio }: { onOpenThemeStudio?: () => 
               </button>
             );
           })}
+          {hasSwitched && !abismoOpen && !site3dOpen && (
+            <span key={activeIndex} className="carousel-change-trail" aria-hidden="true" />
+          )}
         </div>
       </div>
       <p id="project-carousel-help" className="carousel-accessibility-hint">
