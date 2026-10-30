@@ -8,6 +8,28 @@ afterEach(() => {
 });
 
 describe("Abismo embedded inside its own carousel card", () => {
+  it("opens Abismo in a mobile landscape layer without changing the original iframe", async () => {
+    vi.stubGlobal("matchMedia", vi.fn((query: string) => ({
+      matches: query === "(pointer: coarse)",
+      media: query,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+    })));
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({
+      ok: true,
+      headers: { get: () => "application/json" },
+      json: async () => ({ build: "abismo", base: "/abismo/" }),
+    }));
+    const { unmount } = render(<AbismoGameCard onClose={vi.fn()}/>);
+    expect(screen.getByRole("dialog", { name: "Abismo em modo horizontal" })).toBeInTheDocument();
+    expect(document.body.querySelector(".mobile-landscape-stage .abismo-live-card")).toBeInTheDocument();
+    expect(await screen.findByTitle("Abismo — jogo Phaser integrado ao card"))
+      .toHaveAttribute("src", "/abismo/index.html");
+    unmount();
+    expect(document.body.querySelector(".mobile-landscape-experience")).toBeNull();
+  });
+
+
   it("never loads an unrelated or missing page as the actual game", async () => {
     const fetchMock = vi.fn().mockResolvedValue({
       ok: true,
