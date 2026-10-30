@@ -1,0 +1,72 @@
+/*
+ * Author profile is grounded in the owner's supplied résumé.
+ * Keep the already-working Wuthering Waves-inspired color tokens, desktop
+ * particle interaction, mobile fallback and project carousel unchanged.
+ */
+.hyprland-route-home #hero-name.hero-title {
+  font-size: clamp(2.05rem, 7.3vw, 7.1rem);
+  letter-spacing: -.065em;
+  white-space: nowrap;
+}
+.hyprland-route-home .hero-placeholder {
+  max-width: 100%;
+  margin-inline: auto;
+  color: var(--color-text-variant);
+  font-family: var(--font-body);
+  font-size: clamp(.56rem, 1vw, .73rem);
+  font-weight: 650;
+  letter-spacing: .14em;
+  line-height: 1.65;
+}
+.hyprland-route-home .about-copy .author-identity {
+  margin: 1.35rem 0 1.2rem;
+  font-family: var(--font-body);
+  font-size: clamp(.91rem, 1.4vw, 1.12rem);
+  font-weight: 750;
+  letter-spacing: .035em;
+  line-height: 1.5;
+  color: var(--color-accent-yellow);
+}
+.hyprland-route-home .about-copy > p:not(.eyebrow):not(.author-identity) {
+  max-width: 64ch;
+  margin: 0 0 1.08rem;
+  color: var(--color-text-variant);
+  line-height: 1.83;
+}
+.hyprland-route-home .author-skills {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .55rem;
+  padding: 0;
+  margin: 1.65rem 0 .65rem;
+  list-style: none;
+}
+.hyprland-route-home .author-skills li {
+  max-width: 100%;
+  border: 1px solid color-mix(in srgb, var(--color-outline) 30%, transparent);
+  border-radius: 5px;
+  background: color-mix(in srgb, var(--color-surface-container) 36%, transparent);
+  color: var(--color-text);
+  padding: .55rem .73rem;
+  font-family: var(--font-body);
+  font-size: .73rem;
+  line-height: 1.4;
+}
+@media (max-width: 600px) {
+  .hyprland-route-home #hero-name.hero-title {
+    font-size: clamp(1.65rem, 7.5vw, 2.9rem);
+    letter-spacing: -.07em;
+  }
+  .hyprland-route-home .hero-placeholder {
+    font-size: clamp(.48rem, 2.05vw, .6rem);
+    letter-spacing: .075em;
+    overflow-wrap: anywhere;
+  }
+  .hyprland-route-home .about-copy .author-identity {
+    letter-spacing: .01em;
+  }
+  .hyprland-route-home .author-skills li {
+    font-size: .68rem;
+  }
+}
