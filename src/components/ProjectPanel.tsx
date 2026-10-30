@@ -98,6 +98,10 @@ export function ProjectPanel({ onOpenThemeStudio }: { onOpenThemeStudio?: () => 
   const [site3dOpen, setSite3dOpen] = useState(false);
   const [site3dClosing, setSite3dClosing] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
+  const [previousIndex, setPreviousIndex] = useState<number | null>(null);
+  const [isChanging, setIsChanging] = useState(false);
+  const [systemReducedMotion, setSystemReducedMotion] = useState(false);
+  const [forceCarouselMotion, setForceCarouselMotion] = useState(false);
   const [carouselDirection, setCarouselDirection] = useState<"next" | "previous">("next");
   const [hasSwitched, setHasSwitched] = useState(false);
   const activeRef = useRef(0);
@@ -106,6 +110,15 @@ export function ProjectPanel({ onOpenThemeStudio }: { onOpenThemeStudio?: () => 
   const trigger = useRef<HTMLButtonElement | null>(null);
   const touchStart = useRef<{ x: number; y: number } | null>(null);
   const suppressSwipeClick = useRef(false);
+  useEffect(() => {
+    const query = window.matchMedia?.("(prefers-reduced-motion: reduce)");
+    if (!query) return;
+    const refresh = () => setSystemReducedMotion(query.matches);
+    refresh();
+    query.addEventListener?.("change", refresh);
+    return () => query.removeEventListener?.("change", refresh);
+  }, []);
+
   const projects = useMemo(
     () => PLACEHOLDER_PROJECTS.filter((p) => p.featured && p.status !== "hidden"),
     [],
@@ -121,9 +134,18 @@ export function ProjectPanel({ onOpenThemeStudio }: { onOpenThemeStudio?: () => 
     const stepsBackward = (current - next + projects.length) % projects.length;
     setCarouselDirection(stepsForward <= stepsBackward ? "next" : "previous");
     setHasSwitched(true);
+    setPreviousIndex(current);
+    setIsChanging(true);
     activeRef.current = next;
     setActiveIndex(next);
   }, [projects.length]);
+
+  useEffect(() => {
+    if (!isChanging) return;
+    // Covers reduced-motion browsers (no animationend) and interrupted swipes.
+    const timeout = window.setTimeout(() => setIsChanging(false), 920);
+    return () => window.clearTimeout(timeout);
+  }, [isChanging, activeIndex]);
 
   const onCarouselTouchStart = (event: ReactTouchEvent<HTMLDivElement>) => {
     if (abismoOpen || site3dOpen || selected || event.touches.length !== 1) return;
@@ -250,6 +272,7 @@ export function ProjectPanel({ onOpenThemeStudio }: { onOpenThemeStudio?: () => 
         id="spine-stage"
         data-carousel-direction={carouselDirection}
         data-carousel-switched={hasSwitched ? "true" : "false"}
+        data-force-motion={forceCarouselMotion ? "true" : "false"}
         className={"spine-stage project-carousel" + (hasSwitched ? " has-switched" : "") + (abismoOpen ? (abismoClosing ? " is-abismo-closing" : " is-abismo-playing") : site3dOpen ? (site3dClosing ? " is-site3d-closing" : " is-site3d-playing") : "")}
         ref={stageRef}
         role="region"
@@ -268,12 +291,27 @@ export function ProjectPanel({ onOpenThemeStudio }: { onOpenThemeStudio?: () => 
           event.stopPropagation();
         }}
       >
+        {systemReducedMotion && !abismoOpen && !site3dOpen && (
+          <button
+            className="carousel-motion-toggle"
+            type="button"
+            aria-pressed={forceCarouselMotion}
+            onClick={() => setForceCarouselMotion((value) => !value)}
+          >
+            {forceCarouselMotion ? "Desativar animação" : "Animar troca de cards"}
+          </button>
+        )}
         <SpineWorld />
         <div className="project-grid orbit-grid immersive-panels arc-carousel" aria-label="Projetos em destaque">
           {projects.map((project, index) => {
             const meta = PANEL_META[project.id] ?? { category: "PROJECT / DEVELOPMENT", headline: project.title };
             const relative = (index - activeIndex + projects.length) % projects.length;
             const position = relative === 0 ? "center" : relative === 1 ? "right" : "left";
+            const switchRole = isChanging
+              ? index === activeIndex ? " carousel-entering"
+                : index === previousIndex ? " carousel-exiting"
+                  : " carousel-wrapping"
+              : "";
             if (abismoOpen && project.id === "abismo" && position === "center") {
               return <AbismoGameCard key={project.id} onClose={closeAbismo} closing={abismoClosing} onExitComplete={finishCloseAbismo}/>;
             }
@@ -283,8 +321,14 @@ export function ProjectPanel({ onOpenThemeStudio }: { onOpenThemeStudio?: () => 
             return (
               <button
                 key={project.id}
-                className={"project-card orbit-card cinematic-panel cinematic-panel-" + index + " carousel-" + position}
+                className={"project-card orbit-card cinematic-panel cinematic-panel-" + index + " carousel-" + position + switchRole}
                 data-position={position}
+                data-switch-role={isChanging ? (index === activeIndex ? "entering" : index === previousIndex ? "exiting" : "wrapping") : "idle"}
+                onAnimationEnd={(event) => {
+                  if (event.target === event.currentTarget && event.animationName === "carousel-panel-enter") {
+                    setIsChanging(false);
+                  }
+                }}
                 data-project-id={project.id}
                 tabIndex={abismoOpen || site3dOpen ? -1 : undefined}
                 aria-hidden={abismoOpen || site3dOpen ? true : undefined}
