@@ -15,6 +15,28 @@ beforeEach(()=>window.localStorage.clear());
 afterEach(()=>{window.localStorage.clear();vi.restoreAllMocks();vi.unstubAllGlobals();});
 
 describe("Hyprland-Themes on its own page",()=>{
+  it("renders Hyprland-Themes in the same landscape frame on mobile", async () => {
+    vi.stubGlobal("matchMedia", vi.fn((query: string) => ({
+      matches: query === "(pointer: coarse)",
+      media: query,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+    })));
+    const { unmount } = render(
+      <MemoryRouter initialEntries={["/hyprland-themes"]}>
+        <ThemeProvider><Pages/></ThemeProvider>
+      </MemoryRouter>,
+    );
+    expect(await screen.findByRole("dialog", { name: "Hyprland-Themes em modo horizontal" }))
+      .toBeInTheDocument();
+    expect(document.body.querySelector(".mobile-landscape-stage > .hyprland-dedicated-page"))
+      .toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Voltar aos projetos/ })).toBeInTheDocument();
+    unmount();
+    expect(document.body.querySelector(".mobile-landscape-experience")).toBeNull();
+  });
+
+
   it("opens /hyprland-themes directly without rendering the portfolio home inside it",async()=>{
     const {container}=render(
       <MemoryRouter initialEntries={["/hyprland-themes"]}>
