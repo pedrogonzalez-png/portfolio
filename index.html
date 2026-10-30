@@ -47,12 +47,17 @@
             var root = document.getElementById("root");
             var header = document.querySelector(".site-header");
             var masked = document.querySelector(".preset-fractured-desktop");
+            var wrapper = document.querySelector(".preset-disintegrating");
+            var home = document.querySelector(".hyprland-route-home");
             panel.textContent = [
               "DIAGNÓSTICO DO PORTFÓLIO — envie uma captura desta tela",
               "URL: " + location.pathname,
               "Navegador: " + navigator.userAgent.slice(0, 160),
               "Documento: " + document.readyState,
               "React / #root: " + (root ? root.childElementCount + " elementos diretos" : "NÃO ENCONTRADO"),
+              "Reduzir animações: " + (window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "SIM" : "NÃO"),
+              "Contêiner da página: " + describe(home),
+              "Contêiner da transição: " + describe(wrapper),
               "Menu: " + describe(header),
               "Camada visual: " + describe(masked),
               "Scripts de módulo: " + Array.from(document.querySelectorAll('script[type="module"]')).map(function (el) { return el.src || "inline"; }).join(", "),
