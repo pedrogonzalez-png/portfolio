@@ -51,6 +51,7 @@
     "lint": "eslint . --max-warnings 0",
     "test": "vitest run",
     "build": "tsc --noEmit && vite build",
+    "build:vercel": "npm run sync:abismo && npm run sync:site3d && npm run build",
     "preview": "vite preview",
     "sync:abismo": "node scripts/sync-abismo.mjs",
     "sync:site3d": "node scripts/sync-site3d.mjs"
