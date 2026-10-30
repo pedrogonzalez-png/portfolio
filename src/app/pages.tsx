@@ -10,6 +10,7 @@ import { OFFICIAL_THEMES } from "../stores/themes";
 import "../styles/hyprland-entry-transition.css";
 import "../styles/cinematic-polish.css";
 import "../styles/wuwa-art-direction.css";
+import "../styles/author-profile.css";
 
 const Terminal = lazy(() => import("../components/Terminal").then((module) => ({ default: module.Terminal })));
 const ThemeStudio = lazy(() => import("../components/ThemeStudio").then((module) => ({ default: module.ThemeStudio })));
@@ -46,10 +47,10 @@ function HomePage({onOpenHyprland}:{onOpenHyprland:()=>void}) {
           <div className="hero-content">
             <div className="eyebrow"><span className="eyebrow-line" /> PORTFÓLIO / EXPERIÊNCIA INTERATIVA</div>
             <p className="hero-overline">Phaser · React · Hyprland</p>
-            <div className="hero-name-stage"><h1 id="hero-name" className="hero-title"><span className="hero-title-fallback">PORTFÓLIO 3D</span></h1><SceneIntegration /></div>
-            <p className="hero-placeholder">WEB · JOGOS · LINUX</p>
+            <div className="hero-name-stage"><h1 id="hero-name" className="hero-title"><span className="hero-title-fallback">PEDRO GONZALEZ</span></h1><SceneIntegration /></div>
+            <p className="hero-placeholder">PEDRO HENRIQUE MARIANO GONZALEZ</p>
             <p className="hero-description">
-              Desenvolvimento web, jogos e personalização Linux. Explore três projetos reais em construção.
+              Estudante de desenvolvimento de sistemas, com experiência em hardware e projetos de jogos, web e personalização Linux.
             </p>
             <a className="primary-action" href="#projetos">
               Explorar projetos <span aria-hidden="true">↘</span>
@@ -75,7 +76,14 @@ function HomePage({onOpenHyprland}:{onOpenHyprland:()=>void}) {
           <div className="about-copy">
             <p className="eyebrow">03 / SOBRE & CONTATO</p>
             <h2>O código conta <em>uma história.</em></h2>
-            <p>Abismo, site-3D e Hyprland-Themes são projetos disponíveis para exploração. Repositórios e histórico de desenvolvimento no GitHub.</p>
+            <p className="author-identity">Pedro Henrique Mariano Gonzalez</p>
+            <p>Sou estudante de ensino médio técnico em desenvolvimento de sistemas (2025–2027), com interesse em tecnologia e experiência em montagem, diagnóstico e manutenção de computadores, incluindo identificação de componentes e plataformas AMD AM3, AM4 e AM5.</p>
+            <p>Minha formação inclui redes de computadores, bancos de dados, segurança da informação e projetos de TI. Tenho conhecimentos básicos de Python, HTML e CSS.</p>
+            <ul className="author-skills" aria-label="Conhecimentos apresentados no currículo">
+              <li>Montagem e diagnóstico de PCs</li>
+              <li>Python · HTML · CSS — básico</li>
+              <li>Formação técnica em desenvolvimento de sistemas</li>
+            </ul>
             <a className="text-action" href="https://github.com/pedrogonzalez-png" target="_blank" rel="noopener noreferrer">Ver perfil no GitHub ↗</a>
           </div>
           <div className="about-orbit" aria-hidden="true"><span>DESIGN</span><span>CODE</span><span>LINUX</span></div>
