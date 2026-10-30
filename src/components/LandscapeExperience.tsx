@@ -11,7 +11,7 @@ import "../styles/mobile-landscape-experience.css";
  * The portal bypasses project carousel transforms / stacking contexts and
  * gives the original game / site / theme page the entire mobile viewport.
  */
-const MOBILE_QUERY = "(pointer: coarse) and (max-width: 1280px)";
+const MOBILE_QUERY = "(pointer: coarse)";
 
 function isMobileExperience() {
   return typeof window !== "undefined" &&
