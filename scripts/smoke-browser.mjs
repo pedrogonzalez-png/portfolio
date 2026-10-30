@@ -88,16 +88,16 @@ try {
             // Check the actual browser animation, not just a CSS file string.
             if (step === 1) {
               await page.waitForFunction(() =>
-                getComputedStyle(document.querySelector(".cinematic-panel.carousel-center .cinematic-panel-hero"))
+                document.defaultView.getComputedStyle(document.querySelector(".cinematic-panel.carousel-center .cinematic-panel-hero"))
                   .animationName.includes("carousel-title-reveal") ||
-                getComputedStyle(document.querySelector(".cinematic-panel.carousel-center .cinematic-panel-hero"))
+                document.defaultView.getComputedStyle(document.querySelector(".cinematic-panel.carousel-center .cinematic-panel-hero"))
                   .animationName.includes("carousel-quiet-fade"),
               );
               const motion = await carousel.evaluate(stage => {
                 const heading = stage.querySelector(".cinematic-panel.carousel-center .cinematic-panel-hero");
                 const trail = stage.querySelector(".carousel-change-trail");
                 return {
-                  name: heading ? getComputedStyle(heading).animationName : "none",
+                  name: heading ? document.defaultView.getComputedStyle(heading).animationName : "none",
                   trail: Boolean(trail),
                   direction: stage.getAttribute("data-carousel-direction"),
                 };
