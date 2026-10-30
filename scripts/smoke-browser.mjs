@@ -84,12 +84,6 @@ try {
         await carousel.waitFor({ state: "visible", timeout: 10000 });
         for (let step = 0; step < 3; step++) {
           if (step) {
-            if (step === 2 && variant.reducedMotion === "reduce") {
-              await page.getByRole("button", { name: "Animar troca de cards" }).click();
-              if (await carousel.getAttribute("data-force-motion") !== "true") {
-                throw new Error("User opt-in for card motion was not applied.");
-              }
-            }
             await carousel.press("ArrowRight");
             // Check the actual browser animation, not just a CSS file string.
             if (step === 1) {
@@ -129,12 +123,11 @@ try {
             if (!transition.entering || !transition.exiting || !transition.wrapping) {
               throw new Error("Directional card animation roles missing: " + JSON.stringify(transition));
             }
-            const expectsAnimation = variant.reducedMotion !== "reduce" || step === 2;
-            if (expectsAnimation && transition.animation !== "carousel-panel-enter") {
+            if (transition.animation !== "carousel-panel-enter") {
               throw new Error("Moving project card has no entrance animation: " + JSON.stringify(transition));
             }
-            if (!expectsAnimation && transition.animation !== "none") {
-              throw new Error("Reduced-motion setting ignored without opt-in: " + JSON.stringify(transition));
+            if (await page.getByRole("button", { name: /Animar troca de cards|Desativar animação/ }).count()) {
+              throw new Error("Obsolete carousel animation toggle is still visible.");
             }
             console.log(JSON.stringify({ variant: variant.name, transition }));
             await page.waitForTimeout(900);
