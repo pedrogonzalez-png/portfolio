@@ -1,0 +1,259 @@
+/*
+ * Landscape-only mobile experiences:
+ *  - app stays portrait for browsing the portfolio
+ *  - opening a project uses a fixed viewport layer
+ *  - landscape phones use native landscape viewport
+ *  - portrait phones receive a 90deg rotated landscape canvas
+ *
+ * CSS rotation is intentional: screen.orientation.lock() is not supported
+ * on many mobile browsers, notably iOS Safari without fullscreen.
+ */
+.mobile-landscape-experience {
+  position: fixed;
+  z-index: 30000;
+  inset: 0;
+  width: 100vw;
+  height: 100dvh;
+  overflow: hidden;
+  isolation: isolate;
+  background: var(--color-bg, #110a0b);
+  color: var(--color-text, #f7e7d8);
+  overscroll-behavior: contain;
+}
+.mobile-landscape-stage {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--color-bg, #110a0b);
+}
+/* The rotated box has landscape dimensions, but covers the portrait screen.
+   Positive 90deg maps its x-axis along the physical phone's long side. */
+@media (orientation: portrait) {
+  .mobile-landscape-stage {
+    top: 0;
+    right: auto;
+    bottom: auto;
+    left: 100vw;
+    width: 100dvh;
+    height: 100vw;
+    transform: rotate(90deg);
+    transform-origin: 0 0;
+  }
+}
+
+/* Isolate the playable shell from the carousel's original transforms. */
+.mobile-landscape-stage > .abismo-live-card {
+  position: absolute;
+  inset: 0;
+  left: 0;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: none;
+  height: 100%;
+  min-height: 0;
+  margin: 0;
+  transform: none;
+  border-radius: 0;
+  animation: mobile-landscape-enter 350ms ease-out both;
+  will-change: opacity;
+}
+.mobile-landscape-stage.is-closing > .abismo-live-card {
+  animation: mobile-landscape-exit 260ms ease-in both;
+  pointer-events: none;
+}
+@keyframes mobile-landscape-enter {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes mobile-landscape-exit {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+.mobile-landscape-stage .abismo-live-header {
+  display: grid;
+  flex: none;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  min-height: 49px;
+  padding: 5px max(10px, env(safe-area-inset-left));
+  gap: 10px;
+  border-bottom: 1px solid color-mix(in srgb, var(--color-accent-yellow) 25%, transparent);
+}
+.mobile-landscape-stage .abismo-live-back {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding: 7px 12px;
+  gap: 7px;
+  border: 1px solid color-mix(in srgb, var(--color-accent-yellow) 45%, transparent);
+  border-radius: 9px;
+  background: var(--color-surface-container);
+  color: var(--color-text);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.mobile-landscape-stage .abismo-live-back span { color: var(--color-accent-yellow); font-size: 18px; }
+.mobile-landscape-stage .abismo-live-brand {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+.mobile-landscape-stage .abismo-live-kicker {
+  font-size: 9px;
+  letter-spacing: .10em;
+}
+.mobile-landscape-stage .abismo-live-brand h3 {
+  font-size: clamp(12px, 2.2vw, 16px);
+  letter-spacing: .04em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.mobile-landscape-stage .abismo-live-brand h3 span { display: none; }
+.mobile-landscape-stage .abismo-live-actions {
+  justify-self: end;
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 5px;
+}
+.mobile-landscape-stage .abismo-live-actions button {
+  min-height: 38px;
+  padding: 6px 9px;
+  font-size: 11px;
+  white-space: nowrap;
+}
+.mobile-landscape-stage .abismo-live-actions .abismo-live-fullscreen {
+  min-width: 38px;
+  padding: 5px;
+}
+.mobile-landscape-stage .abismo-live-viewport {
+  flex: 1 1 auto;
+  width: 100%;
+  height: auto;
+  min-width: 0;
+  min-height: 0;
+  aspect-ratio: auto;
+  overflow: hidden;
+}
+.mobile-landscape-stage .abismo-live-viewport iframe {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.mobile-landscape-stage .abismo-live-footer { display: none; }
+.mobile-landscape-stage .abismo-live-fallback {
+  min-height: 0;
+  padding: 10px;
+  gap: .3rem;
+  overflow-y: auto;
+}
+.mobile-landscape-stage .abismo-live-fallback .abismo-live-symbol {
+  font-size: 1.65rem;
+}
+.mobile-landscape-stage .abismo-live-fallback strong {
+  font-size: clamp(.85rem, 1.6vw, 1.1rem);
+}
+.mobile-landscape-stage .abismo-live-fallback p {
+  font-size: .72rem;
+  line-height: 1.4;
+}
+.mobile-landscape-stage .abismo-live-viewport:fullscreen {
+  width: 100vw;
+  height: 100dvh;
+  aspect-ratio: auto;
+}
+
+/* The Hyprland gallery uses its OWN scroll container. No viewport overflow or
+   cropping of the large heading / theme chips / desktop preview on the phone. */
+.mobile-landscape-stage > .hyprland-dedicated-page {
+  width: 100%;
+  max-width: none;
+  height: 100%;
+  min-height: 0;
+  padding: 12px max(14px, env(safe-area-inset-left)) 28px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+.mobile-landscape-stage .preset-studio-inline {
+  width: 100%;
+  max-width: none;
+}
+.mobile-landscape-stage .preset-studio-heading {
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.mobile-landscape-stage .preset-studio-topline {
+  padding-bottom: 8px;
+}
+.mobile-landscape-stage .preset-studio-hero-copy {
+  max-width: 100%;
+}
+.mobile-landscape-stage .preset-studio-heading h1 {
+  margin: 4px 0 6px;
+  font-size: clamp(1.55rem, 4vw, 2.5rem);
+  line-height: 1.12;
+  letter-spacing: -.045em;
+  overflow-wrap: anywhere;
+}
+.mobile-landscape-stage .preset-studio-hero-copy > p {
+  max-width: 70ch;
+  font-size: .78rem;
+  line-height: 1.45;
+}
+.mobile-landscape-stage .preset-studio-kicker { font-size: .7rem; }
+.mobile-landscape-stage .preset-studio-exit {
+  min-height: 36px;
+  padding: 6px 10px;
+}
+.mobile-landscape-stage .preset-theme-gallery { gap: 12px; }
+.mobile-landscape-stage .preset-theme-choices {
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  scrollbar-width: thin;
+  -webkit-overflow-scrolling: touch;
+}
+.mobile-landscape-stage .preset-theme-choices button {
+  flex: none;
+  min-height: 36px;
+  padding: 6px 12px;
+  font-size: .7rem;
+}
+.mobile-landscape-stage .preset-stage-ultrawide,
+.mobile-landscape-stage .preset-stage-changli.preset-stage-ultrawide {
+  min-height: 0;
+  aspect-ratio: 1914 / 862;
+}
+.mobile-landscape-stage .preset-stage-standard {
+  min-height: 0;
+  aspect-ratio: 16 / 9;
+}
+.mobile-landscape-stage .preset-theme-gallery,
+.mobile-landscape-stage .preset-view-toolbar,
+.mobile-landscape-stage .preset-gallery-foot {
+  min-width: 0;
+}
+
+/* Compact physical landscape devices have little vertical space. */
+@media (max-height: 430px) and (orientation: landscape) {
+  .mobile-landscape-stage .abismo-live-header { min-height: 43px; padding-block: 3px; }
+  .mobile-landscape-stage .abismo-live-actions button,
+  .mobile-landscape-stage .abismo-live-back { min-height: 35px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mobile-landscape-stage > .abismo-live-card,
+  .mobile-landscape-stage.is-closing > .abismo-live-card { animation: none; }
+}
