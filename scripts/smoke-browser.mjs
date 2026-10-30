@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-/* global process, setTimeout, fetch, console */
+/* global process, setTimeout, fetch, console, URL, document */
 /**
  * Test actual production Vite assets running in Chromium.
  * A successful tsc, npm run build or jsdom unit test does NOT prove that
@@ -73,6 +73,18 @@ try {
       if (errors.some(text => text.startsWith("PAGEERROR:") || text.startsWith("ASSET "))) {
         throw new Error("JavaScript/asset errors in production bundle.");
       }
+      // Ensure that a visitor on a mobile browser with a blank screen can
+      // inspect the actual runtime without opening developer tools.
+      const diagnosticUrl = new URL(ORIGIN);
+      diagnosticUrl.searchParams.set("diagnostico", "1");
+      await page.goto(diagnosticUrl.toString(), { waitUntil: "domcontentloaded" });
+      await page.locator("#portfolio-diagnostico").waitFor({ state: "visible", timeout: 10000 });
+      await page.locator("#root .site-header").waitFor({ state: "visible", timeout: 10000 });
+      await page.waitForFunction(
+        () => document.querySelector("#portfolio-diagnostico")?.textContent?.includes("Menu: encontrado"),
+        null,
+        { timeout: 5000 },
+      );
     } catch (error) {
       failed = true;
       console.error(JSON.stringify({
