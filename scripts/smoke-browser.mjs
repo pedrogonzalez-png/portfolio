@@ -39,14 +39,17 @@ try {
   console.log("Testing deployment:", ORIGIN);
   browser = await chromium.launch({ headless: true });
   for (const variant of [
-    { name: "desktop", viewport: { width: 1440, height: 900 }, mobile: false },
-    { name: "mobile", viewport: { width: 390, height: 844 }, mobile: true },
+    { name: "desktop", viewport: { width: 1440, height: 900 }, mobile: false, reducedMotion: "no-preference" },
+    { name: "mobile", viewport: { width: 390, height: 844 }, mobile: true, reducedMotion: "no-preference" },
+    { name: "mobile-reduced-motion", viewport: { width: 390, height: 844 }, mobile: true, reducedMotion: "reduce" },
+    { name: "desktop-reduced-motion", viewport: { width: 1440, height: 900 }, mobile: false, reducedMotion: "reduce" },
   ]) {
     const context = await browser.newContext({
       viewport: variant.viewport,
       hasTouch: variant.mobile,
       isMobile: variant.mobile,
       deviceScaleFactor: variant.mobile ? 2 : 1,
+      reducedMotion: variant.reducedMotion,
     });
     const page = await context.newPage();
     const errors = [];
@@ -63,6 +66,10 @@ try {
     try {
       const response = await page.goto(ORIGIN, { waitUntil: "domcontentloaded", timeout: 30000 });
       await page.locator("#root .site-header").waitFor({ state: "visible", timeout: 15000 });
+      const headerBounds = await page.locator("#root .site-header").boundingBox();
+      if (!headerBounds || headerBounds.width < 80 || headerBounds.height < 25) {
+        throw new Error("Portfolio menu is mounted but has zero layout size: " + JSON.stringify(headerBounds));
+      }
       await page.getByRole("heading", { name: /Um universo de/i }).waitFor({ state: "attached", timeout: 10000 });
       root = (await page.locator("#root").innerText()).slice(0, 1000);
       if (!root.includes("PORTFÓLIO") || !root.includes("Abismo")) {
