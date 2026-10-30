@@ -1,0 +1,53 @@
+name: Vercel production build (both embedded projects)
+
+on:
+  pull_request:
+    paths:
+      - "vercel.json"
+      - "package.json"
+      - "scripts/sync-abismo.mjs"
+      - "scripts/sync-site3d.mjs"
+      - ".github/workflows/vercel-production.yml"
+  push:
+    paths:
+      - "vercel.json"
+      - "package.json"
+      - "scripts/sync-abismo.mjs"
+      - "scripts/sync-site3d.mjs"
+      - ".github/workflows/vercel-production.yml"
+  workflow_dispatch:
+
+jobs:
+  build-embedded-projects:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Build exactly as Vercel does
+        run: npm run build:vercel
+      - name: Verify BOTH experiences are deployed
+        run: |
+          test -f dist/index.html
+          test -f dist/abismo/index.html
+          test -f dist/abismo/ready.json
+          test -d dist/abismo/assets
+          test -f dist/site-3d/index.html
+          test -f dist/site-3d/ready.json
+          test -d dist/site-3d/assets
+          grep -q '/abismo/assets/' dist/abismo/index.html
+          grep -q '/site-3d/assets/' dist/site-3d/index.html
+          node --input-type=module -e '
+            import fs from "node:fs";
+            const game = JSON.parse(fs.readFileSync("dist/abismo/ready.json"));
+            const site = JSON.parse(fs.readFileSync("dist/site-3d/ready.json"));
+            if (game.build !== "abismo" || game.base !== "/abismo/") process.exit(1);
+            if (site.build !== "site-3d" || site.base !== "/site-3d/") process.exit(1);
+            console.log("Verified:", game.revision, site.revision);
+          '
+      - name: Build sizes
+        run: du -sh dist dist/abismo dist/site-3d || true
