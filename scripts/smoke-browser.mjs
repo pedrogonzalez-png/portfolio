@@ -1,3 +1,4 @@
+/* global process, setTimeout, fetch, console */
 #!/usr/bin/env node
 /**
  * Test actual production Vite assets running in Chromium.
