@@ -203,7 +203,7 @@ describe("three-panel carousel", () => {
       .toHaveClass("carousel-center");
   });
 
-  it("allows an explicit opt-in for carousel animation when Android reduces motion", () => {
+  it("always switches cards without showing an animation toggle, even with reduced motion", () => {
     vi.stubGlobal("matchMedia", vi.fn((query: string) => ({
       matches: query === "(prefers-reduced-motion: reduce)",
       media: query,
@@ -213,11 +213,9 @@ describe("three-panel carousel", () => {
     try {
       const { unmount } = render(<ProjectPanel />);
       const carousel = screen.getByRole("region", { name: "Carrossel de projetos" });
-      expect(carousel).toHaveAttribute("data-force-motion", "false");
-      fireEvent.click(screen.getByRole("button", { name: "Animar troca de cards" }));
-      expect(carousel).toHaveAttribute("data-force-motion", "true");
-      expect(screen.getByRole("button", { name: "Desativar animação" }))
-        .toHaveAttribute("aria-pressed", "true");
+      expect(screen.queryByRole("button", { name: /Animar troca de cards|Desativar animação/ }))
+        .not.toBeInTheDocument();
+      expect(carousel).not.toHaveAttribute("data-force-motion");
       fireEvent.keyDown(carousel, { key: "ArrowRight" });
       expect(screen.getByRole("button", { name: "Explorar site-3D no card" }))
         .toHaveAttribute("data-switch-role", "entering");
