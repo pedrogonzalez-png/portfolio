@@ -14,7 +14,7 @@ export function ThemeStudio({ onClose }: { onClose: () => void }) {
       <header className="preset-studio-heading">
         <div className="preset-studio-topline">
           <span className="preset-studio-overline">
-            <span className="preset-studio-index">04</span> / HYPRLAND THEMES
+            <span className="preset-studio-index">PROJETO</span> / HYPRLAND THEMES
           </span>
           <button type="button" className="preset-studio-exit" onClick={onClose}>
             <span aria-hidden="true">←</span> Voltar aos projetos

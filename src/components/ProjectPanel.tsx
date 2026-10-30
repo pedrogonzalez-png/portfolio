@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { KeyboardEvent as ReactKeyboardEvent, PointerEvent as ReactPointerEvent, TouchEvent as ReactTouchEvent } from "react";
-import { PLACEHOLDER_PROJECTS, type Project } from "./PlaceholderCatalog";
-import { EmbeddedDemo } from "./EmbeddedDemo";
+import { PLACEHOLDER_PROJECTS } from "./PlaceholderCatalog";
 import { AbismoGameCard } from "./AbismoGameCard";
 import { Site3DCard } from "./Site3DCard";
 import { SpineWorld } from "./SpineWorld";
@@ -91,8 +90,6 @@ function useCarouselWheel(
 }
 
 export function ProjectPanel({ onOpenThemeStudio }: { onOpenThemeStudio?: () => void } = {}) {
-  const [selected, setSelected] = useState<Project | null>(null);
-  const [showDemo, setShowDemo] = useState(false);
   const [abismoOpen, setAbismoOpen] = useState(false);
   const [abismoClosing, setAbismoClosing] = useState(false);
   const [site3dOpen, setSite3dOpen] = useState(false);
@@ -100,8 +97,6 @@ export function ProjectPanel({ onOpenThemeStudio }: { onOpenThemeStudio?: () => 
   const [activeIndex, setActiveIndex] = useState(0);
   const activeRef = useRef(0);
   const stageRef = useRef<HTMLDivElement>(null);
-  const closeButton = useRef<HTMLButtonElement>(null);
-  const trigger = useRef<HTMLButtonElement | null>(null);
   const touchStart = useRef<{ x: number; y: number } | null>(null);
   const suppressSwipeClick = useRef(false);
   const projects = useMemo(
@@ -117,7 +112,7 @@ export function ProjectPanel({ onOpenThemeStudio }: { onOpenThemeStudio?: () => 
   }, [projects.length]);
 
   const onCarouselTouchStart = (event: ReactTouchEvent<HTMLDivElement>) => {
-    if (abismoOpen || site3dOpen || selected || event.touches.length !== 1) return;
+    if (abismoOpen || site3dOpen || event.touches.length !== 1) return;
     suppressSwipeClick.current = false;
     touchStart.current = { x: event.touches[0].clientX, y: event.touches[0].clientY };
   };
@@ -125,7 +120,7 @@ export function ProjectPanel({ onOpenThemeStudio }: { onOpenThemeStudio?: () => 
   const onCarouselTouchEnd = (event: ReactTouchEvent<HTMLDivElement>) => {
     const start = touchStart.current;
     touchStart.current = null;
-    if (!start || abismoOpen || site3dOpen || selected || !event.changedTouches.length) return;
+    if (!start || abismoOpen || site3dOpen || !event.changedTouches.length) return;
     const dx = event.changedTouches[0].clientX - start.x;
     const dy = event.changedTouches[0].clientY - start.y;
     // Horizontal swipe changes project; vertical swipes keep normal page scroll.
@@ -135,10 +130,10 @@ export function ProjectPanel({ onOpenThemeStudio }: { onOpenThemeStudio?: () => 
     }
   };
 
-  useCarouselWheel(stageRef, activeRef, projects.length, activate, selected !== null || abismoOpen || site3dOpen);
+  useCarouselWheel(stageRef, activeRef, projects.length, activate, abismoOpen || site3dOpen);
 
   const onCarouselKeyDown = (event: ReactKeyboardEvent<HTMLDivElement>) => {
-    if (selected || abismoOpen || site3dOpen || event.altKey || event.ctrlKey || event.metaKey) return;
+    if (abismoOpen || site3dOpen || event.altKey || event.ctrlKey || event.metaKey) return;
     if (event.key === "ArrowRight" || event.key === "ArrowDown") {
       event.preventDefault();
       activate(activeRef.current + 1);
@@ -153,25 +148,6 @@ export function ProjectPanel({ onOpenThemeStudio }: { onOpenThemeStudio?: () => 
       activate(projects.length - 1);
     }
   };
-
-  useEffect(() => {
-    if (!selected) return;
-    const oldOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    closeButton.current?.focus();
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        setShowDemo(false);
-        setSelected(null);
-      }
-    };
-    document.addEventListener("keydown", onKeyDown);
-    return () => {
-      document.body.style.overflow = oldOverflow;
-      document.removeEventListener("keydown", onKeyDown);
-      trigger.current?.focus();
-    };
-  }, [selected]);
 
   const finishCloseAbismo = useCallback(() => {
     setAbismoOpen(false);
@@ -230,11 +206,6 @@ export function ProjectPanel({ onOpenThemeStudio }: { onOpenThemeStudio?: () => 
     return () => window.removeEventListener("keydown", onEscape);
   }, [site3dOpen, closeSite3D]);
 
-  const close = () => {
-    setShowDemo(false);
-    setSelected(null);
-  };
-
   return (
     <>
       <div
@@ -281,20 +252,17 @@ export function ProjectPanel({ onOpenThemeStudio }: { onOpenThemeStudio?: () => 
                 type="button"
                 onPointerMove={handlePanelMove}
                 onPointerLeave={handlePanelLeave}
-                onClick={(event) => {
+                onClick={() => {
                   if (index !== activeIndex) {
                     activate(index);
-                  } else if (project.id === "hyprland-themes" && onOpenThemeStudio) {
-                    onOpenThemeStudio();
+                  } else if (project.id === "hyprland-themes") {
+                    onOpenThemeStudio?.();
                   } else if (project.id === "abismo") {
                     setAbismoClosing(false);
                     setAbismoOpen(true);
                   } else if (project.id === "site-3d") {
                     setSite3dClosing(false);
                     setSite3dOpen(true);
-                  } else {
-                    trigger.current = event.currentTarget;
-                    setSelected(project);
                   }
                 }}
                 aria-label={index === activeIndex
@@ -318,7 +286,7 @@ export function ProjectPanel({ onOpenThemeStudio }: { onOpenThemeStudio?: () => 
                   <span className="cinematic-panel-title">{meta.headline}</span>
                 </span>
                 <span className="cinematic-panel-bottom" aria-hidden="true">
-                  <span className="cinematic-panel-note">CONCEITO VISUAL · EM DESENVOLVIMENTO</span>
+                  <span className="cinematic-panel-note">{project.id === "abismo" ? "JOGO ORIGINAL · PHASER" : project.id === "site-3d" ? "GALERIA INTERATIVA · REACT" : "TEMAS PARA HYPRLAND"}</span>
                   <span className="cinematic-panel-explore">
                     {index === activeIndex ? "EXPLORAR" : "FOCAR"} <span>↗</span>
                   </span>
@@ -334,32 +302,7 @@ export function ProjectPanel({ onOpenThemeStudio }: { onOpenThemeStudio?: () => 
       <span className="carousel-accessibility-hint" role="status" aria-live="polite">
         Projeto {activeIndex + 1} de {projects.length}: {projects[activeIndex]?.title}
       </span>
-      {selected && (
-        <div className="modal-backdrop" onMouseDown={(event) => {
-          if (event.target === event.currentTarget) close();
-        }}>
-          <div className="project-dialog" role="dialog" aria-modal="true" aria-labelledby="project-dialog-title">
-            <button className="modal-close" type="button" ref={closeButton} onClick={close} aria-label="Fechar projeto">✕</button>
-            <p className="eyebrow">EXPLORAR PROJETO / {selected.status.toUpperCase()}</p>
-            <h2 id="project-dialog-title">{selected.title}</h2>
-            <p className="dialog-summary">{selected.summary.split(" Status:")[0]}</p>
-            <div className="dialog-tags">{selected.tags.map((tag) => <span key={tag}>{tag}</span>)}</div>
-            <p className="dialog-status">
-              {selected.isFinalizedConfirmed ? "Finalização confirmada" : "Projeto ainda não finalizado"} · {selected.demoUrl ? "Demo configurada" : "Sem demonstração publicada"}
-            </p>
-            {showDemo && selected.demoUrl && selected.isFinalizedConfirmed && selected.status === "approved" && (
-              <EmbeddedDemo projectId={selected.id} demoUrl={selected.demoUrl} isOpen={showDemo} onClose={() => setShowDemo(false)} />
-            )}
-            <div className="dialog-actions">
-              <a className="primary-action" href={selected.sourceUrl} target="_blank" rel="noopener noreferrer">Ver código no GitHub ↗</a>
-              {selected.demoUrl && selected.isFinalizedConfirmed && selected.status === "approved" && (
-                <button className="secondary-action" type="button" onClick={() => setShowDemo(true)}>Abrir demonstração</button>
-              )}
-              <button className="secondary-action" type="button" onClick={close}>Voltar à constelação</button>
-            </div>
-          </div>
-        </div>
-      )}
+
     </>
   );
 }
