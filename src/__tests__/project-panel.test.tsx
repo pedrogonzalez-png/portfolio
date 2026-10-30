@@ -169,7 +169,7 @@ describe("three-panel carousel", () => {
       .toHaveAttribute("data-position", "center");
   });
 
-  it("starts an accessible directional reveal on each project change", () => {
+  it("starts an accessible directional reveal on each project change", async () => {
     const { container } = render(<ProjectPanel />);
     const carousel = screen.getByRole("region", { name: "Carrossel de projetos" });
     expect(carousel).toHaveAttribute("data-carousel-switched", "false");
@@ -187,9 +187,9 @@ describe("three-panel carousel", () => {
     expect(screen.getByRole("button", { name: /Trazer Hyprland-Themes para o centro/ }))
       .toHaveClass("carousel-wrapping");
 
-    // The animation releases its temporary role without changing navigation.
-    fireEvent.animationEnd(entering, { animationName: "carousel-panel-enter" });
-    expect(entering).not.toHaveClass("carousel-entering");
+    // JSDOM has no native AnimationEvent.animationName; the component
+    // also guarantees cleanup on its timer if the browser omits animationend.
+    await waitFor(() => expect(entering).not.toHaveClass("carousel-entering"), { timeout: 1600 });
     expect(entering).toHaveAttribute("data-position", "center");
 
     fireEvent.keyDown(carousel, { key: "ArrowLeft" });
