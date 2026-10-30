@@ -99,6 +99,7 @@ export function ProjectPanel({ onOpenThemeStudio }: { onOpenThemeStudio?: () => 
   const [site3dClosing, setSite3dClosing] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
   const [previousIndex, setPreviousIndex] = useState<number | null>(null);
+  const [isChanging, setIsChanging] = useState(false);
   const [systemReducedMotion, setSystemReducedMotion] = useState(false);
   const [forceCarouselMotion, setForceCarouselMotion] = useState(false);
   const [carouselDirection, setCarouselDirection] = useState<"next" | "previous">("next");
@@ -134,9 +135,17 @@ export function ProjectPanel({ onOpenThemeStudio }: { onOpenThemeStudio?: () => 
     setCarouselDirection(stepsForward <= stepsBackward ? "next" : "previous");
     setHasSwitched(true);
     setPreviousIndex(current);
+    setIsChanging(true);
     activeRef.current = next;
     setActiveIndex(next);
   }, [projects.length]);
+
+  useEffect(() => {
+    if (!isChanging) return;
+    // Covers reduced-motion browsers (no animationend) and interrupted swipes.
+    const timeout = window.setTimeout(() => setIsChanging(false), 920);
+    return () => window.clearTimeout(timeout);
+  }, [isChanging, activeIndex]);
 
   const onCarouselTouchStart = (event: ReactTouchEvent<HTMLDivElement>) => {
     if (abismoOpen || site3dOpen || selected || event.touches.length !== 1) return;
@@ -298,7 +307,7 @@ export function ProjectPanel({ onOpenThemeStudio }: { onOpenThemeStudio?: () => 
             const meta = PANEL_META[project.id] ?? { category: "PROJECT / DEVELOPMENT", headline: project.title };
             const relative = (index - activeIndex + projects.length) % projects.length;
             const position = relative === 0 ? "center" : relative === 1 ? "right" : "left";
-            const switchRole = hasSwitched
+            const switchRole = isChanging
               ? index === activeIndex ? " carousel-entering"
                 : index === previousIndex ? " carousel-exiting"
                   : " carousel-wrapping"
@@ -314,6 +323,12 @@ export function ProjectPanel({ onOpenThemeStudio }: { onOpenThemeStudio?: () => 
                 key={project.id}
                 className={"project-card orbit-card cinematic-panel cinematic-panel-" + index + " carousel-" + position + switchRole}
                 data-position={position}
+                data-switch-role={isChanging ? (index === activeIndex ? "entering" : index === previousIndex ? "exiting" : "wrapping") : "idle"}
+                onAnimationEnd={(event) => {
+                  if (event.target === event.currentTarget && event.animationName === "carousel-panel-enter") {
+                    setIsChanging(false);
+                  }
+                }}
                 data-project-id={project.id}
                 tabIndex={abismoOpen || site3dOpen ? -1 : undefined}
                 aria-hidden={abismoOpen || site3dOpen ? true : undefined}
