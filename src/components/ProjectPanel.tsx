@@ -302,7 +302,7 @@ export function ProjectPanel({ onOpenThemeStudio }: { onOpenThemeStudio?: () => 
           </button>
         )}
         <SpineWorld />
-        <div className="project-grid orbit-grid immersive-panels arc-carousel" aria-label="Projetos em destaque">
+        <div className="immersive-panels arc-carousel" aria-label="Projetos em destaque">
           {projects.map((project, index) => {
             const meta = PANEL_META[project.id] ?? { category: "PROJECT / DEVELOPMENT", headline: project.title };
             const relative = (index - activeIndex + projects.length) % projects.length;
@@ -321,7 +321,7 @@ export function ProjectPanel({ onOpenThemeStudio }: { onOpenThemeStudio?: () => 
             return (
               <button
                 key={project.id}
-                className={"project-card orbit-card cinematic-panel cinematic-panel-" + index + " carousel-" + position + switchRole}
+                className={"cinematic-panel cinematic-panel-" + index + " carousel-" + position + switchRole}
                 data-position={position}
                 data-switch-role={isChanging ? (index === activeIndex ? "entering" : index === previousIndex ? "exiting" : "wrapping") : "idle"}
                 onAnimationEnd={(event) => {
