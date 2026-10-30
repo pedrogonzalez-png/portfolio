@@ -1,0 +1,55 @@
+name: Production browser smoke (mobile and desktop)
+
+on:
+  pull_request:
+    paths:
+      - "src/**"
+      - "vite.config.ts"
+      - "package.json"
+      - "scripts/smoke-browser.mjs"
+      - ".github/workflows/browser-smoke.yml"
+  push:
+    branches: [main]
+    paths:
+      - "src/**"
+      - "vite.config.ts"
+      - "package.json"
+      - "scripts/smoke-browser.mjs"
+      - ".github/workflows/browser-smoke.yml"
+  workflow_dispatch:
+    inputs:
+      target_url:
+        description: "URL completa do deployment para diagnóstico opcional"
+        required: false
+        type: string
+
+jobs:
+  smoke-production:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - name: Install npm dependencies
+        run: npm ci
+      - name: Install headless Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Build Vite production assets
+        run: npm run build
+      - name: Open built app in desktop and mobile browsers
+        run: node scripts/smoke-browser.mjs
+      - name: Diagnose a specific deployment URL (advisory)
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.target_url != '' }}
+        continue-on-error: true
+        env:
+          SMOKE_TARGET_URL: ${{ inputs.target_url }}
+        run: node scripts/smoke-browser.mjs
+      - uses: actions/upload-artifact@v4
+        if: failure() || github.event_name == 'workflow_dispatch'
+        with:
+          name: production-browser-diagnostics
+          path: browser-diagnostics/
+          if-no-files-found: ignore
