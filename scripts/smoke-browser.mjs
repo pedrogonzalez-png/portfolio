@@ -73,6 +73,17 @@ try {
       if (errors.some(text => text.startsWith("PAGEERROR:") || text.startsWith("ASSET "))) {
         throw new Error("JavaScript/asset errors in production bundle.");
       }
+      // Ensure that a visitor on a mobile browser with a blank screen can
+      // inspect the actual runtime without opening developer tools.
+      const diagnosticUrl = new URL(ORIGIN);
+      diagnosticUrl.searchParams.set("diagnostico", "1");
+      await page.goto(diagnosticUrl.toString(), { waitUntil: "domcontentloaded" });
+      await page.locator("#portfolio-diagnostico").waitFor({ state: "visible", timeout: 10000 });
+      await page.locator("#root .site-header").waitFor({ state: "visible", timeout: 10000 });
+      const diagnosticText = await page.locator("#portfolio-diagnostico").innerText();
+      if (!diagnosticText.includes("Menu: encontrado")) {
+        throw new Error("Visible diagnostic does not report the React menu.");
+      }
     } catch (error) {
       failed = true;
       console.error(JSON.stringify({
