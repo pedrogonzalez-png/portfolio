@@ -75,6 +75,23 @@ try {
       if (!root.includes("PORTFÓLIO") || !root.includes("Abismo")) {
         throw new Error("React mounted but page content missing: " + root);
       }
+      const authorHeading = page.getByRole("heading", { level: 1, name: "PEDRO GONZALEZ" });
+      await authorHeading.waitFor({ state: "visible", timeout: 10000 });
+      await page.evaluate(() => document.fonts.ready);
+      const nameLayout = await authorHeading.evaluate((heading) => ({
+        content: heading.textContent?.trim(),
+        clientWidth: heading.clientWidth,
+        scrollWidth: heading.scrollWidth,
+        width: heading.getBoundingClientRect().width,
+      }));
+      if (nameLayout.scrollWidth > nameLayout.clientWidth + 5 || nameLayout.width < 220) {
+        throw new Error("Creator heading is clipped or too narrow: " + JSON.stringify(nameLayout));
+      }
+      const about = page.getByRole("region", { name: "Sobre e contato" });
+      if (!(await about.innerText()).includes("Pedro Henrique Mariano Gonzalez")) {
+        throw new Error("Résumé-backed full author name missing from About");
+      }
+      console.log(JSON.stringify({ variant: variant.name, author: nameLayout, about: "verified" }));
       // Geometry regression: a centered project must be fully readable on a
       // phone, including in reduced-motion mode. A previous global
       // transform:none!important kept the card at left:50% with no centering,
