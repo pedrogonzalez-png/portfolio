@@ -1,0 +1,250 @@
+@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap");
+
+/*
+ * WUTHERING WAVES — RESEARCH-LED EDITORIAL REFINEMENT
+ *
+ * Grounding:
+ * 1) Kuro Games explains the use of strong contrast, complementary colors,
+ *    color grading, stable scene lighting and crafted gradients:
+ *    https://www.unrealengine.com/developer-interviews/exploring-the-post-apocalyptic-charm-of-asg-open-worlds-in-wuthering-waves?lang=pt
+ * 2) All portfolio colors come from its ORIGINAL confirmed Changli theme
+ *    tokens, never from guessed "official" Wuthering Waves hex values.
+ *    src/data/official-theme-schemes.json
+ * 3) Gradient layering follows documented standard CSS:
+ *    https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Images/Using_gradients
+ * 4) Manrope is an open-source typeface, listed on Google Fonts:
+ *    https://fonts.google.com/specimen/Manrope
+ *
+ * No Kuro Games art/fonts/logos are copied, no user functionality altered.
+ * This stylesheet refines material, rhythm, contrast and hierarchy only.
+ */
+
+/* Manrope is the reading face; preserve Space Grotesk for the already-tested
+   heading geometry and 3D particle typography. */
+.hyprland-route-home {
+  --font-body: "Manrope", "Inter", system-ui, sans-serif;
+  --wuwa-glint: color-mix(in srgb, var(--color-accent-yellow) 42%, var(--color-text));
+  --wuwa-hairline: color-mix(in srgb, var(--color-outline) 26%, transparent);
+  --wuwa-shadow: color-mix(in srgb, var(--color-bg) 93%, transparent);
+  font-family: var(--font-body);
+  font-optical-sizing: auto;
+}
+
+/* An editorial hierarchy rather than many competing generic glows. */
+.hyprland-route-home .eyebrow,
+.hyprland-route-home .cinematic-panel-top,
+.hyprland-route-home .cinematic-panel-bottom,
+.hyprland-route-home .hero-placeholder,
+.hyprland-route-home .hero-bottom {
+  font-variant-numeric: tabular-nums;
+  text-rendering: optimizeLegibility;
+}
+
+.hyprland-route-home .eyebrow {
+  font-family: var(--font-body);
+  font-weight: 700;
+  letter-spacing: .21em;
+  color: var(--wuwa-glint);
+  text-shadow: none;
+}
+
+.hyprland-route-home .site-header {
+  border-color: var(--wuwa-hairline);
+  background:
+    linear-gradient(125deg,
+      color-mix(in srgb, var(--color-surface-container) 55%, var(--color-bg)) 0%,
+      color-mix(in srgb, var(--color-surface) 91%, transparent) 45%,
+      color-mix(in srgb, var(--color-bg) 94%, transparent) 100%);
+  box-shadow:
+    0 20px 48px color-mix(in srgb, var(--color-bg) 80%, transparent),
+    inset 0 1px color-mix(in srgb, var(--color-text) 12%, transparent);
+}
+
+.hyprland-route-home .site-logo {
+  letter-spacing: .065em;
+}
+.hyprland-route-home .site-logo-mark {
+  text-shadow: none;
+}
+.hyprland-route-home .site-nav a {
+  font-family: var(--font-body);
+  font-weight: 650;
+}
+.hyprland-route-home .site-terminal-button {
+  border-color: var(--wuwa-hairline);
+  box-shadow: inset 0 1px color-mix(in srgb, var(--color-text) 10%, transparent);
+}
+
+/* Calibrated focal lighting: large, quiet radial fields and a darker
+   perimeter. Kuro's interview explicitly describes grade + stable lighting. */
+.hyprland-route-home .hero {
+  isolation: isolate;
+  background:
+    radial-gradient(ellipse 50% 38% at 52% 41%,
+      color-mix(in srgb, var(--color-accent-primary) 12%, transparent) 0%,
+      transparent 80%),
+    radial-gradient(ellipse 65% 54% at 18% 7%,
+      color-mix(in srgb, var(--color-text) 4%, transparent),
+      transparent 88%),
+    linear-gradient(180deg,
+      var(--color-bg) 0%,
+      color-mix(in srgb, var(--color-surface) 45%, var(--color-bg)) 54%,
+      var(--color-bg) 100%);
+}
+.hyprland-route-home .hero::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: .54;
+  background: radial-gradient(ellipse 76% 66% at 50% 51%,
+    transparent 24%,
+    color-mix(in srgb, var(--color-bg) 82%, transparent) 100%);
+}
+.hyprland-route-home .hero-overline {
+  font-weight: 500;
+  letter-spacing: .015em;
+  color: var(--color-text-variant);
+}
+.hyprland-route-home .hero-description {
+  font-weight: 400;
+  line-height: 1.78;
+  max-width: 56ch;
+}
+.hyprland-route-home .hero-placeholder {
+  letter-spacing: .20em;
+  color: var(--color-text-variant);
+}
+.hyprland-route-home .primary-action {
+  font-family: var(--font-body);
+  font-weight: 750;
+  color: var(--color-bg);
+  border-color: color-mix(in srgb, var(--color-accent-yellow) 73%, var(--color-text));
+  background: linear-gradient(114deg,
+    var(--color-accent-primary) 0%,
+    color-mix(in srgb, var(--color-accent-primary) 48%, var(--color-accent-yellow)) 52%,
+    var(--color-accent-yellow) 100%);
+  box-shadow:
+    0 11px 26px color-mix(in srgb, var(--color-bg) 55%, transparent),
+    inset 0 1px color-mix(in srgb, var(--color-text) 43%, transparent);
+}
+.hyprland-route-home .primary-action:hover {
+  box-shadow:
+    0 14px 31px color-mix(in srgb, var(--color-bg) 55%, transparent),
+    inset 0 1px color-mix(in srgb, var(--color-text) 52%, transparent);
+}
+
+/* The gallery keeps its carousel geometry, transitions, touch interactions
+   and live project iframes. Only its visual environment and surfaces change. */
+.hyprland-route-home .projects-area {
+  background:
+    radial-gradient(ellipse 46% 26% at 54% 53%,
+      color-mix(in srgb, var(--color-accent-primary) 13%, transparent),
+      transparent 85%),
+    radial-gradient(ellipse 40% 35% at 100% 12%,
+      color-mix(in srgb, var(--color-text) 5%, transparent),
+      transparent 88%),
+    linear-gradient(180deg,
+      var(--color-bg) 0%,
+      color-mix(in srgb, var(--color-surface) 74%, var(--color-bg)) 53%,
+      var(--color-surface) 100%);
+}
+.hyprland-route-home .projects-area .section-heading .eyebrow {
+  text-shadow: none;
+}
+.hyprland-route-home .projects-area .section-heading h2 {
+  letter-spacing: -.051em;
+  font-weight: 650;
+}
+.hyprland-route-home .projects-area .section-heading h2 em,
+.hyprland-route-home .about-area h2 em {
+  background: linear-gradient(105deg,
+    var(--color-accent-yellow) 0%,
+    var(--wuwa-glint) 50%,
+    var(--color-accent-primary) 100%);
+  color: transparent;
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+.hyprland-route-home .projects-area .section-heading > p:last-child {
+  max-width: 62ch;
+  line-height: 1.75;
+}
+.hyprland-route-home .projects-area::before,
+.hyprland-route-home .projects-area::after {
+  border-color: color-mix(in srgb, var(--color-outline) 14%, transparent);
+}
+.hyprland-route-home .projects-area .section-heading::after {
+  text-shadow: none;
+  border-bottom-color: var(--wuwa-hairline);
+}
+.hyprland-route-home .projects-area .spine-stage.project-carousel::before {
+  filter: blur(48px);
+  background:
+    radial-gradient(ellipse 63% 66% at center,
+      color-mix(in srgb, var(--color-accent-primary) 18%, transparent),
+      transparent 75%);
+}
+.hyprland-route-home .spine-stage.project-carousel .arc-carousel .cinematic-panel {
+  border-color: color-mix(in srgb, var(--color-outline) 58%, transparent);
+  background:
+    linear-gradient(155deg,
+      color-mix(in srgb, var(--color-text) 10%, transparent) 0%,
+      color-mix(in srgb, var(--color-accent-primary) 7%, transparent) 28%,
+      color-mix(in srgb, var(--color-bg) 34%, var(--color-surface)) 100%);
+  box-shadow:
+    inset 0 1px color-mix(in srgb, var(--color-text) 13%, transparent),
+    0 29px 76px color-mix(in srgb, var(--color-bg) 70%, transparent);
+}
+.hyprland-route-home .spine-stage.project-carousel .cinematic-panel-category,
+.hyprland-route-home .spine-stage.project-carousel .cinematic-panel-note {
+  letter-spacing: .12em;
+}
+.hyprland-route-home .spine-stage.project-carousel .cinematic-panel-explore {
+  font-weight: 750;
+  text-shadow: none;
+}
+
+/* Editorial outro: quieter ornament, subtle metallic/light boundary. */
+.hyprland-route-home .about-area {
+  border-top-color: var(--wuwa-hairline);
+  background:
+    radial-gradient(ellipse 55% 73% at 82% 38%,
+      color-mix(in srgb, var(--color-accent-yellow) 10%, transparent),
+      transparent 84%),
+    linear-gradient(140deg,
+      var(--color-surface) 0%,
+      color-mix(in srgb, var(--color-bg) 78%, var(--color-surface)) 100%);
+}
+.hyprland-route-home .about-copy > p:not(.eyebrow) {
+  max-width: 58ch;
+  line-height: 1.82;
+}
+.hyprland-route-home .about-orbit {
+  border-color: var(--wuwa-hairline);
+  box-shadow: inset 0 0 70px color-mix(in srgb, var(--color-accent-primary) 6%, transparent);
+}
+.hyprland-route-home .about-orbit::after {
+  border-color: color-mix(in srgb, var(--color-outline) 18%, transparent);
+}
+.hyprland-route-home .text-action {
+  font-weight: 700;
+  border-bottom-color: var(--wuwa-hairline);
+}
+.hyprland-route-home .site-footer {
+  border-top-color: var(--wuwa-hairline);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Do not compromise the carousel viewport or the mobile landscape modules. */
+@media (max-width: 600px) {
+  .hyprland-route-home .hero::after { opacity: .35; }
+  .hyprland-route-home .eyebrow { letter-spacing: .14em; }
+  .hyprland-route-home .site-header {
+    background: color-mix(in srgb, var(--color-bg) 93%, transparent);
+  }
+  .hyprland-route-home .projects-area .section-heading h2 {
+    letter-spacing: -.045em;
+  }
+}
