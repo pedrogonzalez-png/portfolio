@@ -153,7 +153,16 @@ function ConstellationCanvas() {
   const { theme } = useTheme();
   return (
     <div className="spine-world" aria-hidden="true">
-      <Canvas camera={{ position: [0, 0, 13], fov: 43 }} dpr={[1, 1.5]} gl={{ alpha: true, antialias: true, powerPreference: "high-performance" }}>
+      <Canvas
+        camera={{ position: [0, 0, 13], fov: 43 }}
+        dpr={[1, 1.5]}
+        gl={{ alpha: true, antialias: true, powerPreference: "high-performance" }}
+        onCreated={({ gl }) => {
+          // The canvas is layered over the portfolio background. The default
+          // black clear color must never create a visible rectangular viewport.
+          gl.setClearColor(0x000000, 0);
+        }}
+      >
         <SpineCameraJourney />
         <ambientLight intensity={1.5} />
         <pointLight position={[4, 4, 5]} intensity={42} color={theme.palette.accentYellow} />
