@@ -75,6 +75,47 @@ try {
       if (!root.includes("PORTFÓLIO") || !root.includes("Abismo")) {
         throw new Error("React mounted but page content missing: " + root);
       }
+      // The mobile heading must actually be drawn with points, as on desktop.
+      // An earlier implementation showed Canvas dots AND the fallback font
+      // together on reduced-motion Android: catch that double-render too.
+      if (variant.mobile) {
+        const particleCanvas = page.locator('canvas[data-particle-name="mobile"]');
+        await particleCanvas.waitFor({ state: "visible", timeout: 10000 });
+        await page.waitForFunction(() =>
+          document.querySelector("#hero-name")?.classList.contains("has-mobile-particles"),
+          null, { timeout: 10000 });
+        await page.waitForTimeout(1100);
+        const particles = await particleCanvas.evaluate(canvas => {
+          const ctx = canvas.getContext("2d");
+          if (!ctx || !canvas.width || !canvas.height) return null;
+          const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+          let nontransparent = 0;
+          for (let i = 3; i < data.length; i += 4) {
+            if (data[i] > 75) nontransparent++;
+          }
+          const heading = document.getElementById("hero-name");
+          const fallback = heading?.querySelector(".hero-title-fallback");
+          const canvasRect = canvas.getBoundingClientRect();
+          const titleRect = heading?.getBoundingClientRect();
+          return {
+            nontransparent,
+            text: heading?.textContent?.trim(),
+            fallbackOpacity: fallback ? getComputedStyle(fallback).opacity : "missing",
+            canvasWidth: canvasRect.width,
+            canvasHeight: canvasRect.height,
+            titleWidth: titleRect?.width,
+            titleHeight: titleRect?.height,
+          };
+        });
+        if (!particles || particles.nontransparent < 120 ||
+            particles.text !== "PORTFÓLIO 3D" ||
+            particles.fallbackOpacity !== "0" ||
+            Math.abs(particles.canvasWidth - particles.titleWidth) > 3 ||
+            Math.abs(particles.canvasHeight - particles.titleHeight) > 3) {
+          throw new Error("Mobile particle heading missing, doubled or misaligned: " + JSON.stringify(particles));
+        }
+        console.log(JSON.stringify({ variant: variant.name, particleHeading: particles }));
+      }
       // Geometry regression: a centered project must be fully readable on a
       // phone, including in reduced-motion mode. A previous global
       // transform:none!important kept the card at left:50% with no centering,
