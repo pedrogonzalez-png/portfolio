@@ -621,3 +621,144 @@
   from { opacity: .7; }
   to { opacity: 1; }
 }
+
+
+/*
+ * Actual card travel on each carousel step.
+ *
+ * The old carousel only animated its caption and a decorative light trail.
+ * Animate the card surfaces themselves: incoming from the adjacent side,
+ * outgoing into the opposite side, and the third card traveling behind the
+ * carousel without visibly sweeping across the active project.
+ */
+.spine-stage.project-carousel {
+  --carousel-center-depth: 165px;
+  --carousel-side-depth: -100px;
+  --carousel-side-angle: 36deg;
+  --carousel-side-size: .84;
+}
+.spine-stage.project-carousel[data-carousel-direction="next"] {
+  --panel-enter-x: var(--carousel-spread);
+  --panel-enter-angle: var(--carousel-side-angle);
+  --panel-exit-x: calc(-1 * var(--carousel-spread));
+  --panel-exit-angle: calc(-1 * var(--carousel-side-angle));
+  --panel-wrap-start: calc(-1 * var(--carousel-spread));
+  --panel-wrap-end: var(--carousel-spread);
+  --panel-wrap-start-angle: calc(-1 * var(--carousel-side-angle));
+  --panel-wrap-end-angle: var(--carousel-side-angle);
+}
+.spine-stage.project-carousel[data-carousel-direction="previous"] {
+  --panel-enter-x: calc(-1 * var(--carousel-spread));
+  --panel-enter-angle: calc(-1 * var(--carousel-side-angle));
+  --panel-exit-x: var(--carousel-spread);
+  --panel-exit-angle: var(--carousel-side-angle);
+  --panel-wrap-start: var(--carousel-spread);
+  --panel-wrap-end: calc(-1 * var(--carousel-spread));
+  --panel-wrap-start-angle: var(--carousel-side-angle);
+  --panel-wrap-end-angle: calc(-1 * var(--carousel-side-angle));
+}
+.spine-stage.project-carousel .arc-carousel .cinematic-panel.carousel-entering {
+  animation: carousel-panel-enter 800ms cubic-bezier(.16,.82,.18,1) both;
+}
+.spine-stage.project-carousel .arc-carousel .cinematic-panel.carousel-exiting {
+  animation: carousel-panel-exit 800ms cubic-bezier(.24,.75,.26,1) both;
+}
+.spine-stage.project-carousel .arc-carousel .cinematic-panel.carousel-wrapping {
+  animation: carousel-panel-wrap 800ms cubic-bezier(.22,.72,.22,1) both;
+}
+@keyframes carousel-panel-enter {
+  0% {
+    opacity: .32;
+    filter: blur(5px) saturate(.8);
+    transform: translate(-50%, -50%) translate3d(var(--panel-enter-x), 0, var(--carousel-side-depth))
+      rotateY(var(--panel-enter-angle)) scale(var(--carousel-side-size));
+  }
+  52% { opacity: .94; filter: blur(1px) saturate(1); }
+  80% {
+    transform: translate(-50%, -50%) translate3d(0, -3px, var(--carousel-center-depth))
+      rotateY(0deg) scale(1.025);
+  }
+  100% {
+    opacity: 1;
+    filter: none;
+    transform: translate(-50%, -50%) translate3d(0, 0, var(--carousel-center-depth))
+      rotateY(0deg) scale(1);
+  }
+}
+@keyframes carousel-panel-exit {
+  0% {
+    opacity: 1;
+    filter: none;
+    transform: translate(-50%, -50%) translate3d(0, 0, var(--carousel-center-depth))
+      rotateY(0deg) scale(1);
+  }
+  100% {
+    opacity: .75;
+    filter: saturate(.75) brightness(.76) blur(.65px);
+    transform: translate(-50%, -50%) translate3d(var(--panel-exit-x), 0, var(--carousel-side-depth))
+      rotateY(var(--panel-exit-angle)) scale(var(--carousel-side-size));
+  }
+}
+@keyframes carousel-panel-wrap {
+  0% {
+    opacity: .45;
+    transform: translate(-50%, -50%) translate3d(var(--panel-wrap-start), 0, var(--carousel-side-depth))
+      rotateY(var(--panel-wrap-start-angle)) scale(var(--carousel-side-size));
+  }
+  15%, 78% { opacity: 0; }
+  100% {
+    opacity: .75;
+    transform: translate(-50%, -50%) translate3d(var(--panel-wrap-end), 0, var(--carousel-side-depth))
+      rotateY(var(--panel-wrap-end-angle)) scale(var(--carousel-side-size));
+  }
+}
+@media (max-width: 600px) {
+  .spine-stage.project-carousel {
+    --carousel-center-depth: 0px;
+    --carousel-side-depth: 0px;
+    --carousel-side-angle: 12deg;
+    --carousel-side-size: .82;
+  }
+  .spine-stage.project-carousel .arc-carousel .cinematic-panel.carousel-entering,
+  .spine-stage.project-carousel .arc-carousel .cinematic-panel.carousel-exiting,
+  .spine-stage.project-carousel .arc-carousel .cinematic-panel.carousel-wrapping {
+    animation-duration: 650ms;
+  }
+}
+
+/* Respect the OS setting until visitors explicitly opt into animation. */
+@media (prefers-reduced-motion: reduce) {
+  .spine-stage.project-carousel .arc-carousel .cinematic-panel.carousel-entering,
+  .spine-stage.project-carousel .arc-carousel .cinematic-panel.carousel-exiting,
+  .spine-stage.project-carousel .arc-carousel .cinematic-panel.carousel-wrapping {
+    animation: none;
+  }
+  .spine-stage.project-carousel[data-force-motion="true"] .arc-carousel .cinematic-panel.carousel-entering {
+    animation: carousel-panel-enter 650ms cubic-bezier(.16,.82,.18,1) both;
+  }
+  .spine-stage.project-carousel[data-force-motion="true"] .arc-carousel .cinematic-panel.carousel-exiting {
+    animation: carousel-panel-exit 650ms cubic-bezier(.24,.75,.26,1) both;
+  }
+  .spine-stage.project-carousel[data-force-motion="true"] .arc-carousel .cinematic-panel.carousel-wrapping {
+    animation: carousel-panel-wrap 650ms cubic-bezier(.22,.72,.22,1) both;
+  }
+}
+
+/* Appears only when the operating system has reduced motion enabled. */
+.spine-stage.project-carousel .carousel-motion-toggle {
+  position: absolute;
+  z-index: 12;
+  top: 1px;
+  right: clamp(12px, 4vw, 28px);
+  padding: 7px 12px;
+  border: 1px solid color-mix(in srgb, var(--color-accent-yellow) 40%, transparent);
+  border-radius: 999px;
+  color: var(--color-text);
+  background: color-mix(in srgb, var(--color-surface) 88%, transparent);
+  font: 600 11px var(--font-body);
+  cursor: pointer;
+}
+.spine-stage.project-carousel .carousel-motion-toggle:focus-visible {
+  outline: 2px solid var(--color-accent-yellow);
+  outline-offset: 3px;
+}
