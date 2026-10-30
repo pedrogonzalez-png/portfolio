@@ -45,8 +45,8 @@ function HomePage({onOpenHyprland}:{onOpenHyprland:()=>void}) {
           <div className="hero-content">
             <div className="eyebrow"><span className="eyebrow-line" /> PORTFÓLIO / EXPERIÊNCIA INTERATIVA</div>
             <p className="hero-overline">Uma jornada por projetos, código e criatividade</p>
-            <div className="hero-name-stage"><h1 id="hero-name" className="hero-title"><span className="hero-title-fallback">NOME DO AUTOR</span></h1><SceneIntegration /></div>
-            <p className="hero-placeholder">NOME DE APRESENTAÇÃO PENDENTE</p>
+            <div className="hero-name-stage"><h1 id="hero-name" className="hero-title"><span className="hero-title-fallback">PORTFÓLIO 3D</span></h1><SceneIntegration /></div>
+            <p className="hero-placeholder">WEB · JOGOS · LINUX</p>
             <p className="hero-description">
               Desenvolvimento web, jogos e personalização Linux. Explore três projetos reais em construção.
             </p>

@@ -389,3 +389,60 @@
 .spine-stage.project-carousel .cinematic-panel-category,.spine-stage.project-carousel .cinematic-panel-explore{color:var(--color-accent-yellow)}
 .spine-stage.project-carousel .cinematic-panel-title{color:var(--color-text)}
 .spine-stage.project-carousel .cinematic-panel-note{color:var(--color-text-variant)}
+
+
+/*
+ * Mobile layout: center one card in the actual available viewport.
+ * The desktop's positive Z translation enlarges a card by perspective;
+ * combined with reduced-motion transform resets this pushed content offscreen.
+ * Keep lateral previews at the edges, but never crop the active card.
+ */
+@media (max-width: 600px) {
+  .spine-stage.project-carousel {
+    --carousel-spread: clamp(220px, 76vw, 400px);
+    width: 100%;
+    max-width: 100%;
+    height: clamp(280px, 92vw, 390px);
+    padding: 0;
+    overflow: hidden;
+    perspective: none;
+  }
+
+  .spine-stage.project-carousel .arc-carousel {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    overflow: hidden;
+    transform-style: flat;
+    perspective: none;
+  }
+
+  .spine-stage.project-carousel .arc-carousel .cinematic-panel {
+    top: 50%;
+    left: 50%;
+    width: min(87%, 420px);
+    max-width: none;
+    aspect-ratio: 1.38;
+    transform-style: flat;
+    backface-visibility: visible;
+  }
+
+  .spine-stage.project-carousel .arc-carousel .cinematic-panel.carousel-center,
+  .spine-stage.project-carousel .arc-carousel .cinematic-panel.carousel-center:is(:hover,:focus-visible) {
+    transform: translate(-50%, -50%) translate3d(0, 0, 0) scale(1);
+  }
+
+  .spine-stage.project-carousel .arc-carousel .cinematic-panel.carousel-left,
+  .spine-stage.project-carousel .arc-carousel .cinematic-panel.carousel-left:is(:hover,:focus-visible) {
+    transform: translate(-50%, -50%)
+      translate3d(calc(-1 * var(--carousel-spread)), 0, 0)
+      rotateY(-12deg) scale(.82);
+  }
+
+  .spine-stage.project-carousel .arc-carousel .cinematic-panel.carousel-right,
+  .spine-stage.project-carousel .arc-carousel .cinematic-panel.carousel-right:is(:hover,:focus-visible) {
+    transform: translate(-50%, -50%)
+      translate3d(var(--carousel-spread), 0, 0)
+      rotateY(12deg) scale(.82);
+  }
+}

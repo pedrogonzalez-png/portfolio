@@ -177,7 +177,11 @@ body::before {
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   .scroll-indicator { animation: none; }
-  .project-card, .primary-action, .secondary-action { transition: none; transform: none !important; }
+  /* Keep the positional transforms of the 3D carousel cards.
+     Removing them made the centered card start at left:50% and disappear
+     off the right side on phones with reduced motion enabled. */
+  .project-card, .primary-action, .secondary-action { transition: none; }
+  .primary-action, .secondary-action { transform: none !important; }
 }
 
 

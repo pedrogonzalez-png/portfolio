@@ -75,6 +75,41 @@ try {
       if (!root.includes("PORTFÓLIO") || !root.includes("Abismo")) {
         throw new Error("React mounted but page content missing: " + root);
       }
+      // Geometry regression: a centered project must be fully readable on a
+      // phone, including in reduced-motion mode. A previous global
+      // transform:none!important kept the card at left:50% with no centering,
+      // leaving only its right half visible.
+      if (variant.mobile) {
+        const carousel = page.locator(".spine-stage.project-carousel");
+        await carousel.waitFor({ state: "visible", timeout: 10000 });
+        for (let step = 0; step < 3; step++) {
+          if (step) {
+            await carousel.press("ArrowRight");
+            await page.waitForTimeout(900);
+          }
+          const geometry = await carousel.evaluate(stage => {
+            const panel = stage.querySelector(".cinematic-panel.carousel-center");
+            if (!panel) return null;
+            const bounds = panel.getBoundingClientRect();
+            const frame = stage.getBoundingClientRect();
+            return {
+              active: panel.getAttribute("data-project-id"),
+              left: bounds.left,
+              right: bounds.right,
+              width: bounds.width,
+              frameLeft: frame.left,
+              frameRight: frame.right,
+              frameWidth: frame.width,
+            };
+          });
+          if (!geometry || geometry.width < 180 ||
+              geometry.left < geometry.frameLeft - 3 ||
+              geometry.right > geometry.frameRight + 3) {
+            throw new Error("Mobile carousel card clipped after navigation: " + JSON.stringify(geometry));
+          }
+          console.log(JSON.stringify({ variant: variant.name, carousel: geometry.active, geometry: "inside viewport" }));
+        }
+      }
       // Preserve browser diagnostics for nonfatal errors as well.
       console.log(JSON.stringify({ variant: variant.name, http: response?.status(), mounted: true, errors }));
       if (errors.some(text => text.startsWith("PAGEERROR:") || text.startsWith("ASSET "))) {
