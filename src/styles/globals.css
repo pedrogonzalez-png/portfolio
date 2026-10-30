@@ -358,3 +358,22 @@ body::before{background:radial-gradient(ellipse 55% 45% at 50% 30%,color-mix(in 
 .modal-backdrop{background:color-mix(in srgb,var(--color-bg) 89%,transparent)}
 ::selection{color:var(--color-bg);background:var(--color-accent-yellow)}
 @media(prefers-reduced-motion:reduce){body,.site-header,.site-footer,.projects-area,.about-area,.project-dialog,.cinematic-panel{transition:none}}
+
+
+/* Same dotted name as the PC on phones and non-WebGL devices.
+   Canvas2D covers only the heading, not the whole hero. The real h1 stays
+   in the accessibility tree and provides the exact text and dimensions. */
+.hero-name-stage > .mobile-particle-name {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: block;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+/* Stronger than the generic prefers-reduced-motion fallback below/above:
+   never draw a solid font on top of the Canvas dots (previous mobile bug). */
+.hero-title.particles-ready.has-mobile-particles .hero-title-fallback {
+  opacity: 0;
+}
