@@ -101,14 +101,16 @@ export function ParticleNameCanvas({ reducedMotion = false }: { reducedMotion?: 
         title.classList.add("particles-ready", "has-canvas-particles");
         ready = true;
       }
-      if (motion && visible) {
-        cancelAnimationFrame(frame);
-        frame = requestAnimationFrame(drawFrame);
-      }
+      // drawFrame already scheduled its next frame when motion is enabled.
     }
 
     function drawFrame(now: number) {
       if (destroyed || !context || !visible) return;
+      // Limit the dense canvas typography to ~30fps on small touch screens.
+      if (motion && width < 600 && previous && now - previous < 30) {
+        frame = requestAnimationFrame(drawFrame);
+        return;
+      }
       const dt = previous ? Math.min(48, now - previous) / 16.667 : 1;
       previous = now;
       context.clearRect(0, 0, width, height);
