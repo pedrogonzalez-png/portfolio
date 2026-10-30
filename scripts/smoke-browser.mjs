@@ -9,18 +9,19 @@ import { chromium } from "@playwright/test";
 import { spawn } from "node:child_process";
 import { mkdir } from "node:fs/promises";
 
-const ORIGIN = "http://127.0.0.1:4173";
-const preview = spawn("node", ["node_modules/vite/bin/vite.js", "preview", "--host", "127.0.0.1", "--port", "4173", "--strictPort"], {
+const ORIGIN = process.env.SMOKE_TARGET_URL || "http://127.0.0.1:4173";
+const REMOTE = Boolean(process.env.SMOKE_TARGET_URL);
+const preview = REMOTE ? null : spawn("node", ["node_modules/vite/bin/vite.js", "preview", "--host", "127.0.0.1", "--port", "4173", "--strictPort"], {
   stdio: ["ignore", "pipe", "pipe"],
   env: { ...process.env, CI: "true" },
 });
-preview.stdout.on("data", data => process.stdout.write(String(data)));
-preview.stderr.on("data", data => process.stderr.write(String(data)));
+preview?.stdout.on("data", data => process.stdout.write(String(data)));
+preview?.stderr.on("data", data => process.stderr.write(String(data)));
 
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 async function waitForServer() {
   for (let i = 0; i < 80; i++) {
-    if (preview.exitCode !== null) throw new Error("Vite preview exited before serving.");
+    if (preview?.exitCode !== null) throw new Error("Vite preview exited before serving.");
     try {
       const response = await fetch(ORIGIN);
       if (response.ok) return;
@@ -34,7 +35,8 @@ await mkdir("browser-diagnostics", { recursive: true });
 let browser;
 let failed = false;
 try {
-  await waitForServer();
+  if (!REMOTE) await waitForServer();
+  console.log("Testing deployment:", ORIGIN);
   browser = await chromium.launch({ headless: true });
   for (const variant of [
     { name: "desktop", viewport: { width: 1440, height: 900 }, mobile: false },
@@ -88,6 +90,6 @@ try {
   }
 } finally {
   await browser?.close();
-  preview.kill("SIGTERM");
+  preview?.kill("SIGTERM");
 }
 if (failed) process.exitCode = 1;
