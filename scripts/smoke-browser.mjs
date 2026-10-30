@@ -161,6 +161,49 @@ try {
           }
           console.log(JSON.stringify({ variant: variant.name, carousel: geometry.active, geometry: "inside viewport" }));
         }
+
+        // Regression for Opera Android's sticky :hover after tapping side
+        // cards. The old generic CSS replaced translate(-50%, -50%) with
+        // translateY(-5px)!important, moving the card right and DOWN.
+        // Force both pseudo states on a real Chromium render and compare
+        // the vertical centres of the side card and carousel stage.
+        const cdp = await context.newCDPSession(page);
+        try {
+          await cdp.send("DOM.enable");
+          await cdp.send("CSS.enable");
+          const root = await cdp.send("DOM.getDocument");
+          const selected = await cdp.send("DOM.querySelector", {
+            nodeId: root.root.nodeId,
+            selector: ".spine-stage.project-carousel .arc-carousel .cinematic-panel.carousel-right",
+          });
+          if (!selected.nodeId) throw new Error("Side project card not found");
+          for (const pseudo of ["hover", "focus-visible"]) {
+            await cdp.send("CSS.forcePseudoState", {
+              nodeId: selected.nodeId,
+              forcedPseudoClasses: [pseudo],
+            });
+            const layout = await carousel.evaluate(stage => {
+              const side = stage.querySelector(".cinematic-panel.carousel-right");
+              if (!side) return null;
+              const outer = stage.getBoundingClientRect();
+              const inner = side.getBoundingClientRect();
+              return {
+                yDelta: (inner.top + inner.height / 2) - (outer.top + outer.height / 2),
+                xDelta: (inner.left + inner.width / 2) - (outer.left + outer.width / 2),
+                transform: getComputedStyle(side).transform,
+              };
+            });
+            if (!layout || Math.abs(layout.yDelta) > 22 || layout.xDelta < 75) {
+              throw new Error("Sticky " + pseudo + " displaces side card: " + JSON.stringify(layout));
+            }
+            console.log(JSON.stringify({ variant: variant.name, pseudo, sideCard: layout }));
+          }
+          await cdp.send("CSS.forcePseudoState", {
+            nodeId: selected.nodeId, forcedPseudoClasses: [],
+          });
+        } finally {
+          await cdp.detach();
+        }
       }
       // Preserve browser diagnostics for nonfatal errors as well.
       console.log(JSON.stringify({ variant: variant.name, http: response?.status(), mounted: true, errors }));

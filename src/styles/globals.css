@@ -330,8 +330,16 @@ body::before {
     min-height: 280px;
     transform: none;
   }
-  .orbit-grid .orbit-card:hover,
-  .orbit-grid .orbit-card:focus-visible { transform: translateY(-5px) !important; }
+  /*
+   * Only legacy free-positioned cards use the lift-on-hover transform.
+   * The project carousel needs translate(-50%, -50%) for centering, even when
+   * Opera Android keeps :hover active after tapping a card. The former
+   * !important rule removed that centering and pushed side cards down/right.
+   */
+  .orbit-grid:not(.arc-carousel) .orbit-card:hover,
+  .orbit-grid:not(.arc-carousel) .orbit-card:focus-visible {
+    transform: translateY(-5px) !important;
+  }
 }
 @media (prefers-reduced-motion: reduce) {
   .orbit-grid .orbit-card:nth-child(n) { transform: none; }
