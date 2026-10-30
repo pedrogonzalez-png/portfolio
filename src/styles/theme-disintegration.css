@@ -103,7 +103,13 @@
   to{opacity:0}
 }
 @media (prefers-reduced-motion: reduce){
-  .preset-disintegrating{display:none}
+  /*
+   * The entire HomePage is wrapped in ThemeDisintegration even while idle.
+   * Never hide that wrapper: an ancestor display:none gives every visible
+   * child a 0x0 bounding box (blank page on Android reduced-motion devices).
+   * Only suppress the active outgoing animation layer.
+   */
+  .preset-disintegrating:not(.preset-disintegrating-idle){display:none}
   .preset-fracture-cell,.preset-fragment,.preset-disintegration-lifetime{
     animation:none!important;
   }
