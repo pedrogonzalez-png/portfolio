@@ -9,6 +9,7 @@ vi.mock("../components/ProjectPanel", () => ({
     <button type="button" onClick={onOpenThemeStudio}>Abrir Hyprland-Themes do carrossel</button>,
 }));
 vi.mock("../components/SceneIntegration", () => ({default:()=>null}));
+vi.mock("../components/KnowledgeTree", () => ({KnowledgeTree:()=>null}));
 
 beforeEach(()=>window.localStorage.clear());
 afterEach(()=>{window.localStorage.clear();vi.restoreAllMocks();vi.unstubAllGlobals();});
