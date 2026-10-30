@@ -179,8 +179,18 @@ describe("three-panel carousel", () => {
     expect(carousel).toHaveAttribute("data-carousel-direction", "next");
     expect(carousel).toHaveAttribute("data-carousel-switched", "true");
     expect(container.querySelectorAll(".carousel-change-trail")).toHaveLength(1);
-    expect(screen.getByRole("button", { name: "Explorar site-3D no card" }))
-      .toHaveClass("carousel-center");
+    const entering = screen.getByRole("button", { name: "Explorar site-3D no card" });
+    expect(entering).toHaveClass("carousel-center", "carousel-entering");
+    expect(entering).toHaveAttribute("data-switch-role", "entering");
+    expect(screen.getByRole("button", { name: /Trazer Abismo para o centro/ }))
+      .toHaveClass("carousel-exiting");
+    expect(screen.getByRole("button", { name: /Trazer Hyprland-Themes para o centro/ }))
+      .toHaveClass("carousel-wrapping");
+
+    // The animation releases its temporary role without changing navigation.
+    fireEvent.animationEnd(entering, { animationName: "carousel-panel-enter" });
+    expect(entering).not.toHaveClass("carousel-entering");
+    expect(entering).toHaveAttribute("data-position", "center");
 
     fireEvent.keyDown(carousel, { key: "ArrowLeft" });
     expect(carousel).toHaveAttribute("data-carousel-direction", "previous");
@@ -191,6 +201,30 @@ describe("three-panel carousel", () => {
     expect(carousel).toHaveAttribute("data-carousel-direction", "previous");
     expect(screen.getByRole("button", { name: /Abrir detalhes de Hyprland-Themes/ }))
       .toHaveClass("carousel-center");
+  });
+
+  it("allows an explicit opt-in for carousel animation when Android reduces motion", () => {
+    vi.stubGlobal("matchMedia", vi.fn((query: string) => ({
+      matches: query === "(prefers-reduced-motion: reduce)",
+      media: query,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+    })));
+    try {
+      const { unmount } = render(<ProjectPanel />);
+      const carousel = screen.getByRole("region", { name: "Carrossel de projetos" });
+      expect(carousel).toHaveAttribute("data-force-motion", "false");
+      fireEvent.click(screen.getByRole("button", { name: "Animar troca de cards" }));
+      expect(carousel).toHaveAttribute("data-force-motion", "true");
+      expect(screen.getByRole("button", { name: "Desativar animação" }))
+        .toHaveAttribute("aria-pressed", "true");
+      fireEvent.keyDown(carousel, { key: "ArrowRight" });
+      expect(screen.getByRole("button", { name: "Explorar site-3D no card" }))
+        .toHaveAttribute("data-switch-role", "entering");
+      unmount();
+    } finally {
+      vi.unstubAllGlobals();
+    }
   });
 
   it("supports endless arrow-key navigation in both directions", () => {
