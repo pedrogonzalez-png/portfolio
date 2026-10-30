@@ -85,6 +85,30 @@ try {
         for (let step = 0; step < 3; step++) {
           if (step) {
             await carousel.press("ArrowRight");
+            // Check the actual browser animation, not just a CSS file string.
+            if (step === 1) {
+              await page.waitForFunction(() =>
+                getComputedStyle(document.querySelector(".cinematic-panel.carousel-center .cinematic-panel-hero"))
+                  .animationName.includes("carousel-title-reveal") ||
+                getComputedStyle(document.querySelector(".cinematic-panel.carousel-center .cinematic-panel-hero"))
+                  .animationName.includes("carousel-quiet-fade"),
+              );
+              const motion = await carousel.evaluate(stage => {
+                const heading = stage.querySelector(".cinematic-panel.carousel-center .cinematic-panel-hero");
+                const trail = stage.querySelector(".carousel-change-trail");
+                return {
+                  name: heading ? getComputedStyle(heading).animationName : "none",
+                  trail: Boolean(trail),
+                  direction: stage.getAttribute("data-carousel-direction"),
+                };
+              });
+              if (!motion.trail || motion.direction !== "next" ||
+                  motion.name !== (variant.reducedMotion === "reduce"
+                    ? "carousel-quiet-fade" : "carousel-title-reveal")) {
+                throw new Error("Card switch animation absent: " + JSON.stringify(motion));
+              }
+              console.log(JSON.stringify({ variant: variant.name, cardSwitch: motion }));
+            }
             await page.waitForTimeout(900);
           }
           const geometry = await carousel.evaluate(stage => {
