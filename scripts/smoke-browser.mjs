@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-/* global process, setTimeout, fetch, console, URL, document */
+/* global process, setTimeout, fetch, console, URL, document, getComputedStyle */
 /**
  * Test actual production Vite assets running in Chromium.
  * A successful tsc, npm run build or jsdom unit test does NOT prove that
@@ -84,6 +84,12 @@ try {
         await carousel.waitFor({ state: "visible", timeout: 10000 });
         for (let step = 0; step < 3; step++) {
           if (step) {
+            if (step === 2 && variant.reducedMotion === "reduce") {
+              await page.getByRole("button", { name: "Animar troca de cards" }).click();
+              if (await carousel.getAttribute("data-force-motion") !== "true") {
+                throw new Error("User opt-in for card motion was not applied.");
+              }
+            }
             await carousel.press("ArrowRight");
             // Check the actual browser animation, not just a CSS file string.
             if (step === 1) {
@@ -109,6 +115,28 @@ try {
               }
               console.log(JSON.stringify({ variant: variant.name, cardSwitch: motion }));
             }
+            const transition = await carousel.evaluate(stage => {
+              const entering = stage.querySelector(".cinematic-panel.carousel-entering");
+              const leaving = stage.querySelector(".cinematic-panel.carousel-exiting");
+              const wrapping = stage.querySelector(".cinematic-panel.carousel-wrapping");
+              return {
+                entering: entering?.getAttribute("data-project-id"),
+                exiting: leaving?.getAttribute("data-project-id"),
+                wrapping: wrapping?.getAttribute("data-project-id"),
+                animation: entering ? getComputedStyle(entering).animationName : null,
+              };
+            });
+            if (!transition.entering || !transition.exiting || !transition.wrapping) {
+              throw new Error("Directional card animation roles missing: " + JSON.stringify(transition));
+            }
+            const expectsAnimation = variant.reducedMotion !== "reduce" || step === 2;
+            if (expectsAnimation && transition.animation !== "carousel-panel-enter") {
+              throw new Error("Moving project card has no entrance animation: " + JSON.stringify(transition));
+            }
+            if (!expectsAnimation && transition.animation !== "none") {
+              throw new Error("Reduced-motion setting ignored without opt-in: " + JSON.stringify(transition));
+            }
+            console.log(JSON.stringify({ variant: variant.name, transition }));
             await page.waitForTimeout(900);
           }
           const geometry = await carousel.evaluate(stage => {
