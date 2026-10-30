@@ -1,40 +1,28 @@
 import { lazy, Suspense, useEffect, useState } from "react";
 import { useAccessibility } from "./accessibilityContext";
-import { MobileParticleName } from "./MobileParticleName";
 
 const Scene3D = lazy(() => import("../scenes/Scene3D"));
 
-/**
- * Desktop keeps the original 3D physics and shader unchanged.
- * Phones use its matching point typography in Canvas2D; this also avoids
- * WebGL driver issues on Opera Android, and stays dotted in reduced motion.
- */
 export default function SceneIntegration() {
   const { reducedMotion } = useAccessibility();
-  const [useCanvas2D, setUseCanvas2D] = useState(true);
+  const [available, setAvailable] = useState(false);
 
   useEffect(() => {
-    const device = window.matchMedia("(max-width: 850px), (pointer: coarse)");
-    const chooseRenderer = () => {
-      if (device.matches || reducedMotion) {
-        setUseCanvas2D(true);
-        return;
-      }
+    let enabled = false;
+    if (!reducedMotion) {
       try {
-        const probe = document.createElement("canvas");
-        setUseCanvas2D(!(probe.getContext("webgl2") || probe.getContext("webgl")));
+        const canvas = document.createElement("canvas");
+        enabled = Boolean(canvas.getContext("webgl2") || canvas.getContext("webgl"));
       } catch {
-        setUseCanvas2D(true);
+        enabled = false;
       }
-    };
-    chooseRenderer();
-    device.addEventListener?.("change", chooseRenderer);
-    return () => device.removeEventListener?.("change", chooseRenderer);
+    }
+    setAvailable(enabled);
   }, [reducedMotion]);
 
-  if (useCanvas2D) return <MobileParticleName reducedMotion={reducedMotion} />;
+  if (!available) return null;
   return (
-    <Suspense fallback={<MobileParticleName reducedMotion={reducedMotion} />}>
+    <Suspense fallback={null}>
       <Scene3D />
     </Suspense>
   );
