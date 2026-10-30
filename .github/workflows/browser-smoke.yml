@@ -36,8 +36,13 @@ jobs:
         run: npm run build
       - name: Open built app in desktop and mobile browsers
         run: node scripts/smoke-browser.mjs
+      - name: Diagnose the Vercel URL shown in the user's screenshot (advisory)
+        continue-on-error: true
+        env:
+          SMOKE_TARGET_URL: https://portfolio-f92tr8tyu-wazaimon1.vercel.app/
+        run: node scripts/smoke-browser.mjs
       - uses: actions/upload-artifact@v4
-        if: failure()
+        if: always()
         with:
           name: production-browser-diagnostics
           path: browser-diagnostics/
