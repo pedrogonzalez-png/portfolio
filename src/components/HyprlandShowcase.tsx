@@ -1,25 +1,114 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { CSSProperties } from "react";
 import { GALLERY_THEMES, THEME_SHELF_MEDIA, galleryCssTokens, type GalleryTheme, type ShelfThemeId } from "../config/themeShelfMedia";
 import { ThemeCdShelf } from "./ThemeCdShelf";
+import { useCompactPlayback } from "../hooks/useCompactPlayback";
 import "../styles/preset-theme-gallery.css";
 
-/** Show only the selected CD's image or video, without desktop widgets. */
+/** The large preview is the ONLY moving video on compact/touch devices. */
 function ThemeMediaPreview({ theme }: { theme: GalleryTheme }) {
   const media = THEME_SHELF_MEDIA[theme.id as ShelfThemeId];
+  const compact = useCompactPlayback();
+  const containerRef = useRef<HTMLDivElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [near, setNear] = useState(!compact);
+  const [playing, setPlaying] = useState(false);
+  const [tapRequired, setTapRequired] = useState(false);
   const [failed, setFailed] = useState(false);
-  const reducedMotion = typeof window !== "undefined" &&
+  const [originalFallback, setOriginalFallback] = useState(false);
+  const [retry, setRetry] = useState(0);
+  const prefersReducedMotion = typeof window !== "undefined" &&
     window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
+  const poster = media?.poster || media?.cover || "";
+  const videoSource = compact && media?.mobileVideo && !originalFallback
+    ? media.mobileVideo : media?.video || "";
+  const shouldLoadVideo = !compact || near;
+
+  useEffect(() => {
+    if (!compact || !media?.video) {
+      setNear(true);
+      return;
+    }
+    const node = containerRef.current;
+    if (!node || typeof IntersectionObserver === "undefined") {
+      setNear(true);
+      return;
+    }
+    const observer = new IntersectionObserver(([entry]) => {
+      setNear(Boolean(entry?.isIntersecting));
+    }, { rootMargin: "180px 0px" });
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [compact, media?.video]);
+
+  useEffect(() => {
+    if (!shouldLoadVideo || !videoRef.current || failed || prefersReducedMotion) return;
+    const video = videoRef.current;
+    try {
+      const attempt = video.play();
+      if (attempt && typeof attempt.catch === "function") {
+        void attempt.catch((error: {name?: string}) => {
+          if (error?.name === "NotAllowedError") setTapRequired(true);
+        });
+      }
+    } catch {
+      setTapRequired(true);
+    }
+  }, [videoSource, shouldLoadVideo, failed, retry, prefersReducedMotion]);
+
+  const onVideoError = () => {
+    setPlaying(false);
+    // Mobile files are preferred, but older deployments may not have them yet.
+    if (compact && media?.mobileVideo && !originalFallback) {
+      setOriginalFallback(true);
+    } else {
+      setFailed(true);
+    }
+  };
+
+  const retryPlayback = () => {
+    if (failed) {
+      setFailed(false);
+      setOriginalFallback(false);
+      setPlaying(false);
+      setRetry(value => value + 1);
+      setTapRequired(false);
+      return;
+    }
+    const attempt = videoRef.current?.play();
+    if (attempt && typeof attempt.then === "function") {
+      void attempt.then(() => setTapRequired(false)).catch(() => setTapRequired(true));
+    }
+  };
 
   return (
-    <div className="preset-desktop-scene preset-media-only"
+    <div ref={containerRef} className="preset-desktop-scene preset-media-only"
       aria-label={"Mídia de " + theme.name}>
-      {media?.video && !failed ? (
-        <video className="preset-media-wallpaper" src={media.video}
-          poster={media.poster || media.cover || undefined}
-          autoPlay={!reducedMotion} muted loop playsInline preload="metadata"
-          aria-label={"Vídeo de " + theme.name}
-          onError={() => setFailed(true)} />
+      {media?.video ? (
+        <>
+          {/* Keep a real JPEG frame visible while mobile video is fetching,
+              waiting for user gesture, or falling back to the original MP4. */}
+          {poster && <img src={poster} alt="" className="preset-media-wallpaper"
+            aria-hidden="true" decoding="async" />}
+          {!poster && <div className="preset-media-fallback" aria-hidden="true" />}
+          {shouldLoadVideo && !failed && (
+            <video key={videoSource + retry} ref={videoRef}
+              className={"preset-media-wallpaper preset-media-player" + (playing ? " is-playing" : "")}
+              src={videoSource} poster={poster || undefined}
+              autoPlay={!prefersReducedMotion}
+              muted loop playsInline preload={compact ? "metadata" : "auto"}
+              aria-label={"Vídeo de " + theme.name}
+              onPlaying={() => { setPlaying(true); setTapRequired(false); }}
+              onPause={() => setPlaying(false)}
+              onError={onVideoError} />
+          )}
+          {compact && (tapRequired || failed || (prefersReducedMotion && !playing)) && (
+            <button className="preset-media-play-retry" type="button"
+              onClick={retryPlayback}>
+              {failed ? "Tentar carregar o vídeo" : "Reproduzir vídeo"}
+            </button>
+          )}
+        </>
       ) : media?.cover && !failed ? (
         <img className="preset-media-wallpaper" src={media.cover}
           alt={"Imagem de " + theme.name} decoding="async"
