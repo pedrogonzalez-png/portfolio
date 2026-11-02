@@ -35,7 +35,9 @@ function ThemeMediaPreview({ theme }: { theme: GalleryTheme }) {
       return;
     }
     const observer = new IntersectionObserver(([entry]) => {
-      setNear(Boolean(entry?.isIntersecting));
+      const visible = Boolean(entry?.isIntersecting);
+      setNear(visible);
+      if (!visible) setPlaying(false);
     }, { rootMargin: "180px 0px" });
     observer.observe(node);
     return () => observer.disconnect();
@@ -102,7 +104,7 @@ function ThemeMediaPreview({ theme }: { theme: GalleryTheme }) {
               onPause={() => setPlaying(false)}
               onError={onVideoError} />
           )}
-          {compact && (tapRequired || failed || (prefersReducedMotion && !playing)) && (
+          {compact && (failed || tapRequired || (near && !playing)) && (
             <button className="preset-media-play-retry" type="button"
               onClick={retryPlayback}>
               {failed ? "Tentar carregar o vídeo" : "Reproduzir vídeo"}
