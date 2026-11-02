@@ -71,10 +71,11 @@ export function RealDesktopPreview({
     <div className="real-desktop-preview" style={variables}
       aria-label={media ? "Prévia do desktop " + themeName + " com wallpaper do GitHub" :
         "Prévia de cores do tema " + themeName}>
-      {localWallpaper?.type === "image" ? (
+      {localWallpaper?.type === "image" && !wallpaperError ? (
         <img className="real-desktop-wallpaper" src={localWallpaper.url}
-          alt="" aria-hidden="true" />
-      ) : media && !wallpaperError ? (
+          alt="" aria-hidden="true" decoding="async"
+          onError={() => setWallpaperError(true)} />
+      ) : !localWallpaper && media && !wallpaperError ? (
         <img className="real-desktop-wallpaper" src={media.image}
           alt="" aria-hidden="true" decoding="async"
           onError={() => setWallpaperError(true)} />
@@ -110,11 +111,6 @@ export function RealDesktopPreview({
         <time className="real-desktop-time">{time}</time>
       </div>
 
-      {!media && !localWallpaper && (
-        <p className="real-desktop-no-wallpaper">
-          A paleta {themeName} está ativa nesta prévia. O wallpaper Changli não é aplicado a outros temas.
-        </p>
-      )}
       {media && wallpaperError && (
         <p className="real-desktop-wallpaper-error" role="status">
           Não foi possível carregar o wallpaper do GitHub. Confira sua conexão.
