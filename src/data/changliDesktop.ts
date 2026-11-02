@@ -1,7 +1,8 @@
 /**
- * CHANGLI — media and preview data, in ONE editable place.
+ * CHANGLI — widget media and fallback for the reference desktop.
+ * The selected CD's wallpaper is configured in src/config/themeShelfMedia.ts.
  *
- * To supply artwork later:
+ * To supply artwork for the individual widgets later:
  * 1. Add files inside public/assets/hyprland/changli/
  * 2. Replace the empty strings below with e.g.
  *    "/assets/hyprland/changli/background.mp4"
