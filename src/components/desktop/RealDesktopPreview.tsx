@@ -81,7 +81,7 @@ export function RealDesktopPreview({
       ) : (
         <div className="real-desktop-wallpaper-fallback" aria-hidden="true" />
       )}
-      {animationEnabled && localWallpaper?.type === "video" && (
+      {animationEnabled && localWallpaper?.type === "video" && !videoError && (
         <video className="real-desktop-wallpaper" autoPlay loop muted playsInline
           preload="metadata" src={localWallpaper.url}
           aria-label={"Wallpaper local de " + themeName}
@@ -141,7 +141,7 @@ export function RealDesktopPreview({
       )}
       {videoError && (
         <span className="real-desktop-video-error" role="status">
-          MP4 indisponível neste navegador; imagem estática mantida.
+          MP4 indisponível neste navegador; fundo alternativo mantido.
         </span>
       )}
     </div>
