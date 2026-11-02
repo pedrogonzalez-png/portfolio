@@ -89,7 +89,7 @@ describe("illuminated jewel-case theme exhibition", () => {
       expect(scheme.dark.term).toHaveLength(16);
       expect(scheme.light.term).toHaveLength(16);
       for (const key of ["primary","secondary","tertiary"] as const) {
-        expect(scheme.dark.accents[scheme.defaults[key]]).toMatch(/^#[\\da-f]{6}$/i);
+        expect(scheme.dark.accents[scheme.defaults[key]]).toMatch(/^#[0-9a-f]{6}$/i);
       }
       const css = galleryCssTokens(theme.id as keyof typeof GALLERY_SCHEMES);
       expect(css["--color-accent-primary"])
