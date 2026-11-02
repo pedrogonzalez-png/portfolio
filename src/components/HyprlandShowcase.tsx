@@ -4,6 +4,7 @@ import { OFFICIAL_THEMES, type Theme, type ThemePalette } from "../stores/themes
 import { RealDesktopPreview } from "./desktop/RealDesktopPreview";
 import { ChangliDesktop } from "./desktop/ChangliDesktop";
 import { ThemeCdShelf } from "./ThemeCdShelf";
+import { THEME_SHELF_MEDIA, type OfficialShelfThemeId } from "../config/themeShelfMedia";
 import { validatePublishedLayouts, type WidgetPlacement, type WidgetKind } from "../services/quickshellLayoutImport";
 import published from "../data/published-widget-layouts.json";
 import "../styles/preset-theme-gallery.css";
@@ -21,11 +22,22 @@ const collection = validatePublishedLayouts(published).profiles;
 
 function ProfileDesktop({ view, active, accent }: { view:View; active:boolean; accent:string | null }) {
   const palette = accent ? { ...view.palette, accentPrimary:accent } : view.palette;
+  // Display the selected CD's media behind the actual desktop widgets.
+  const selectedMedia=THEME_SHELF_MEDIA[view.id as OfficialShelfThemeId];
+  const wallpaperImage=selectedMedia?.cover||"";
+  const wallpaperVideo=selectedMedia?.video||"";
+  const localWallpaper=wallpaperVideo
+    ? {url:wallpaperVideo,type:"video" as const}
+    : wallpaperImage
+      ? {url:wallpaperImage,type:"image" as const}
+      : undefined;
   return (
     <div className="preset-desktop-scene" style={{"--preset-glow":palette.accentPrimary} as CSSProperties}>
-      {view.id==="changli" ? <ChangliDesktop active={active} accent={accent}/> : (
+      {view.id==="changli" ? <ChangliDesktop active={active} accent={accent}
+        wallpaperImage={wallpaperImage} wallpaperVideo={wallpaperVideo}/> : (
         <>
-          <RealDesktopPreview palette={palette} themeName={view.name} animationEnabled={active}/>
+          <RealDesktopPreview key={view.id} palette={palette} themeName={view.name}
+            animationEnabled={active} localWallpaper={localWallpaper}/>
       <div className="preset-desktop-widgets" aria-label={"Widgets publicados de "+view.name}>
         {view.widgets.map((widget,i) => (
           <div key={widget.kind+"-"+i} className={"preset-widget preset-"+widget.kind}
@@ -125,7 +137,7 @@ export function HyprlandShowcase({
       <div className="preset-gallery-foot">
         <div>
           <strong>{theme.name} <span aria-hidden="true">·</span> {theme.id==="changli"?"Desktop de referência":current.widgets.length+" widgets da composição original"}</strong>
-          <p>Prévia em código baseada nas configurações do Quickshell. Os CDs exibem as imagens e vídeos publicados para cada tema.</p>
+          <p>Prévia em código baseada nas configurações do Quickshell. O tema selecionado exibe seu vídeo ou imagem como fundo, atrás dos widgets.</p>
         </div>
         {variants.length>1&&theme.id!=="changli"&&(
           <div className="preset-variant-controls">
@@ -143,7 +155,7 @@ export function HyprlandShowcase({
         <p className="preset-source-note">
           <a href="https://moewalls.com/anime/hiyuki-entrust-your-wishes-to-me-wuthering-waves-live-wallpaper/"
              target="_blank" rel="noopener noreferrer">Wallpaper original Hiyuki — MoeWalls</a>.
-          O vídeo local da Hiyuki aparece no CD selecionado; a prévia do desktop abaixo continua independente.
+          O vídeo local da Hiyuki aparece no CD selecionado e também como fundo do desktop abaixo.
         </p>
       )}
     </div>
