@@ -7,7 +7,12 @@ import { HyprlandShowcase } from "./HyprlandShowcase";
 import "../styles/preset-theme-studio.css";
 
 /** Original five palettes remain global; additional media themes are local to the exhibition. */
-export function ThemeStudio({ onClose }: { onClose: () => void }) {
+export function ThemeStudio({
+  onClose, onSelectedThemeChange,
+}: {
+  onClose: () => void;
+  onSelectedThemeChange?: (id: ShelfThemeId) => void;
+}) {
   const { theme, setTheme } = useTheme();
   const [selectedId, setSelectedId] = useState(theme.id);
   useEffect(() => setSelectedId(theme.id), [theme.id]);
@@ -38,6 +43,7 @@ export function ThemeStudio({ onClose }: { onClose: () => void }) {
       <HyprlandShowcase themes={GALLERY_THEMES} selectedId={selectedId}
         onChoose={candidate => {
           setSelectedId(candidate.id);
+          onSelectedThemeChange?.(candidate.id as ShelfThemeId);
           if (OFFICIAL_THEMES.some(t => t.id === candidate.id)) {
             setTheme(candidate.id);
           }
