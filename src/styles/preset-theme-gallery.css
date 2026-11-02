@@ -229,3 +229,38 @@
 .preset-media-fallback{position:absolute;inset:0;
   background:radial-gradient(ellipse at center,
     color-mix(in srgb,var(--stage-accent) 35%,#141018),#0c0b12 78%)}
+
+
+/* Keep the real first frame visible until the MP4 is actually playing.
+   A black or stalled video layer must never cover the poster on mobile. */
+.preset-media-player {
+  z-index: 1;
+  opacity: 0;
+  transition: opacity .18s ease;
+}
+.preset-media-player.is-playing { opacity: 1; }
+.preset-media-play-retry {
+  position: absolute;
+  z-index: 2;
+  left: 50%;
+  bottom: clamp(12px, 3vw, 24px);
+  transform: translateX(-50%);
+  min-height: 42px;
+  padding: .55rem 1rem;
+  white-space: nowrap;
+  max-width: calc(100% - 24px);
+  border: 1px solid color-mix(in srgb, var(--stage-accent) 65%, white);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--color-bg) 86%, transparent);
+  color: var(--color-text);
+  font: 650 .75rem var(--font-body);
+  cursor: pointer;
+  backdrop-filter: blur(12px);
+}
+.preset-media-play-retry:focus-visible {
+  outline: 2px solid var(--color-accent-yellow);
+  outline-offset: 3px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .preset-media-player { transition: none; }
+}
