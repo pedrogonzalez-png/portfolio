@@ -40,16 +40,32 @@ describe("illuminated jewel-case theme exhibition", () => {
     expect(changed).toHaveBeenLastCalledWith(OFFICIAL_THEMES[3]);
   });
 
-  it("starts with intentional empty media slots and no broken image or invented video", () => {
-    const { container } = render(
-      <ThemeCdShelf themes={OFFICIAL_THEMES} selectedId="hiyuki" onChoose={() => {}}/>,
-    );
+  it("maps each official theme to its already-published image or video", () => {
+    expect(THEME_SHELF_MEDIA.changli.video).toBe("/assets/hyprland/temas/videos-fundo/changli.mp4");
+    expect(THEME_SHELF_MEDIA.hiyuki.video).toBe("/assets/hyprland/temas/videos-fundo/hyuki.mp4");
+    expect(THEME_SHELF_MEDIA.emilia.cover).toBe("/assets/hyprland/temas/foto-fundo/emilia.png");
+    expect(THEME_SHELF_MEDIA.furina.cover).toBe("/assets/hyprland/temas/foto-fundo/furina.png");
+    expect(THEME_SHELF_MEDIA["hotline-miami"].cover).toBe("/assets/hyprland/temas/foto-fundo/tony.png");
     expect(Object.keys(THEME_SHELF_MEDIA)).toHaveLength(5);
-    expect(Object.values(THEME_SHELF_MEDIA).every(
-      (item) => item.cover === "" && item.video === "" && item.poster === "",
-    )).toBe(true);
-    expect(container.querySelectorAll(".theme-cd-artwork img")).toHaveLength(0);
+  });
+
+  it("plays only the selected theme's video, or shows its PNG when selected", () => {
+    const { container, rerender } = render(
+      <ThemeCdShelf themes={OFFICIAL_THEMES} selectedId="hiyuki" onChoose={() => {}} />,
+    );
+    expect(container.querySelectorAll("video")).toHaveLength(1);
+    expect(container.querySelector("video source"))
+      .toHaveAttribute("src", THEME_SHELF_MEDIA.hiyuki.video);
+    expect(container.querySelectorAll(".theme-cd-artwork img")).toHaveLength(3);
+
+    rerender(<ThemeCdShelf themes={OFFICIAL_THEMES} selectedId="furina" onChoose={() => {}} />);
     expect(container.querySelectorAll("video")).toHaveLength(0);
-    expect(screen.getAllByText("INSIRA SUA CAPA / VÍDEO")).toHaveLength(5);
+    expect(screen.getByRole("button", { name: "Furina" }).querySelector("img"))
+      .toHaveAttribute("src", THEME_SHELF_MEDIA.furina.cover);
+
+    rerender(<ThemeCdShelf themes={OFFICIAL_THEMES} selectedId="changli" onChoose={() => {}} />);
+    expect(container.querySelectorAll("video")).toHaveLength(1);
+    expect(container.querySelector("video source"))
+      .toHaveAttribute("src", THEME_SHELF_MEDIA.changli.video);
   });
 });
