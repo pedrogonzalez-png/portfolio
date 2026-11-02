@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import type { CSSProperties } from "react";
+import { THEME_CSS_TOKENS, type ThemePalette } from "../stores/themes";
 import { GALLERY_THEMES, THEME_SHELF_MEDIA, type GalleryTheme, type ShelfThemeId } from "../config/themeShelfMedia";
 import { ThemeCdShelf } from "./ThemeCdShelf";
 import "../styles/preset-theme-gallery.css";
@@ -47,6 +48,13 @@ export function HyprlandShowcase({
   const [id, setId] = useState(selectedId);
   const theme = approvedThemes.find((candidate) => candidate.id === id) ?? GALLERY_THEMES[0];
   const chosenMedia = THEME_SHELF_MEDIA[theme.id as ShelfThemeId];
+  // Scope every color token to this gallery: changing CDs does not change
+  // the portfolio's global theme or other pages.
+  const galleryStyle = Object.fromEntries(
+    Object.entries(THEME_CSS_TOKENS).map(([token, cssVariable]) => [
+      cssVariable, theme.palette[token as keyof ThemePalette],
+    ]),
+  ) as CSSProperties;
 
   useEffect(() => {
     setId(selectedId);
@@ -59,7 +67,8 @@ export function HyprlandShowcase({
   };
 
   return (
-    <div className="preset-theme-gallery" aria-label="Galeria de temas Hyprland prontos">
+    <div className="preset-theme-gallery" style={galleryStyle}
+      aria-label="Galeria de temas Hyprland prontos">
       <div className="preset-gallery-intro">
         <span className="preset-eyebrow"><span aria-hidden="true">01</span> / ESCOLHA SEU UNIVERSO</span>
         <span className="preset-gallery-status">
