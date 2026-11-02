@@ -5,9 +5,9 @@ import { THEME_SHELF_MEDIA } from "../config/themeShelfMedia";
 import { OFFICIAL_THEMES } from "../stores/themes";
 
 describe("Hyprland media-only exhibition", () => {
-  it("shows five CDs, no widgets or desktop chrome", () => {
+  it("shows ten CDs, no widgets or desktop chrome", () => {
     const {container}=render(<HyprlandShowcase />);
-    expect(screen.getByRole("navigation", {name:"Escolher tema pronto"}).querySelectorAll("button")).toHaveLength(5);
+    expect(screen.getByRole("navigation", {name:"Escolher tema pronto"}).querySelectorAll("button")).toHaveLength(10);
     expect(container.querySelector(".preset-stage .preset-widget")).toBeNull();
     expect(container.querySelector(".preset-stage [data-changli-slot]")).toBeNull();
     expect(container.querySelector(".preset-stage .real-desktop-topbar")).toBeNull();
