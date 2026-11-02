@@ -95,3 +95,8 @@ A mídia do CD selecionado também aparece **atrás dos widgets** na prévia log
 ## Prévia limpa (decisão mais recente)
 
 O quadro grande abaixo dos CDs exibe somente o arquivo do tema selecionado, sem widgets, dock, barras ou cartões sobrepostos. A proporção 21:9/16:9 continua selecionável. A coleção Quickshell publicada permanece preservada como dados, mas não é renderizada sobre a mídia; o seletor de variantes foi retirado por não alterar essa visualização.
+
+
+## Estante expandida (10 temas)
+
+Além das cinco edições iniciais, as mídias já publicadas foram associadas a Hsin (hsin.mp4), Shorekeeper (shorekeeper.mp4), Wuthering (wutering.mp4), Doom (doom.png) e Kyoraku (kyoraku.png). Nenhum arquivo foi movido. Os cinco adicionais usam iluminação neutra provisória, sem alegar paletas oficiais; as cinco paletas originais permanecem intactas. As capas de vídeo são montadas mesmo quando não selecionadas, pausadas no primeiro quadro, e apenas o CD central reproduz. A estante também navega por roda do mouse, setas e arraste horizontal por toque no celular.
