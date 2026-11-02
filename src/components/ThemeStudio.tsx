@@ -26,7 +26,7 @@ export function ThemeStudio({ onClose }: { onClose: () => void }) {
             Coleção de desktops
           </span>
           <h1>Seu desktop, <em>outros universos.</em></h1>
-          <p>Uma estante de cinco temas em caixas de vidro iluminadas. Escolha uma capa para ver a imagem ou o vídeo correspondente e explorar cada desktop.</p>
+          <p>Uma estante de cinco temas em caixas de vidro iluminadas. Selecione um CD para ver apenas seu vídeo ou imagem, sem widgets sobrepostos.</p>
         </div>
       </header>
 
