@@ -148,6 +148,24 @@ describe("illuminated jewel-case theme exhibition", () => {
     expect(changed).not.toHaveBeenCalled();
   });
 
+  it("allows vertical and diagonal swipes to scroll without switching CDs",()=>{
+    const changed=vi.fn();
+    const {container}=render(
+      <ThemeCdShelf themes={GALLERY_THEMES} selectedId="changli" onChoose={changed}/>,
+    );
+    const nav=container.querySelector(".theme-cd-shelf")!;
+
+    // Finger moves mostly down, even if it drifts sideways over a CD.
+    fireEvent.touchStart(nav,{touches:[{clientX:240,clientY:90}]});
+    fireEvent.touchEnd(nav,{changedTouches:[{clientX:185,clientY:290}]});
+    expect(changed).not.toHaveBeenCalled();
+
+    // Clearly horizontal swipe still moves to the next CD.
+    fireEvent.touchStart(nav,{touches:[{clientX:240,clientY:90}]});
+    fireEvent.touchEnd(nav,{changedTouches:[{clientX:100,clientY:115}]});
+    expect(changed).toHaveBeenCalledWith(GALLERY_THEMES[1]);
+  });
+
   it("shows only actual media in the large preview, with no desktop widgets",()=>{
     const {container}=render(<HyprlandShowcase/>);
     const stage=()=>container.querySelector(".preset-stage")!;

@@ -108,9 +108,22 @@
   outline-offset:3px;
 }
 @media(max-width:730px){
-  .hyprland-dedicated-page{padding:1.15rem 1rem 3rem}
-  .preset-studio-heading{gap:1.75rem;margin-bottom:2rem}
-  .preset-studio-heading h1{font-size:clamp(2.4rem,8.1vw,3.6rem)}
+  /* The Hyprland gallery is a document, not a fullscreen game. Allow the
+     phone's normal portrait scrolling instead of a rotated viewport. */
+  .hyprland-dedicated-page{
+    width:100%;
+    min-height:100svh;
+    height:auto;
+    overflow:visible;
+    padding:1rem 1rem calc(2.5rem + env(safe-area-inset-bottom, 0px));
+  }
+  .preset-studio-heading{gap:1rem;margin-bottom:1.35rem}
+  .preset-studio-heading h1{
+    font-size:clamp(2rem,7.7vw,3.3rem);
+    line-height:1.08;
+    margin:.5rem 0 .55rem;
+  }
+  .preset-studio-hero-copy>p{font-size:.82rem;line-height:1.5}
   .preset-studio-topline{gap:.5rem}
   .preset-studio-overline{font-size:.56rem}
   .preset-studio-exit{min-height:39px;padding:.55rem .75rem;font-size:.7rem}

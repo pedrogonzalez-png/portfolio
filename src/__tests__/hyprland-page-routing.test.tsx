@@ -15,7 +15,7 @@ beforeEach(()=>window.localStorage.clear());
 afterEach(()=>{window.localStorage.clear();vi.restoreAllMocks();vi.unstubAllGlobals();});
 
 describe("Hyprland-Themes on its own page",()=>{
-  it("renders Hyprland-Themes in the same landscape frame on mobile", async () => {
+  it("renders Hyprland-Themes as a naturally scrollable portrait page on mobile", async () => {
     vi.stubGlobal("matchMedia", vi.fn((query: string) => ({
       matches: query === "(pointer: coarse)",
       media: query,
@@ -27,15 +27,19 @@ describe("Hyprland-Themes on its own page",()=>{
         <ThemeProvider><Pages/></ThemeProvider>
       </MemoryRouter>,
     );
-    expect(await screen.findByRole("dialog", { name: "Hyprland-Themes em modo horizontal" }))
+    expect(await screen.findByRole("region", { name: "Exposição dos temas Hyprland" }))
       .toBeInTheDocument();
-    expect(document.body.querySelector(".mobile-landscape-stage > .hyprland-dedicated-page"))
-      .toBeInTheDocument();
-    expect(await screen.findByRole("button", { name: /Voltar aos projetos/ })).toBeInTheDocument();
-    unmount();
+    const page = document.querySelector("main.hyprland-dedicated-page");
+    expect(page).not.toBeNull();
+    expect(page?.querySelector(".theme-cd-stage")).not.toBeNull();
+    expect(page?.querySelector(".preset-stage")).not.toBeNull();
+    // No forced 90-degree rotation, fixed viewport overlay, or body scroll lock.
     expect(document.body.querySelector(".mobile-landscape-experience")).toBeNull();
+    expect(document.body.style.overflow).not.toBe("hidden");
+    expect(await screen.findByRole("button", { name: /Voltar aos projetos/ }))
+      .toBeInTheDocument();
+    unmount();
   });
-
 
   it("opens /hyprland-themes directly without rendering the portfolio home inside it",async()=>{
     const {container}=render(

@@ -75,7 +75,7 @@ function ShelfCover({ media, selected, name }: {
 export function ThemeCdShelf({ themes, selectedId, onChoose }: ShelfProps) {
   const stageRef = useRef<HTMLDivElement>(null);
   const lastWheel = useRef(0);
-  const touchStart = useRef<number | null>(null);
+  const touchStart = useRef<{ x: number; y: number } | null>(null);
   const suppressNextClick = useRef(false);
   const count = themes.length;
   const activeIndex = Math.max(0, themes.findIndex(theme => theme.id === selectedId));
@@ -114,13 +114,18 @@ export function ThemeCdShelf({ themes, selectedId, onChoose }: ShelfProps) {
     }
   };
   const touchBegin = (event: TouchEvent<HTMLElement>) => {
-    touchStart.current = event.touches[0]?.clientX ?? null;
+    const point = event.touches[0];
+    touchStart.current = point ? { x: point.clientX, y: point.clientY ?? 0 } : null;
   };
   const touchFinish = (event: TouchEvent<HTMLElement>) => {
-    if (touchStart.current === null) return;
-    const dx = (event.changedTouches[0]?.clientX ?? touchStart.current) - touchStart.current;
+    const start = touchStart.current;
     touchStart.current = null;
-    if (Math.abs(dx) < 42) return;
+    if (!start) return;
+    const end = event.changedTouches[0];
+    const dx = (end?.clientX ?? start.x) - start.x;
+    const dy = (end?.clientY ?? start.y) - start.y;
+    // A diagonal or vertical swipe must scroll the mobile page, not change CDs.
+    if (Math.abs(dx) < 42 || Math.abs(dx) <= Math.abs(dy) * 1.2) return;
     suppressNextClick.current = true;
     window.setTimeout(() => { suppressNextClick.current = false; }, 360);
     step(dx < 0 ? 1 : -1);
