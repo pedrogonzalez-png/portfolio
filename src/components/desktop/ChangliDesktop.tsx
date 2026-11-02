@@ -225,24 +225,30 @@ function Timers() {
  * Widgets are readonly, per the decision that visitors only select accent color.
  * Background video and all artwork are LOCAL OPTIONAL SLOTS in changliDesktop.ts.
  */
-export function ChangliDesktop({ active=true, accent }: { active?:boolean;accent?:string|null }) {
+export function ChangliDesktop({ active=true, accent, wallpaperImage="", wallpaperVideo="" }: {
+  active?:boolean;accent?:string|null;wallpaperImage?:string;wallpaperVideo?:string;
+}) {
   const now=useLocalTime();
+  const image=wallpaperImage||changliDesktop.media.backgroundImage;
+  const video=wallpaperVideo||changliDesktop.media.backgroundVideo;
+  const [videoError,setVideoError]=useState(false);
+  useEffect(()=>setVideoError(false),[video]);
   return (
     <div className="changli-desktop" style={{
       "--changli-accent":accent||"#dc693e",
     } as CSSProperties} aria-label="Desktop Changli com widgets em posições da referência">
       <div className="changli-wallpaper-layer" aria-hidden="true">
         <div className="changli-wallpaper-gradient"/>
-        {changliDesktop.media.backgroundImage&&
-          <img src={changliDesktop.media.backgroundImage} alt="" className="changli-wallpaper-media"/>}
-        {active&&changliDesktop.media.backgroundVideo&&
-          <video src={changliDesktop.media.backgroundVideo}
-            poster={changliDesktop.media.backgroundImage || undefined}
-            className="changli-wallpaper-media" autoPlay muted loop playsInline preload="metadata"/>}
+        {image&&
+          <img src={image} alt="" className="changli-wallpaper-media"/>}
+        {active&&video&&!videoError&&
+          <video src={video} poster={image||undefined}
+            className="changli-wallpaper-media" autoPlay muted loop playsInline preload="metadata"
+            onError={()=>setVideoError(true)}/>}
         <div className="changli-wallpaper-vignette"/>
         <span className="changli-wallpaper-line changli-wallpaper-line-one"/>
         <span className="changli-wallpaper-line changli-wallpaper-line-two"/>
-        {!changliDesktop.media.backgroundImage&&!changliDesktop.media.backgroundVideo&&
+        {!image&&!video&&
           <span className="changli-wallpaper-hint">BACKGROUND VIDEO / IMAGEM LOCAL</span>}
       </div>
 

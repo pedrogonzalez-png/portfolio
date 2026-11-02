@@ -1,54 +1,50 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { HyprlandShowcase } from "../components/HyprlandShowcase";
-import { OFFICIAL_THEMES } from "../stores/themes";
+import { GALLERY_THEMES, THEME_SHELF_MEDIA } from "../config/themeShelfMedia";
 
-beforeEach(()=>localStorage.clear());
-afterEach(()=>{localStorage.clear();vi.restoreAllMocks();});
-describe("finished Hyprland gallery and dissolving transition",()=>{
-  it("offers five finished presets, without editors or custom theme creation",()=>{
-    render(<HyprlandShowcase themes={OFFICIAL_THEMES} selectedId="changli"/>);
-    const gallery=screen.getByRole("navigation",{name:"Escolher tema pronto"});
-    expect(gallery.querySelectorAll("button")).toHaveLength(5);
-    for(const theme of OFFICIAL_THEMES)expect(screen.getByRole("button",{name:theme.name})).toBeInTheDocument();
-    for(const name of ["Adicionar Relógio","Ampliar desktop","Restaurar referência","Limpar widgets"]){
-      expect(screen.queryByRole("button",{name})).not.toBeInTheDocument();
-    }
-    expect(screen.queryByLabelText("Carregar wallpaper correto da Hiyuki")).not.toBeInTheDocument();
-    expect(screen.queryByLabelText("Importar posições do Quickshell")).not.toBeInTheDocument();
+describe("Hyprland media-only exhibition", () => {
+  it("shows ten CDs, no widgets or desktop chrome", () => {
+    const {container}=render(<HyprlandShowcase />);
+    expect(screen.getByRole("navigation", {name:"Escolher tema pronto"}).querySelectorAll("button")).toHaveLength(10);
+    expect(container.querySelector(".preset-stage .preset-widget")).toBeNull();
+    expect(container.querySelector(".preset-stage [data-changli-slot]")).toBeNull();
+    expect(container.querySelector(".preset-stage .real-desktop-topbar")).toBeNull();
+    expect(container.querySelector(".preset-stage .real-desktop-dock")).toBeNull();
+    expect(screen.queryByRole("combobox", {name:"Outras composições prontas"})).toBeNull();
   });
-  it("switches ready-made themes without disintegrating inside the gallery",()=>{
+  it("switches selected media, preserving the theme selection", () => {
     const changed=vi.fn();
-    const {container}=render(<HyprlandShowcase themes={OFFICIAL_THEMES} selectedId="changli" onChoose={changed}/>);
+    const {container}=render(<HyprlandShowcase onChoose={changed}/>);
+    const stage=()=>container.querySelector(".preset-stage")!;
+    expect(stage().querySelector("video.preset-media-wallpaper"))
+      .toHaveAttribute("src",THEME_SHELF_MEDIA.changli.video);
     fireEvent.click(screen.getByRole("button",{name:"Hiyuki"}));
-    expect(changed).toHaveBeenCalledWith(OFFICIAL_THEMES[1]);
-    expect(screen.getAllByText(/Hiyuki —/).length).toBeGreaterThan(0);
-    expect(container.querySelector(".preset-disintegrating")).toBeNull();
-    expect(container.querySelector(".preset-fracture-cell")).toBeNull();
-    expect(container.querySelector(".preset-fragment-cloud")).toBeNull();
+    expect(changed).toHaveBeenCalledWith(GALLERY_THEMES[1]);
+    expect(stage().querySelector("video.preset-media-wallpaper"))
+      .toHaveAttribute("src",THEME_SHELF_MEDIA.hiyuki.video);
+    fireEvent.click(screen.getByRole("button",{name:"Emilia"}));
+    expect(stage().querySelector("img.preset-media-wallpaper"))
+      .toHaveAttribute("src",THEME_SHELF_MEDIA.emilia.cover);
+    expect(stage().querySelector("video")).toBeNull();
+    fireEvent.click(screen.getByRole("button",{name:"Furina"}));
+    expect(stage().querySelector("img.preset-media-wallpaper"))
+      .toHaveAttribute("src",THEME_SHELF_MEDIA.furina.cover);
+    fireEvent.click(screen.getByRole("button",{name:"Hotline Miami"}));
+    expect(stage().querySelector("img.preset-media-wallpaper"))
+      .toHaveAttribute("src",THEME_SHELF_MEDIA["hotline-miami"].cover);
   });
-  it("preserves published positions in read-only presentation, with no misleading private data",()=>{
-    const {container}=render(<HyprlandShowcase selectedId="changli"/>);
-    const first=container.querySelector('[data-changli-slot="notes"]') as HTMLElement;
-    expect(first.style.left).toMatch(/%/);
-    expect(first.style.top).toMatch(/%/);
-    expect(container.querySelectorAll("[data-changli-slot]").length).toBe(11);
-    expect(screen.queryByText(/CPU —/)).not.toBeInTheDocument();
-    expect(screen.queryByText(/Conteúdo privado/)).not.toBeInTheDocument();
+  it("has a fallback if the image fails", () => {
+    const {container}=render(<HyprlandShowcase selectedId="emilia"/>);
+    fireEvent.error(container.querySelector(".preset-stage img")!);
+    expect(container.querySelector(".preset-stage .preset-media-fallback")).not.toBeNull();
+    expect(container.querySelector(".preset-stage img")).toBeNull();
   });
-  it("shows correct Hiyuki source without loading the old incorrect video",()=>{
-    const {container}=render(<HyprlandShowcase selectedId="changli"/>);
-    fireEvent.click(screen.getByRole("button",{name:"Hiyuki"}));
-    const link=screen.getByRole("link",{name:/Wallpaper original Hiyuki/});
-    expect(link).toHaveAttribute("href",expect.stringContaining("hiyuki-entrust-your-wishes-to-me"));
-    expect(container.querySelector("video")).toBeNull();
-  });
-  it("shows one fixed Changli reference and retains variants for other finished themes",()=>{
-    render(<HyprlandShowcase selectedId="changli"/>);
-    expect(screen.queryByRole("combobox",{name:"Outras composições prontas"})).not.toBeInTheDocument();
-    expect(screen.getByText(/Composição de referência/)).toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button",{name:"Hiyuki"}));
-    const combo=screen.getByRole("combobox",{name:"Outras composições prontas"});
-    expect(combo.querySelectorAll("option")).toHaveLength(3);
+  it("shows one fixed ultrawide preview without aspect-ratio controls", () => {
+    const {container}=render(<HyprlandShowcase/>);
+    expect(container.querySelector(".preset-stage-ultrawide")).not.toBeNull();
+    expect(screen.queryByRole("group",{name:"Proporção da prévia"})).not.toBeInTheDocument();
+    expect(screen.queryByRole("button",{name:"21:9"})).not.toBeInTheDocument();
+    expect(screen.queryByRole("button",{name:"16:9"})).not.toBeInTheDocument();
   });
 });

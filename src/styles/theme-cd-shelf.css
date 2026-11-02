@@ -143,3 +143,26 @@
   .preset-theme-choices.theme-cd-shelf .theme-cd-case,.theme-cd-arrow{transition:none!important}
   .theme-cd-light-cone,.theme-cd-floor-light{filter:none}
 }
+
+/* Extended carousel: only the five nearest jewel cases are in view. */
+.preset-theme-choices.theme-cd-shelf .theme-cd-case[data-cd-hidden="true"]{
+  opacity:0;visibility:hidden;pointer-events:none;filter:brightness(.4);
+  transform:translateX(-50%) translateY(35%) scale(.35);
+}
+.preset-theme-choices.theme-cd-shelf .theme-cd-case[data-cd-slot="-2"]{
+  transform:translateX(calc(-50% - clamp(180px,31vw,455px))) translateY(24%) rotateY(38deg) scale(.56);
+}
+.preset-theme-choices.theme-cd-shelf .theme-cd-case[data-cd-slot="2"]{
+  transform:translateX(calc(-50% + clamp(180px,31vw,455px))) translateY(24%) rotateY(-38deg) scale(.56);
+}
+/* Horizontal swipes rotate CDs; vertical swipes still scroll the mobile page. */
+.preset-theme-choices.theme-cd-shelf{touch-action:pan-y;user-select:none}
+.preset-theme-choices.theme-cd-shelf img,.preset-theme-choices.theme-cd-shelf video{
+  pointer-events:none;-webkit-user-drag:none;
+}
+@media(max-width:760px){
+  .preset-theme-choices.theme-cd-shelf .theme-cd-case[data-cd-slot="-2"],
+  .preset-theme-choices.theme-cd-shelf .theme-cd-case[data-cd-slot="2"]{
+    opacity:.3;
+  }
+}

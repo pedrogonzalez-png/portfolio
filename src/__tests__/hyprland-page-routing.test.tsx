@@ -50,6 +50,39 @@ describe("Hyprland-Themes on its own page",()=>{
     expect(screen.getByRole("button",{name:/Voltar aos projetos/})).toBeInTheDocument();
   });
 
+  it("changes the entire route background for all ten JSON themes, not only the CD", async () => {
+    const {container}=render(
+      <MemoryRouter initialEntries={["/hyprland-themes"]}>
+        <ThemeProvider><Pages/></ThemeProvider>
+      </MemoryRouter>,
+    );
+    await screen.findByRole("region",{name:"Exposição dos temas Hyprland"});
+    const page=container.querySelector<HTMLElement>("main.hyprland-dedicated-page")!;
+    expect(page).not.toBeNull();
+    const expected: readonly [string,string,string][]=[
+      ["changli","#110A0B","#ca5230"],
+      ["hiyuki","#101118","#C96A85"],
+      ["emilia","#11091F","#b787ff"],
+      ["furina","#0d1525","#9dc7ff"],
+      ["hotline-miami","#1b102e","#f10d6e"],
+      ["hsin","#101015","#d94639"],
+      ["shorekeeper","#101015","#738ae8"],
+      ["wuthering","#101015","#4a5cb4"],
+      ["doom","#101015","#e89073"],
+      ["kyoraku","#101015","#d49900"],
+    ];
+    for(const [index,[id,bg,accent]] of expected.entries()) {
+      if(index > 0) fireEvent.click(screen.getByRole("button",{name:"Próximo tema"}));
+      expect(page).toHaveAttribute("data-gallery-theme",id);
+      expect(page).toHaveStyle({"--color-bg":bg,"--color-accent-primary":accent});
+      expect(page.querySelector(".preset-theme-gallery"))
+        .toHaveStyle({"--color-bg":bg,"--color-accent-primary":accent});
+    }
+    fireEvent.click(screen.getByRole("button",{name:"Próximo tema"}));
+    expect(page).toHaveAttribute("data-gallery-theme","changli");
+    expect(page).toHaveStyle({"--color-bg":"#110A0B"});
+  });
+
   it("disintegrates the CURRENT portfolio viewport on Hyprland project entry, then returns",async()=>{
     const {container}=render(
       <MemoryRouter initialEntries={["/"]}>

@@ -52,8 +52,19 @@ describe("preset-only theme experience",()=>{
     expect(container.querySelectorAll(".preset-gallery-intro h3")).toHaveLength(0);
     expect(container.querySelector(".preset-studio-topline .preset-studio-exit")).not.toBeNull();
     expect(container.querySelector(".preset-color-only")).toBeNull();
-    expect(container.querySelectorAll(".preset-theme-choices button")).toHaveLength(5);
+    expect(container.querySelectorAll(".preset-theme-choices button")).toHaveLength(10);
   });
+  it("applies the original palette to the whole exhibition, not just the CD frame", () => {
+    const {container}=render(<ThemeProvider><ThemeStudio onClose={()=>{}}/></ThemeProvider>);
+    const section=container.querySelector("#theme-studio")!;
+    expect(section).toHaveStyle({"--color-accent-primary":"#ca5230"});
+    expect(section).toHaveStyle({"--quickshell-dark-surface-dim":"#110A0B"});
+    fireEvent.click(screen.getByRole("button",{name:"Hiyuki"}));
+    expect(section).toHaveStyle({"--color-accent-primary":"#C96A85"});
+    fireEvent.click(screen.getByRole("button",{name:"Próximo tema"}));
+    expect(section).toHaveStyle({"--color-accent-primary":"#b787ff"});
+  });
+
   it("returns to projects through the top navigation",()=>{
     const close=vi.fn();
     render(<ThemeProvider><ThemeStudio onClose={close}/></ThemeProvider>);

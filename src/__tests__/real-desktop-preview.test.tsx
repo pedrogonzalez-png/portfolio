@@ -51,7 +51,29 @@ describe("Theme Studio — verified Changli GitHub wallpaper", () => {
     expect(container.querySelector("video")).toBeNull();
     expect(screen.queryByRole("button", { name: "Ativar wallpaper animado" }))
       .not.toBeInTheDocument();
-    expect(screen.getByText(/O wallpaper Changli não é aplicado a outros temas/)).toBeInTheDocument();
+    expect(screen.queryByText(/O wallpaper Changli não é aplicado a outros temas/)).toBeNull();
+    expect(container.querySelector(".real-desktop-wallpaper-fallback")).not.toBeNull();
+  });
+
+  it("shows Emilia's published PNG as full desktop wallpaper, never the old central warning", () => {
+    const src="/assets/hyprland/temas/foto-fundo/emilia.png";
+    const { container }=render(
+      <RealDesktopPreview palette={OFFICIAL_THEMES[2].palette} themeName="Emilia"
+        localWallpaper={{url:src,type:"image"}} />,
+    );
+    expect(container.querySelector("img.real-desktop-wallpaper")).toHaveAttribute("src",src);
+    expect(container.querySelector(".real-desktop-no-wallpaper")).toBeNull();
+    expect(container.querySelector("video")).toBeNull();
+  });
+
+  it("falls back to background gradient when a theme PNG is unavailable", () => {
+    const {container}=render(
+      <RealDesktopPreview palette={OFFICIAL_THEMES[2].palette} themeName="Emilia"
+        localWallpaper={{url:"/assets/hyprland/temas/foto-fundo/emilia.png",type:"image"}} />,
+    );
+    fireEvent.error(container.querySelector("img.real-desktop-wallpaper")!);
+    expect(container.querySelector("img.real-desktop-wallpaper")).toBeNull();
+    expect(container.querySelector(".real-desktop-wallpaper-fallback")).not.toBeNull();
   });
 
   it("reports a failed image request instead of pretending the actual wallpaper loaded", () => {

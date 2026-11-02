@@ -46,19 +46,13 @@ describe("M6 real Quickshell wallpaper profiles — sanitized publication", () =
     expect(visualizer.height).toBeCloseTo(260/1440*100,3);
   });
 
-  it("switches original variants without editing the published widget data", () => {
+  it("preserves archived Quickshell data without rendering its widgets", () => {
     const before=JSON.stringify(data.profiles);
-    const {container}=render(
-      <HyprlandShowcase themes={OFFICIAL_THEMES} selectedId="changli" onChoose={vi.fn()}/>,
-    );
-    expect(container.querySelectorAll("[data-changli-slot]").length).toBe(11);
-    expect(screen.queryByRole("combobox",{name:"Outras composições prontas"})).not.toBeInTheDocument();
+    const {container}=render(<HyprlandShowcase themes={OFFICIAL_THEMES} selectedId="changli" onChoose={vi.fn()}/>);
+    expect(container.querySelectorAll("[data-changli-slot]")).toHaveLength(0);
     fireEvent.click(screen.getByRole("button",{name:"Hiyuki"}));
-    const select=screen.getByRole("combobox",{name:"Outras composições prontas"});
-    expect(select.querySelectorAll("option")).toHaveLength(3);
-    fireEvent.change(select,{target:{value:"hiyuki-2"}});
-    expect(select).toHaveValue("hiyuki-2");
-    expect(screen.queryByRole("button",{name:"Adicionar Relógio"})).not.toBeInTheDocument();
+    expect(container.querySelector(".preset-stage .preset-widget")).toBeNull();
+    expect(screen.queryByRole("combobox",{name:"Outras composições prontas"})).toBeNull();
     expect(JSON.stringify(data.profiles)).toBe(before);
   });
 

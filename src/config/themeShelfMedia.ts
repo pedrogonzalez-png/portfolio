@@ -1,33 +1,195 @@
-/**
- * HYPRLAND THEMES / CD SHELF — ÚNICO LUGAR PARA COLOCAR SUAS MÍDIAS
- *
- * 1. Envie os arquivos para public/media/themes/<tema>/ no repositório.
- * 2. Preencha as strings abaixo, por exemplo:
- *       cover: "/media/themes/changli/cover.webp",
- *       video: "/media/themes/changli/preview.mp4",
- *       poster: "/media/themes/changli/poster.webp",
- * 3. Uma string vazia usa a capa abstrata de vidro (sem imagens quebradas).
- *
- * cover = foto / captura do desktop na caixa de CD.
- * video = gravação mostrada APENAS na caixa selecionada (sem áudio).
- * poster = quadro estático opcional antes de iniciar o vídeo.
- *
- * Não use imports do bundler nem edite JSX/CSS para trocar as mídias.
- * Links HTTPS também funcionam, se o servidor permitir exibir a mídia.
- * Nenhum arquivo, print ou vídeo foi fabricado ou incluído nesta etapa.
- */
+import { THEME_CSS_TOKENS, type ThemePalette } from "../stores/themes";
+import changli from "../data/hyprland-color-schemes/changli.json";
+import hiyuki from "../data/hyprland-color-schemes/hiyuki.json";
+import emilia from "../data/hyprland-color-schemes/emilia.json";
+import furina from "../data/hyprland-color-schemes/furina.json";
+import hotlineMiami from "../data/hyprland-color-schemes/hotline-miami.json";
+import hsin from "../data/hyprland-color-schemes/hsin.json";
+import shorekeeper from "../data/hyprland-color-schemes/shorekeeper.json";
+import wuwa from "../data/hyprland-color-schemes/wuwa.json";
+import doom from "../data/hyprland-color-schemes/doom.json";
+import kiyoraku from "../data/hyprland-color-schemes/kiyoraku.json";
+
+export interface GalleryTheme {
+  id: string;
+  name: string;
+  palette: ThemePalette;
+}
 export interface ThemeShelfMedia {
   cover: string;
   video: string;
   poster: string;
 }
-export type OfficialShelfThemeId =
-  | "changli" | "hiyuki" | "emilia" | "furina" | "hotline-miami";
+export type ShelfThemeId =
+  | "changli" | "hiyuki" | "emilia" | "furina" | "hotline-miami"
+  | "hsin" | "shorekeeper" | "wuthering" | "doom" | "kyoraku";
 
-export const THEME_SHELF_MEDIA: Readonly<Record<OfficialShelfThemeId, ThemeShelfMedia>> = {
-  changli: { cover: "", video: "", poster: "" },
-  hiyuki: { cover: "", video: "", poster: "" },
-  emilia: { cover: "", video: "", poster: "" },
-  furina: { cover: "", video: "", poster: "" },
-  "hotline-miami": { cover: "", video: "", poster: "" },
+interface SchemeMode {
+  surface_dim: string;
+  surface: string;
+  surface_container_lowest: string;
+  surface_container: string;
+  surface_container_high: string;
+  on_surface: string;
+  on_surface_variant: string;
+  outline: string;
+  accents: Record<string, string>;
+  term: string[];
+}
+export interface QuickshellColorScheme {
+  name: string;
+  defaults: { primary: string; secondary: string; tertiary: string };
+  dark: SchemeMode;
+  light: SchemeMode;
+}
+
+/** These are the owner's original files, NOT manually reconstructed palettes. */
+export const GALLERY_SCHEMES: Readonly<Record<ShelfThemeId, QuickshellColorScheme>> =
+  Object.freeze({
+    changli,
+    hiyuki,
+    emilia,
+    furina,
+    "hotline-miami": hotlineMiami,
+    hsin,
+    shorekeeper,
+    wuthering: wuwa,
+    doom,
+    kyoraku: kiyoraku,
+  });
+
+function paletteFromScheme(scheme: QuickshellColorScheme): ThemePalette {
+  const dark = scheme.dark;
+  const accent = (which: "primary" | "secondary" | "tertiary") => {
+    const name = scheme.defaults[which];
+    const color = dark.accents[name];
+    if (!color) throw new Error(`Missing ${which} accent (${name}) for ${scheme.name}`);
+    return color;
+  };
+  return Object.freeze({
+    bg: dark.surface_dim,
+    surface: dark.surface,
+    surfaceContainer: dark.surface_container,
+    surfaceContainerHigh: dark.surface_container_high,
+    text: dark.on_surface,
+    textVariant: dark.on_surface_variant,
+    outline: dark.outline,
+    accentPrimary: accent("primary"),
+    accentRed: accent("secondary"),
+    accentYellow: accent("tertiary"),
+    surfaceDim: dark.surface_dim,
+    fallbackBg: dark.surface_container_lowest,
+  });
+}
+
+export const GALLERY_PALETTES: Readonly<Record<ShelfThemeId, ThemePalette>> =
+  Object.freeze(Object.fromEntries(
+    (Object.entries(GALLERY_SCHEMES) as [ShelfThemeId, QuickshellColorScheme][])
+      .map(([id, scheme]) => [id, paletteFromScheme(scheme)]),
+  ) as Record<ShelfThemeId, ThemePalette>);
+
+/**
+ * Expose every supplied surface, accent and terminal color as scoped CSS vars.
+ * Styling stays inside Hyprland Themes; other portfolio pages are unaffected.
+ */
+export function gallerySchemeVariables(id: ShelfThemeId): Record<string, string> {
+  const scheme = GALLERY_SCHEMES[id];
+  const tokens: Record<string, string> = {};
+  for (const mode of ["dark", "light"] as const) {
+    const data = scheme[mode];
+    for (const [key, value] of Object.entries(data)) {
+      if (key === "accents" || key === "term") continue;
+      if (typeof value === "string") {
+        tokens[`--quickshell-${mode}-${key.replaceAll("_", "-")}`] = value;
+      }
+    }
+    for (const [key, value] of Object.entries(data.accents)) {
+      tokens[`--quickshell-${mode}-accent-${key.replaceAll("_", "-")}`] = value;
+    }
+    data.term.forEach((value, index) => {
+      tokens[`--quickshell-${mode}-term-${index}`] = value;
+    });
+  }
+  return tokens;
+}
+
+/** Real Quickshell colors exposed to components and visual styles. */
+export function galleryCssTokens(id: ShelfThemeId): Record<string, string> {
+  const palette = GALLERY_PALETTES[id];
+  const base = Object.fromEntries(
+    (Object.entries(THEME_CSS_TOKENS) as [keyof ThemePalette, string][])
+      .map(([key, name]) => [name, palette[key]]),
+  ) as Record<string, string>;
+  return { ...base, ...gallerySchemeVariables(id) };
+}
+
+export const GALLERY_THEMES: readonly GalleryTheme[] = Object.freeze(
+  ([
+    ["changli", "Changli"],
+    ["hiyuki", "Hiyuki"],
+    ["emilia", "Emilia"],
+    ["furina", "Furina"],
+    ["hotline-miami", "Hotline Miami"],
+    ["hsin", "Hsin"],
+    ["shorekeeper", "Shorekeeper"],
+    ["wuthering", "Wuthering"],
+    ["doom", "Doom"],
+    ["kyoraku", "Kyoraku"],
+  ] as const).map(([id, name]) => Object.freeze({
+    id, name, palette: GALLERY_PALETTES[id],
+  })),
+);
+
+/** File names match the actual published files; do not rename hyuki/wutering. */
+export const THEME_SHELF_MEDIA: Readonly<Record<ShelfThemeId, ThemeShelfMedia>> = {
+  changli: {
+    cover: "",
+    video: "/assets/hyprland/temas/videos-fundo/changli.mp4",
+    poster: "",
+  },
+  hiyuki: {
+    cover: "",
+    video: "/assets/hyprland/temas/videos-fundo/hyuki.mp4",
+    poster: "",
+  },
+  emilia: {
+    cover: "/assets/hyprland/temas/foto-fundo/emilia.png",
+    video: "",
+    poster: "",
+  },
+  furina: {
+    cover: "/assets/hyprland/temas/foto-fundo/furina.png",
+    video: "",
+    poster: "",
+  },
+  "hotline-miami": {
+    cover: "/assets/hyprland/temas/foto-fundo/tony.png",
+    video: "",
+    poster: "",
+  },
+  hsin: {
+    cover: "",
+    video: "/assets/hyprland/temas/videos-fundo/hsin.mp4",
+    poster: "",
+  },
+  shorekeeper: {
+    cover: "",
+    video: "/assets/hyprland/temas/videos-fundo/shorekeeper.mp4",
+    poster: "",
+  },
+  wuthering: {
+    cover: "",
+    video: "/assets/hyprland/temas/videos-fundo/wutering.mp4",
+    poster: "",
+  },
+  doom: {
+    cover: "/assets/hyprland/temas/foto-fundo/doom.png",
+    video: "",
+    poster: "",
+  },
+  kyoraku: {
+    cover: "/assets/hyprland/temas/foto-fundo/kyoraku.png",
+    video: "",
+    poster: "",
+  },
 };
