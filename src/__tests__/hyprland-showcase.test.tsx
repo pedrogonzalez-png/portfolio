@@ -1,8 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { HyprlandShowcase } from "../components/HyprlandShowcase";
-import { THEME_SHELF_MEDIA } from "../config/themeShelfMedia";
-import { OFFICIAL_THEMES } from "../stores/themes";
+import { GALLERY_THEMES, THEME_SHELF_MEDIA } from "../config/themeShelfMedia";
 
 describe("Hyprland media-only exhibition", () => {
   it("shows ten CDs, no widgets or desktop chrome", () => {
@@ -21,7 +20,7 @@ describe("Hyprland media-only exhibition", () => {
     expect(stage().querySelector("video.preset-media-wallpaper"))
       .toHaveAttribute("src",THEME_SHELF_MEDIA.changli.video);
     fireEvent.click(screen.getByRole("button",{name:"Hiyuki"}));
-    expect(changed).toHaveBeenCalledWith(OFFICIAL_THEMES[1]);
+    expect(changed).toHaveBeenCalledWith(GALLERY_THEMES[1]);
     expect(stage().querySelector("video.preset-media-wallpaper"))
       .toHaveAttribute("src",THEME_SHELF_MEDIA.hiyuki.video);
     fireEvent.click(screen.getByRole("button",{name:"Emilia"}));
