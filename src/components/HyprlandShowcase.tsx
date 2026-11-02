@@ -45,7 +45,6 @@ export function HyprlandShowcase({
     () => themes, [themes],
   );
   const [id, setId] = useState(selectedId);
-  const [format, setFormat] = useState<"ultrawide" | "standard">("ultrawide");
   const theme = approvedThemes.find((candidate) => candidate.id === id) ?? GALLERY_THEMES[0];
   const chosenMedia = THEME_SHELF_MEDIA[theme.id as ShelfThemeId];
 
@@ -76,15 +75,9 @@ export function HyprlandShowcase({
           <span className="preset-theme-divider" aria-hidden="true">/</span>
           <span>{chosenMedia?.video ? "Vídeo" : "Imagem"}</span>
         </span>
-        <div role="group" aria-label="Proporção da prévia">
-          <button type="button" aria-pressed={format === "ultrawide"}
-            onClick={() => setFormat("ultrawide")}>21:9</button>
-          <button type="button" aria-pressed={format === "standard"}
-            onClick={() => setFormat("standard")}>16:9</button>
-        </div>
       </div>
 
-      <div className={"preset-stage preset-stage-" + format}
+      <div className="preset-stage preset-stage-ultrawide"
         style={{ "--stage-accent": accentColor ?? theme.palette.accentPrimary } as CSSProperties}
         aria-label={"Prévia de mídia: " + theme.name}>
         <ThemeMediaPreview key={theme.id} theme={theme} />
