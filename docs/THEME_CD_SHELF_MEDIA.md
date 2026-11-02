@@ -90,3 +90,8 @@ A mídia do CD selecionado também aparece **atrás dos widgets** na prévia log
 - Os widgets continuam por cima e os arquivos originais não são movidos.
 - Ao sair de um tema, seu vídeo deixa de fazer parte da prévia.
 - Sem mídias disponíveis ou em caso de erro, o fundo CSS existente continua como alternativa.
+
+
+## Prévia limpa (decisão mais recente)
+
+O quadro grande abaixo dos CDs exibe somente o arquivo do tema selecionado, sem widgets, dock, barras ou cartões sobrepostos. A proporção 21:9/16:9 continua selecionável. A coleção Quickshell publicada permanece preservada como dados, mas não é renderizada sobre a mídia; o seletor de variantes foi retirado por não alterar essa visualização.
