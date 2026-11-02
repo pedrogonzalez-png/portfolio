@@ -80,3 +80,13 @@ de terceiros como substitutos.
   não foram modificados.
 - Revisar a aparência num navegador real depois de adicionar as mídias;
   testes automatizados e CI verificam o básico, não substituem QA visual.
+
+
+## Fundo da prévia de desktop
+
+A mídia do CD selecionado também aparece **atrás dos widgets** na prévia logo abaixo da estante. Em Changli, o vídeo é aplicado no desktop reproduzido em código; nos demais temas, no visualizador com widgets Quickshell publicados.
+
+- Vídeos em loop e sem som; PNGs exibidos como fundo do tema correspondente.
+- Os widgets continuam por cima e os arquivos originais não são movidos.
+- Ao sair de um tema, seu vídeo deixa de fazer parte da prévia.
+- Sem mídias disponíveis ou em caso de erro, o fundo CSS existente continua como alternativa.
