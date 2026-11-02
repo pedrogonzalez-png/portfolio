@@ -60,3 +60,7 @@ A estante não é editor de temas ou desktop real. Os layouts Quickshell
 arquivados continuam nos dados do projeto, mas não são exibidos sobre a prévia.
 Abismo, site-3D, carrossel principal e transição de acesso ao Hyprland
 continuam independentes.
+
+## Originais JSON efetivamente adicionados
+
+Em vez da tabela de hexadecimais construída manualmente, a página importa os arquivos completos de `src/data/hyprland-color-schemes/` diretamente. Cada arquivo contém `defaults`, `dark`, `light`, `accents` e os 16 índices de `term`. As variáveis CSS `--quickshell-dark-*`, `--quickshell-light-*` e `--color-*` são derivadas dos JSONs em tempo de execução, **aplicadas à página Hyprland toda**. As paletas do restante do portfólio não foram substituídas.
