@@ -64,7 +64,7 @@ export function HyprlandShowcase({
       <div className="preset-gallery-intro">
         <span className="preset-eyebrow"><span aria-hidden="true">01</span> / ESCOLHA SEU UNIVERSO</span>
         <span className="preset-gallery-status">
-          {approvedThemes.length.toString().padStart(2, "0")} TEMAS ORIGINAIS
+          {approvedThemes.length.toString().padStart(2, "0")} TEMAS DISPONÍVEIS
         </span>
       </div>
 
