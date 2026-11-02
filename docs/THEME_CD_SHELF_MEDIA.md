@@ -100,3 +100,10 @@ O quadro grande abaixo dos CDs exibe somente o arquivo do tema selecionado, sem 
 ## Estante expandida (10 temas)
 
 Além das cinco edições iniciais, as mídias já publicadas foram associadas a Hsin (hsin.mp4), Shorekeeper (shorekeeper.mp4), Wuthering (wutering.mp4), Doom (doom.png) e Kyoraku (kyoraku.png). Nenhum arquivo foi movido. Os cinco adicionais usam iluminação neutra provisória, sem alegar paletas oficiais; as cinco paletas originais permanecem intactas. As capas de vídeo são montadas mesmo quando não selecionadas, pausadas no primeiro quadro, e apenas o CD central reproduz. A estante também navega por roda do mouse, setas e arraste horizontal por toque no celular.
+
+
+## Cores entregues e seletor de proporção removido (2026-11-02)
+
+A iluminação de cada CD usa agora os valores da respectiva paleta JSON enviada pelo proprietário: Changli, Hiyuki, Emilia, Furina, Hotline Miami, Hsin, Shorekeeper, Wuwa/Wuthering, Doom e Kiyoraku/Kyoraku. Os acentos seguem o nome configurado em `defaults.primary`, `defaults.secondary` e `defaults.tertiary` de cada esquema, e os valores de fundo/contorno/texto são os de `dark`. A exposição utiliza esses dados localmente; o tema global do portfólio permanece separado.
+
+O seletor 21:9/16:9 foi removido. A prévia usa a proporção ultrawide fixa existente (`3440/1440`) e continua mostrando somente a imagem ou o vídeo selecionado. As mídias não foram redimensionadas ou modificadas em disco.
