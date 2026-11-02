@@ -125,7 +125,7 @@ export function HyprlandShowcase({
       <div className="preset-gallery-foot">
         <div>
           <strong>{theme.name} <span aria-hidden="true">·</span> {theme.id==="changli"?"Desktop de referência":current.widgets.length+" widgets da composição original"}</strong>
-          <p>Prévia em código, baseada nas configurações do Quickshell. Imagens e vídeos serão adicionados depois.</p>
+          <p>Prévia em código baseada nas configurações do Quickshell. Os CDs exibem as imagens e vídeos publicados para cada tema.</p>
         </div>
         {variants.length>1&&theme.id!=="changli"&&(
           <div className="preset-variant-controls">
@@ -143,7 +143,7 @@ export function HyprlandShowcase({
         <p className="preset-source-note">
           <a href="https://moewalls.com/anime/hiyuki-entrust-your-wishes-to-me-wuthering-waves-live-wallpaper/"
              target="_blank" rel="noopener noreferrer">Wallpaper original Hiyuki — MoeWalls</a>.
-          O vídeo ainda não foi publicado neste portfólio; a prévia usa um fundo de cor, sem substituí-lo por outro vídeo.
+          O vídeo local da Hiyuki aparece no CD selecionado; a prévia do desktop abaixo continua independente.
         </p>
       )}
     </div>
