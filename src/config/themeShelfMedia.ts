@@ -1,4 +1,4 @@
-import type { ThemePalette } from "../stores/themes";
+import { THEME_CSS_TOKENS, type ThemePalette } from "../stores/themes";
 import changli from "../data/hyprland-color-schemes/changli.json";
 import hiyuki from "../data/hyprland-color-schemes/hiyuki.json";
 import emilia from "../data/hyprland-color-schemes/emilia.json";
@@ -111,6 +111,16 @@ export function gallerySchemeVariables(id: ShelfThemeId): Record<string, string>
     });
   }
   return tokens;
+}
+
+/** Real Quickshell colors exposed to components and visual styles. */
+export function galleryCssTokens(id: ShelfThemeId): Record<string, string> {
+  const palette = GALLERY_PALETTES[id];
+  const base = Object.fromEntries(
+    (Object.entries(THEME_CSS_TOKENS) as [keyof ThemePalette, string][])
+      .map(([key, name]) => [name, palette[key]]),
+  ) as Record<string, string>;
+  return { ...base, ...gallerySchemeVariables(id) };
 }
 
 export const GALLERY_THEMES: readonly GalleryTheme[] = Object.freeze(
