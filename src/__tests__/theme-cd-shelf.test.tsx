@@ -4,7 +4,7 @@ import { ThemeCdShelf } from "../components/ThemeCdShelf";
 import { HyprlandShowcase } from "../components/HyprlandShowcase";
 import { GALLERY_THEMES, GALLERY_PALETTES, GALLERY_SCHEMES, galleryCssTokens, THEME_SHELF_MEDIA } from "../config/themeShelfMedia";
 
-afterEach(() => vi.restoreAllMocks());
+afterEach(() => {vi.restoreAllMocks();vi.unstubAllGlobals();});
 
 describe("illuminated jewel-case theme exhibition", () => {
   it("renders ten CDs, with only the nearest five visible", () => {
@@ -117,6 +117,23 @@ describe("illuminated jewel-case theme exhibition", () => {
     expect(container.querySelectorAll(".theme-cd-case video[autoplay]")).toHaveLength(0);
     expect(container.querySelector('button[aria-label="Furina"] img'))
       .toHaveAttribute("src",THEME_SHELF_MEDIA.furina.cover);
+  });
+
+  it("keeps real video posters on phones without loading five video players",()=>{
+    vi.stubGlobal("matchMedia",vi.fn((query:string)=>({
+      matches:query==="(pointer: coarse)", media:query,
+      addEventListener:vi.fn(),removeEventListener:vi.fn(),
+    })));
+    const {container}=render(
+      <ThemeCdShelf themes={GALLERY_THEMES} selectedId="hiyuki" onChoose={()=>{}}/>,
+    );
+    expect(container.querySelectorAll(".theme-cd-case video")).toHaveLength(0);
+    expect(container.querySelector('button[aria-label="Hiyuki"] img'))
+      .toHaveAttribute("src",THEME_SHELF_MEDIA.hiyuki.poster);
+    expect(container.querySelector('button[aria-label="Changli"] img'))
+      .toHaveAttribute("src",THEME_SHELF_MEDIA.changli.poster);
+    expect(container.querySelector('button[aria-label="Hsin"] img'))
+      .toHaveAttribute("src",THEME_SHELF_MEDIA.hsin.poster);
   });
 
   it("rotates the shelf from wheel gestures without relying on page scrolling",()=>{

@@ -18,7 +18,10 @@ export interface GalleryTheme {
 export interface ThemeShelfMedia {
   cover: string;
   video: string;
+  /** Original first frame; stays visible until the video actually decodes. */
   poster: string;
+  /** Lightweight H.264 / yuv420p / faststart variant for mobile devices. */
+  mobileVideo?: string;
 }
 export type ShelfThemeId =
   | "changli" | "hiyuki" | "emilia" | "furina" | "hotline-miami"
@@ -145,12 +148,14 @@ export const THEME_SHELF_MEDIA: Readonly<Record<ShelfThemeId, ThemeShelfMedia>> 
   changli: {
     cover: "",
     video: "/assets/hyprland/temas/videos-fundo/changli.mp4",
-    poster: "",
+    poster: "/assets/hyprland/temas/posters/changli.jpg",
+    mobileVideo: "/assets/hyprland/temas/videos-mobile/changli.mp4",
   },
   hiyuki: {
     cover: "",
     video: "/assets/hyprland/temas/videos-fundo/hyuki.mp4",
-    poster: "",
+    poster: "/assets/hyprland/temas/posters/hyuki.jpg",
+    mobileVideo: "/assets/hyprland/temas/videos-mobile/hyuki.mp4",
   },
   emilia: {
     cover: "/assets/hyprland/temas/foto-fundo/emilia.png",
@@ -170,17 +175,20 @@ export const THEME_SHELF_MEDIA: Readonly<Record<ShelfThemeId, ThemeShelfMedia>> 
   hsin: {
     cover: "",
     video: "/assets/hyprland/temas/videos-fundo/hsin.mp4",
-    poster: "",
+    poster: "/assets/hyprland/temas/posters/hsin.jpg",
+    mobileVideo: "/assets/hyprland/temas/videos-mobile/hsin.mp4",
   },
   shorekeeper: {
     cover: "",
     video: "/assets/hyprland/temas/videos-fundo/shorekeeper.mp4",
-    poster: "",
+    poster: "/assets/hyprland/temas/posters/shorekeeper.jpg",
+    mobileVideo: "/assets/hyprland/temas/videos-mobile/shorekeeper.mp4",
   },
   wuthering: {
     cover: "",
     video: "/assets/hyprland/temas/videos-fundo/wutering.mp4",
-    poster: "",
+    poster: "/assets/hyprland/temas/posters/wutering.jpg",
+    mobileVideo: "/assets/hyprland/temas/videos-mobile/wutering.mp4",
   },
   doom: {
     cover: "/assets/hyprland/temas/foto-fundo/doom.png",

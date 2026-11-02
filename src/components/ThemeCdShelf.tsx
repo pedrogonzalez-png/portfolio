@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import type { CSSProperties, KeyboardEvent, TouchEvent } from "react";
 import { THEME_SHELF_MEDIA } from "../config/themeShelfMedia";
 import type { GalleryTheme, ShelfThemeId, ThemeShelfMedia } from "../config/themeShelfMedia";
+import { useCompactPlayback } from "../hooks/useCompactPlayback";
 import "../styles/theme-cd-shelf.css";
 
 interface ShelfProps {
@@ -11,8 +12,8 @@ interface ShelfProps {
 }
 
 /** All video covers are visible: unselected videos freeze on their first frame. */
-function ShelfCover({ media, selected, name }: {
-  media: ThemeShelfMedia; selected: boolean; name: string;
+function ShelfCover({ media, selected, name, compact }: {
+  media: ThemeShelfMedia; selected: boolean; name: string; compact: boolean;
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [brokenCover, setBrokenCover] = useState(false);
@@ -22,7 +23,7 @@ function ShelfCover({ media, selected, name }: {
 
   useEffect(() => {
     const video = videoRef.current;
-    if (!video) return;
+    if (!video || compact) return;
     if (selected && !prefersReducedMotion) {
       try {
         const playing = video.play();
@@ -31,7 +32,7 @@ function ShelfCover({ media, selected, name }: {
     } else {
       try { video.pause(); } catch { /* Not supported in some test environments. */ }
     }
-  }, [selected, prefersReducedMotion, media.video]);
+  }, [selected, prefersReducedMotion, media.video, compact]);
 
   return (
     <span className="theme-cd-cover">
@@ -41,17 +42,19 @@ function ShelfCover({ media, selected, name }: {
           <span className="theme-cd-disc" />
           <span className="theme-cd-spark">✧</span>
         </span>
-        {media.cover && !brokenCover && (
-          <img src={media.cover} alt="" loading={selected ? "eager" : "lazy"}
+        {(media.cover || media.poster) && !brokenCover && (
+          <img src={media.cover || media.poster} alt=""
+            loading={selected ? "eager" : "lazy"}
             onError={() => setBrokenCover(true)} />
         )}
-        {media.video && !brokenVideo && (
+        {/* Mobile: the real JPG frame IS the paused video cover. Don't stream
+            every MP4 in the carousel while the large preview is loading. */}
+        {!compact && media.video && !brokenVideo && (
           <video ref={videoRef} key={media.video} muted playsInline loop
             autoPlay={selected && !prefersReducedMotion} preload="metadata"
             poster={media.poster || media.cover || undefined} aria-hidden="true"
             onLoadedMetadata={(event) => {
               if (!selected) {
-                // Decode a real early frame rather than leaving idle CDs black.
                 try { event.currentTarget.currentTime = 0.08; } catch { /* Fallback artwork */ }
               }
             }}
@@ -73,6 +76,7 @@ function ShelfCover({ media, selected, name }: {
  * rotate the selection; keyboard arrows and explicit controls remain available.
  */
 export function ThemeCdShelf({ themes, selectedId, onChoose }: ShelfProps) {
+  const compact = useCompactPlayback();
   const stageRef = useRef<HTMLDivElement>(null);
   const lastWheel = useRef(0);
   const touchStart = useRef<{ x: number; y: number } | null>(null);
@@ -169,7 +173,7 @@ export function ThemeCdShelf({ themes, selectedId, onChoose }: ShelfProps) {
                 style={{ "--cd-case-color": theme.palette.accentPrimary } as CSSProperties}>
                 <span className="theme-cd-glass-frame">
                   <span className="theme-cd-spine" aria-hidden="true">{theme.name}</span>
-                  <ShelfCover key={theme.id} media={media} selected={slot === 0} name={theme.name} />
+                  <ShelfCover key={theme.id} media={media} selected={slot === 0} name={theme.name} compact={compact} />
                   <span className="theme-cd-reflection" aria-hidden="true" />
                   <span className="theme-cd-case-corner" aria-hidden="true">✦</span>
                 </span>
