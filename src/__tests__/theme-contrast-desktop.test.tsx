@@ -25,7 +25,10 @@ describe("contrast and read-only presets",()=>{
     expect(screen.queryByRole("button",{name:"Sugerir texto legível"})).not.toBeInTheDocument();
     expect(screen.queryByRole("button",{name:"Abrir desktop ampliado"})).not.toBeInTheDocument();
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button",{name:"Furina"}));
+    // Furina starts outside the five visible CD slots; navigate the carousel.
+    for (let i=0;i<3;i++) {
+      fireEvent.click(screen.getByRole("button",{name:"Próximo tema"}));
+    }
     expect(document.documentElement.dataset.theme).toBe("furina");
   });
 });
