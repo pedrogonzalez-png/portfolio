@@ -90,5 +90,8 @@ jobs:
           git add public/assets/hyprland/temas/videos-mobile/ public/assets/hyprland/temas/posters/
           if ! git diff --cached --quiet; then
             git commit -m "assets(hyprland): add mobile H264 videos and preview posters"
+            # Code commits might land while ffmpeg is running. Preserve them.
+            git fetch origin fix/hyprland-mobile-video-loading
+            git rebase origin/fix/hyprland-mobile-video-loading
             git push origin HEAD:fix/hyprland-mobile-video-loading
           fi
