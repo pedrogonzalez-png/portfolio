@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { ThemeCdShelf } from "../components/ThemeCdShelf";
+import { HyprlandShowcase } from "../components/HyprlandShowcase";
 import { THEME_SHELF_MEDIA } from "../config/themeShelfMedia";
 import { OFFICIAL_THEMES } from "../stores/themes";
 
@@ -67,5 +68,33 @@ describe("illuminated jewel-case theme exhibition", () => {
     expect(container.querySelectorAll("video")).toHaveLength(1);
     expect(container.querySelector("video source"))
       .toHaveAttribute("src", THEME_SHELF_MEDIA.changli.video);
+  });
+
+  it("renders the selected theme's media behind its desktop widgets", () => {
+    const { container } = render(<HyprlandShowcase />);
+    const stage = () => container.querySelector(".preset-stage")!;
+
+    expect(stage().querySelector(".changli-wallpaper-layer video"))
+      .toHaveAttribute("src", THEME_SHELF_MEDIA.changli.video);
+    expect(stage().querySelector(".changli-slot")).not.toBeNull();
+
+    fireEvent.click(screen.getByRole("button", { name: "Hiyuki" }));
+    expect(stage().querySelector(".changli-wallpaper-layer video")).toBeNull();
+    expect(stage().querySelector(".real-desktop-preview video.real-desktop-wallpaper"))
+      .toHaveAttribute("src", THEME_SHELF_MEDIA.hiyuki.video);
+    expect(stage().querySelector(".preset-desktop-widgets")).not.toBeNull();
+
+    fireEvent.click(screen.getByRole("button", { name: "Emilia" }));
+    expect(stage().querySelector("video")).toBeNull();
+    expect(stage().querySelector(".real-desktop-preview img.real-desktop-wallpaper"))
+      .toHaveAttribute("src", THEME_SHELF_MEDIA.emilia.cover);
+
+    fireEvent.click(screen.getByRole("button", { name: "Furina" }));
+    expect(stage().querySelector(".real-desktop-preview img.real-desktop-wallpaper"))
+      .toHaveAttribute("src", THEME_SHELF_MEDIA.furina.cover);
+
+    fireEvent.click(screen.getByRole("button", { name: "Hotline Miami" }));
+    expect(stage().querySelector(".real-desktop-preview img.real-desktop-wallpaper"))
+      .toHaveAttribute("src", THEME_SHELF_MEDIA["hotline-miami"].cover);
   });
 });
