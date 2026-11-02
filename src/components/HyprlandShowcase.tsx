@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import type { CSSProperties } from "react";
-import { THEME_CSS_TOKENS, type ThemePalette } from "../stores/themes";
-import { GALLERY_THEMES, THEME_SHELF_MEDIA, type GalleryTheme, type ShelfThemeId } from "../config/themeShelfMedia";
+import { GALLERY_THEMES, THEME_SHELF_MEDIA, galleryCssTokens, type GalleryTheme, type ShelfThemeId } from "../config/themeShelfMedia";
 import { ThemeCdShelf } from "./ThemeCdShelf";
 import "../styles/preset-theme-gallery.css";
 
@@ -50,11 +49,7 @@ export function HyprlandShowcase({
   const chosenMedia = THEME_SHELF_MEDIA[theme.id as ShelfThemeId];
   // Scope every color token to this gallery: changing CDs does not change
   // the portfolio's global theme or other pages.
-  const galleryStyle = Object.fromEntries(
-    Object.entries(THEME_CSS_TOKENS).map(([token, cssVariable]) => [
-      cssVariable, theme.palette[token as keyof ThemePalette],
-    ]),
-  ) as CSSProperties;
+  const galleryStyle = galleryCssTokens(theme.id as ShelfThemeId) as CSSProperties;
 
   useEffect(() => {
     setId(selectedId);
