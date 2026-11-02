@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { HyprlandShowcase } from "../components/HyprlandShowcase";
+import { THEME_SHELF_MEDIA } from "../config/themeShelfMedia";
 import { OFFICIAL_THEMES } from "../stores/themes";
 
 beforeEach(()=>localStorage.clear());
@@ -36,12 +37,14 @@ describe("finished Hyprland gallery and dissolving transition",()=>{
     expect(screen.queryByText(/CPU —/)).not.toBeInTheDocument();
     expect(screen.queryByText(/Conteúdo privado/)).not.toBeInTheDocument();
   });
-  it("shows correct Hiyuki source without loading the old incorrect video",()=>{
+  it("shows the correct published Hiyuki video without loading an unrelated remote video",()=>{
     const {container}=render(<HyprlandShowcase selectedId="changli"/>);
     fireEvent.click(screen.getByRole("button",{name:"Hiyuki"}));
     const link=screen.getByRole("link",{name:/Wallpaper original Hiyuki/});
     expect(link).toHaveAttribute("href",expect.stringContaining("hiyuki-entrust-your-wishes-to-me"));
-    expect(container.querySelector("video")).toBeNull();
+    expect(container.querySelector(".preset-stage .real-desktop-preview video"))
+      .toHaveAttribute("src", THEME_SHELF_MEDIA.hiyuki.video);
+    expect(container.querySelector('video source[src*="moewalls.com"]')).toBeNull();
   });
   it("shows one fixed Changli reference and retains variants for other finished themes",()=>{
     render(<HyprlandShowcase selectedId="changli"/>);
