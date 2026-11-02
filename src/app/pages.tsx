@@ -3,7 +3,6 @@ import { useLocation, useNavigate } from "react-router-dom";
 import type { CSSProperties } from "react";
 import { TopMenu } from "../components/TopMenu";
 import { ProjectPanel } from "../components/ProjectPanel";
-import { LandscapeExperience } from "../components/LandscapeExperience";
 import SceneIntegration from "../components/SceneIntegration";
 import { ThemeDisintegration } from "../components/desktop/ThemeDisintegration";
 import { OFFICIAL_THEMES } from "../stores/themes";
@@ -122,7 +121,6 @@ function HyprlandThemesPage() {
   }, []);
 
   return (
-    <LandscapeExperience title="Hyprland-Themes em modo horizontal">
     <main className="hyprland-dedicated-page"
       data-gallery-theme={selectedThemeId} style={pagePalette}>
       <Suspense fallback={<p role="status">Carregando exposição Hyprland-Themes...</p>}>
@@ -130,7 +128,6 @@ function HyprlandThemesPage() {
           onSelectedThemeChange={setSelectedThemeId} />
       </Suspense>
     </main>
-    </LandscapeExperience>
   );
 }
 
