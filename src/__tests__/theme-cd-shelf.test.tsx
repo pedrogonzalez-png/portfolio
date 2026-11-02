@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { ThemeCdShelf } from "../components/ThemeCdShelf";
 import { HyprlandShowcase } from "../components/HyprlandShowcase";
-import { GALLERY_THEMES, THEME_SHELF_MEDIA } from "../config/themeShelfMedia";
+import { GALLERY_THEMES, GALLERY_PALETTES, THEME_SHELF_MEDIA } from "../config/themeShelfMedia";
 
 afterEach(() => vi.restoreAllMocks());
 
@@ -51,6 +51,36 @@ describe("illuminated jewel-case theme exhibition", () => {
       const media=THEME_SHELF_MEDIA[theme.id as keyof typeof THEME_SHELF_MEDIA];
       expect(media.video||media.cover).toBe("/assets/hyprland/temas/"+files[index]);
     });
+  });
+
+  it("applies supplied colors from all ten dark Quickshell schemes", () => {
+    const values: Record<string,readonly [string,string,string]> = {
+      changli: ["#ca5230","#e17f72","#e3b37a"],
+      hiyuki: ["#C96A85","#C18CB4","#A0B2DF"],
+      emilia: ["#b787ff","#576fff","#91a9ff"],
+      furina: ["#9dc7ff","#92dbea","#e9ce9b"],
+      "hotline-miami": ["#f10d6e","#f1b696","#e7aec3"],
+      hsin: ["#d94639","#a93341","#e7e9ef"],
+      shorekeeper: ["#738ae8","#73b4e8","#738de8"],
+      wuthering: ["#4a5cb4","#a875e0","#d98da0"],
+      doom: ["#e89073","#a9e873","#e8bd73"],
+      kyoraku: ["#d49900","#c1e839","#e89b31"],
+    };
+    expect(GALLERY_THEMES).toHaveLength(10);
+    for (const theme of GALLERY_THEMES) {
+      const palette=GALLERY_PALETTES[theme.id as keyof typeof GALLERY_PALETTES];
+      const [primary,secondary,tertiary]=values[theme.id];
+      expect([palette.accentPrimary,palette.accentRed,palette.accentYellow])
+        .toEqual([primary,secondary,tertiary]);
+      expect(theme.palette).toBe(palette);
+    }
+    const {container}=render(
+      <ThemeCdShelf themes={GALLERY_THEMES} selectedId="hsin" onChoose={()=>{}}/>,
+    );
+    expect(container.querySelector(".theme-cd-stage"))
+      .toHaveStyle({"--cd-spotlight":"#d94639","--cd-rim":"#e7e9ef"});
+    expect(container.querySelector('button[aria-label="Hsin"]'))
+      .toHaveStyle({"--cd-case-color":"#d94639"});
   });
 
   it("mounts every video cover and enables autoplay only for selected CD",()=>{
