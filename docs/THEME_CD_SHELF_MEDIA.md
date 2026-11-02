@@ -1,109 +1,62 @@
-# Estante de CDs de vidro — Hyprland Themes
+# Galeria Hyprland — estante de CDs e prévia de mídia
 
-## Onde fica
-Na página dedicada \`/hyprland-themes\`, aberta ao clicar no projeto
-**Hyprland Themes** no carrossel do portfólio. A transição de entrada e
-o visualizador dos layouts publicados continuam como estavam.
+A página `/hyprland-themes` apresenta dez CDs. Ao selecionar uma caixa,
+a prévia grande abaixo mostra **somente** o vídeo ou a imagem correspondente,
+sem widgets, barra do sistema, dock ou texto sobre a mídia.
 
-## Onde inserir suas mídias
+## Mídias existentes
 
-**Só precisa editar:**
-\`src/config/themeShelfMedia.ts\`
+Os arquivos estão em `public/assets/hyprland/temas/` e são mapeados em
+`src/config/themeShelfMedia.ts`, sem renomear ou mover o conteúdo:
 
-São cinco entradas, uma por tema:
-- \`changli\`
-- \`hiyuki\`
-- \`emilia\`
-- \`furina\`
-- \`hotline-miami\`
+| Tema | Arquivo |
+| --- | --- |
+| Changli | `videos-fundo/changli.mp4` |
+| Hiyuki | `videos-fundo/hyuki.mp4` |
+| Emilia | `foto-fundo/emilia.png` |
+| Furina | `foto-fundo/furina.png` |
+| Hotline Miami | `foto-fundo/tony.png` |
+| Hsin | `videos-fundo/hsin.mp4` |
+| Shorekeeper | `videos-fundo/shorekeeper.mp4` |
+| Wuthering | `videos-fundo/wutering.mp4` |
+| Doom | `foto-fundo/doom.png` |
+| Kyoraku | `foto-fundo/kyoraku.png` |
 
-Cada entrada possui três campos:
-- **cover**: print/arte de capa da caixa de CD; idealmente quadrada, WebP/JPG/PNG.
-- **video**: gravação MP4 opcional. É exibida **apenas na caixa selecionada**,
-  sem som, em loop e em linha com a capa. Usuários que preferem movimento reduzido
-  não recebem reprodução automática.
-- **poster**: frame estático opcional do vídeo (fallback visual).
+Os cinco vídeos dos CDs permanecem carregados para permitir ver um quadro
+estático enquanto não selecionados. Somente o CD selecionado reproduz;
+vídeos são mudos e em loop. Com redução de movimento ativa, não há autoplay.
+Se a mídia da prévia falhar, permanece um fundo alternativo em CSS.
 
-Exemplo para depois, quando os arquivos existirem:
+## Navegação e apresentação
 
-\`\`\`ts
-changli: {
-  cover: "/media/themes/changli/cover.webp",
-  video: "/media/themes/changli/preview.mp4",
-  poster: "/media/themes/changli/poster.webp",
-},
-\`\`\`
+- Roda do mouse sobre a estante: avança/retrocede entre CDs.
+- Arraste horizontal por toque: navega no celular; arraste vertical ainda
+  pode rolar a página.
+- Setas do teclado, controles anterior/próximo e clique no CD continuam válidos.
+- Há dez edições e até cinco capas visíveis de cada vez na composição circular.
+- A opção 21:9/16:9 foi **removida**. A prévia utiliza somente a proporção
+  ultrawide fixa `3440 / 1440`; o conteúdo usa `object-fit: cover`.
 
-Coloque os arquivos em:
-\`\`\`
-public/
-  media/
-    themes/
-      changli/
-        cover.webp
-        preview.mp4
-        poster.webp
-      hiyuki/
-        cover.webp
-        preview.mp4
-        poster.webp
-      emilia/
-      furina/
-      hotline-miami/
-\`\`\`
+## Cores exatas fornecidas pelo proprietário
 
-Arquivos em \`public/\` são servidos a partir de \`/\` no Vite.
-O exemplo acima é **só o formato de caminho**: os arquivos ainda não existem.
-É possível colocar URLs HTTPS diretamente nos campos, mas o servidor remoto
-precisa permitir reprodução/exibição no navegador.
+Em 02/11/2026 foram recebidos dez esquemas Quickshell JSON:
+`changli(1).json`, `hiyuki(1).json`, `emilia(1).json`,
+`furina(1).json`, `hotline-miami(1).json`, `hsin.json`,
+`shorekeeper.json`, `wuwa.json`, `doom.json` e `kiyoraku.json`.
 
-**Enquanto os campos estão vazios**, a caixa mostra arte abstrata gerada
-por CSS, sem fazer requisição por uma mídia inexistente. Não utilizamos vídeos
-de terceiros como substitutos.
+`src/config/themeShelfMedia.ts` contém os valores de **dark** usados pela
+galeria (superfícies, texto, contorno e os acentos primário/secundário/
+terciário), preservando o valor exato de `defaults.*` de cada esquema.
+`wuwa.json` é o tema identificado na galeria como Wuthering, e
+`kiyoraku.json` como Kyoraku. A aparência do vidro, iluminação,
+contornos e elementos da galeria acompanha a seleção.
 
-## Interação
-- Cinco caixas em perspectiva circular, sempre com uma no centro;
-  clique em outra caixa para centralizá-la.
-- Botões **Tema anterior** e **Próximo tema** (também setas esquerda/direita).
-- A cor emitida pelo vidro e pela prateleira segue os acentos oficiais do tema.
-- A seleção altera normalmente a prévia de desktop publicada logo abaixo
-  (Changli, Hiyuki, Emilia, Furina, Hotline Miami), bem como as variantes já
-  suportadas. Não há editor de widgets/cor reintroduzido.
-- A estante usa React e CSS, não outra cena Three.js; mobile e
-  \`prefers-reduced-motion\` mantêm alternativas utilizáveis.
+Esses tokens são aplicados **somente à galeria**, sem modificar as cinco
+paletas oficiais globais nem a aparência dos demais projetos.
 
-## Limites e validação
-- A galeria agora é uma vitrine de mídia visual, mas **nenhuma captura ou gravação
-  foi fornecida ainda**; assim, não há vídeo ou screenshot real neste commit.
-- Alterações isoladas à página Hyprland. O carrossel de projetos, Abismo, site-3D,
-  roteamento, transição de desintegração e arquivos dos repositórios originais
-  não foram modificados.
-- Revisar a aparência num navegador real depois de adicionar as mídias;
-  testes automatizados e CI verificam o básico, não substituem QA visual.
+## Escopo da alteração
 
-
-## Fundo da prévia de desktop
-
-A mídia do CD selecionado também aparece **atrás dos widgets** na prévia logo abaixo da estante. Em Changli, o vídeo é aplicado no desktop reproduzido em código; nos demais temas, no visualizador com widgets Quickshell publicados.
-
-- Vídeos em loop e sem som; PNGs exibidos como fundo do tema correspondente.
-- Os widgets continuam por cima e os arquivos originais não são movidos.
-- Ao sair de um tema, seu vídeo deixa de fazer parte da prévia.
-- Sem mídias disponíveis ou em caso de erro, o fundo CSS existente continua como alternativa.
-
-
-## Prévia limpa (decisão mais recente)
-
-O quadro grande abaixo dos CDs exibe somente o arquivo do tema selecionado, sem widgets, dock, barras ou cartões sobrepostos. A proporção 21:9/16:9 continua selecionável. A coleção Quickshell publicada permanece preservada como dados, mas não é renderizada sobre a mídia; o seletor de variantes foi retirado por não alterar essa visualização.
-
-
-## Estante expandida (10 temas)
-
-Além das cinco edições iniciais, as mídias já publicadas foram associadas a Hsin (hsin.mp4), Shorekeeper (shorekeeper.mp4), Wuthering (wutering.mp4), Doom (doom.png) e Kyoraku (kyoraku.png). Nenhum arquivo foi movido. Os cinco adicionais usam iluminação neutra provisória, sem alegar paletas oficiais; as cinco paletas originais permanecem intactas. As capas de vídeo são montadas mesmo quando não selecionadas, pausadas no primeiro quadro, e apenas o CD central reproduz. A estante também navega por roda do mouse, setas e arraste horizontal por toque no celular.
-
-
-## Cores entregues e seletor de proporção removido (2026-11-02)
-
-A iluminação de cada CD usa agora os valores da respectiva paleta JSON enviada pelo proprietário: Changli, Hiyuki, Emilia, Furina, Hotline Miami, Hsin, Shorekeeper, Wuwa/Wuthering, Doom e Kiyoraku/Kyoraku. Os acentos seguem o nome configurado em `defaults.primary`, `defaults.secondary` e `defaults.tertiary` de cada esquema, e os valores de fundo/contorno/texto são os de `dark`. A exposição utiliza esses dados localmente; o tema global do portfólio permanece separado.
-
-O seletor 21:9/16:9 foi removido. A prévia usa a proporção ultrawide fixa existente (`3440/1440`) e continua mostrando somente a imagem ou o vídeo selecionado. As mídias não foram redimensionadas ou modificadas em disco.
+A estante não é editor de temas ou desktop real. Os layouts Quickshell
+arquivados continuam nos dados do projeto, mas não são exibidos sobre a prévia.
+Abismo, site-3D, carrossel principal e transição de acesso ao Hyprland
+continuam independentes.
