@@ -1,13 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
 import type { CSSProperties } from "react";
-import { OFFICIAL_THEMES, type Theme } from "../stores/themes";
+import { GALLERY_THEMES, THEME_SHELF_MEDIA, type GalleryTheme, type ShelfThemeId } from "../config/themeShelfMedia";
 import { ThemeCdShelf } from "./ThemeCdShelf";
-import { THEME_SHELF_MEDIA, type OfficialShelfThemeId } from "../config/themeShelfMedia";
 import "../styles/preset-theme-gallery.css";
 
 /** Show only the selected CD's image or video, without desktop widgets. */
-function ThemeMediaPreview({ theme }: { theme: Theme }) {
-  const media = THEME_SHELF_MEDIA[theme.id as OfficialShelfThemeId];
+function ThemeMediaPreview({ theme }: { theme: GalleryTheme }) {
+  const media = THEME_SHELF_MEDIA[theme.id as ShelfThemeId];
   const [failed, setFailed] = useState(false);
   const reducedMotion = typeof window !== "undefined" &&
     window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
@@ -34,27 +33,27 @@ function ThemeMediaPreview({ theme }: { theme: Theme }) {
 }
 
 export function HyprlandShowcase({
-  themes = OFFICIAL_THEMES, selectedId = "changli", onChoose, accentColor = null,
+  themes = GALLERY_THEMES, selectedId = "changli", onChoose, accentColor = null,
 }: {
-  themes?: readonly Theme[];
+  themes?: readonly GalleryTheme[];
   selectedId?: string;
-  onChoose?: (theme: Theme) => void;
+  onChoose?: (theme: GalleryTheme) => void;
   accentColor?: string | null;
   active?: boolean;
 }) {
   const approvedThemes = useMemo(
-    () => themes.filter((theme) => theme.kind === "official"), [themes],
+    () => themes, [themes],
   );
   const [id, setId] = useState(selectedId);
   const [format, setFormat] = useState<"ultrawide" | "standard">("ultrawide");
-  const theme = approvedThemes.find((candidate) => candidate.id === id) ?? OFFICIAL_THEMES[0];
-  const chosenMedia = THEME_SHELF_MEDIA[theme.id as OfficialShelfThemeId];
+  const theme = approvedThemes.find((candidate) => candidate.id === id) ?? GALLERY_THEMES[0];
+  const chosenMedia = THEME_SHELF_MEDIA[theme.id as ShelfThemeId];
 
   useEffect(() => {
     setId(selectedId);
   }, [selectedId]);
 
-  const switchTo = (next: Theme) => {
+  const switchTo = (next: GalleryTheme) => {
     if (next.id === id) return;
     setId(next.id);
     onChoose?.(next);
