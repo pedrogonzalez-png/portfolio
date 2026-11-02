@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { ThemeCdShelf } from "../components/ThemeCdShelf";
 import { HyprlandShowcase } from "../components/HyprlandShowcase";
-import { GALLERY_THEMES, GALLERY_PALETTES, THEME_SHELF_MEDIA } from "../config/themeShelfMedia";
+import { GALLERY_THEMES, GALLERY_PALETTES, GALLERY_SCHEMES, galleryCssTokens, THEME_SHELF_MEDIA } from "../config/themeShelfMedia";
 
 afterEach(() => vi.restoreAllMocks());
 
@@ -81,6 +81,24 @@ describe("illuminated jewel-case theme exhibition", () => {
       .toHaveStyle({"--cd-spotlight":"#d94639","--cd-rim":"#e7e9ef"});
     expect(container.querySelector('button[aria-label="Hsin"]'))
       .toHaveStyle({"--cd-case-color":"#d94639"});
+  });
+
+  it("loads all original full JSON schemes, including light mode and 16 terminal colors", () => {
+    for (const theme of GALLERY_THEMES) {
+      const scheme = GALLERY_SCHEMES[theme.id as keyof typeof GALLERY_SCHEMES];
+      expect(scheme.dark.term).toHaveLength(16);
+      expect(scheme.light.term).toHaveLength(16);
+      for (const key of ["primary","secondary","tertiary"] as const) {
+        expect(scheme.dark.accents[scheme.defaults[key]]).toMatch(/^#[\\da-f]{6}$/i);
+      }
+      const css = galleryCssTokens(theme.id as keyof typeof GALLERY_SCHEMES);
+      expect(css["--color-accent-primary"])
+        .toBe(scheme.dark.accents[scheme.defaults.primary]);
+      expect(css["--quickshell-dark-surface-dim"]).toBe(scheme.dark.surface_dim);
+      expect(css["--quickshell-light-surface"]).toBe(scheme.light.surface);
+      expect(css["--quickshell-dark-term-15"]).toBe(scheme.dark.term[15]);
+      expect(css["--quickshell-light-term-15"]).toBe(scheme.light.term[15]);
+    }
   });
 
   it("mounts every video cover and enables autoplay only for selected CD",()=>{
