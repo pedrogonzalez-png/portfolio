@@ -264,3 +264,15 @@
 @media (prefers-reduced-motion: reduce) {
   .preset-media-player { transition: none; }
 }
+
+/* Mobile preview should retain the real ultrawide video proportions.
+   The former 210px minimum made a narrow phone crop away much of the video. */
+@media (max-width: 740px) {
+  .preset-stage-ultrawide {
+    aspect-ratio: 3440 / 1440;
+    min-height: 0;
+  }
+  .preset-media-wallpaper {
+    object-fit: contain;
+  }
+}
