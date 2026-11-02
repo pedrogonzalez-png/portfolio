@@ -41,10 +41,11 @@ describe("Hyprland media-only exhibition", () => {
     expect(container.querySelector(".preset-stage .preset-media-fallback")).not.toBeNull();
     expect(container.querySelector(".preset-stage img")).toBeNull();
   });
-  it("offers both 21:9 and 16:9 formats", () => {
+  it("shows one fixed ultrawide preview without aspect-ratio controls", () => {
     const {container}=render(<HyprlandShowcase/>);
     expect(container.querySelector(".preset-stage-ultrawide")).not.toBeNull();
-    fireEvent.click(screen.getByRole("button",{name:"16:9"}));
-    expect(container.querySelector(".preset-stage-standard")).not.toBeNull();
+    expect(screen.queryByRole("group",{name:"Proporção da prévia"})).not.toBeInTheDocument();
+    expect(screen.queryByRole("button",{name:"21:9"})).not.toBeInTheDocument();
+    expect(screen.queryByRole("button",{name:"16:9"})).not.toBeInTheDocument();
   });
 });
