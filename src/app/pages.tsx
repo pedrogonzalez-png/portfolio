@@ -7,6 +7,8 @@ import { LandscapeExperience } from "../components/LandscapeExperience";
 import SceneIntegration from "../components/SceneIntegration";
 import { ThemeDisintegration } from "../components/desktop/ThemeDisintegration";
 import { OFFICIAL_THEMES } from "../stores/themes";
+import { useTheme } from "../stores/themeContext";
+import { galleryCssTokens, GALLERY_PALETTES, type ShelfThemeId } from "../config/themeShelfMedia";
 import "../styles/hyprland-entry-transition.css";
 import "../styles/cinematic-polish.css";
 import "../styles/wuwa-art-direction.css";
@@ -105,6 +107,12 @@ function HomePage({onOpenHyprland}:{onOpenHyprland:()=>void}) {
 
 function HyprlandThemesPage() {
   const navigate = useNavigate();
+  const { theme } = useTheme();
+  // The active CD drives the page background for ALL ten original schemes,
+  // not only the five supported by the global portfolio ThemeProvider.
+  const [selectedThemeId, setSelectedThemeId] = useState<ShelfThemeId>(() =>
+    theme.id in GALLERY_PALETTES ? theme.id as ShelfThemeId : "changli");
+  const pagePalette = galleryCssTokens(selectedThemeId) as CSSProperties;
 
   useEffect(() => {
     // A dedicated page should always open from its beginning, including after
@@ -115,9 +123,11 @@ function HyprlandThemesPage() {
 
   return (
     <LandscapeExperience title="Hyprland-Themes em modo horizontal">
-    <main className="hyprland-dedicated-page">
+    <main className="hyprland-dedicated-page"
+      data-gallery-theme={selectedThemeId} style={pagePalette}>
       <Suspense fallback={<p role="status">Carregando exposição Hyprland-Themes...</p>}>
-        <ThemeStudio onClose={() => navigate("/#projetos")} />
+        <ThemeStudio onClose={() => navigate("/#projetos")}
+          onSelectedThemeChange={setSelectedThemeId} />
       </Suspense>
     </main>
     </LandscapeExperience>
