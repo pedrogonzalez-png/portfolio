@@ -26,7 +26,7 @@ export function ThemeStudio({ onClose }: { onClose: () => void }) {
             Coleção de desktops
           </span>
           <h1>Seu desktop, <em>outros universos.</em></h1>
-          <p>Uma coleção dos temas que construí no Hyprland. Cinco identidades, cada uma com sua própria atmosfera.</p>
+          <p>Uma estante de cinco temas em caixas de vidro iluminadas. Escolha uma capa para explorar cada desktop — imagens e vídeos reais serão adicionados à coleção.</p>
         </div>
       </header>
 

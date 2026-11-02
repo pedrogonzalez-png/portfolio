@@ -3,6 +3,7 @@ import type { CSSProperties } from "react";
 import { OFFICIAL_THEMES, type Theme, type ThemePalette } from "../stores/themes";
 import { RealDesktopPreview } from "./desktop/RealDesktopPreview";
 import { ChangliDesktop } from "./desktop/ChangliDesktop";
+import { ThemeCdShelf } from "./ThemeCdShelf";
 import { validatePublishedLayouts, type WidgetPlacement, type WidgetKind } from "../services/quickshellLayoutImport";
 import published from "../data/published-widget-layouts.json";
 import "../styles/preset-theme-gallery.css";
@@ -100,13 +101,8 @@ export function HyprlandShowcase({
         <span className="preset-gallery-status">{approvedThemes.length.toString().padStart(2,"0")} TEMAS ORIGINAIS</span>
       </div>
 
-      <nav className="preset-theme-choices" aria-label="Escolher tema pronto">
-        {approvedThemes.map(t=><button type="button" key={t.id}
-          aria-pressed={theme.id===t.id} onClick={()=>switchTo(t.id)}
-          style={{"--preset-swatch":t.palette.accentPrimary} as CSSProperties}>
-          <i aria-hidden="true"/><span>{t.name}</span><span className="preset-theme-choice-mark" aria-hidden="true">↗</span>
-        </button>)}
-      </nav>
+      <ThemeCdShelf themes={approvedThemes} selectedId={theme.id}
+        onChoose={(candidate)=>switchTo(candidate.id)} />
 
       <div className="preset-view-toolbar">
         <span className="preset-theme-label"><i aria-hidden="true"/>
