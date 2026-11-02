@@ -52,7 +52,7 @@ describe("preset-only theme experience",()=>{
     expect(container.querySelectorAll(".preset-gallery-intro h3")).toHaveLength(0);
     expect(container.querySelector(".preset-studio-topline .preset-studio-exit")).not.toBeNull();
     expect(container.querySelector(".preset-color-only")).toBeNull();
-    expect(container.querySelectorAll(".preset-theme-choices button")).toHaveLength(5);
+    expect(container.querySelectorAll(".preset-theme-choices button")).toHaveLength(10);
   });
   it("returns to projects through the top navigation",()=>{
     const close=vi.fn();
