@@ -16,26 +16,63 @@ export type ShelfThemeId =
   | "hsin" | "shorekeeper" | "wuthering" | "doom" | "kyoraku";
 
 /**
- * The original five retain their verified Quickshell palettes. For the five
- * additional media-only entries, a neutral exhibition light is intentional:
- * it is NOT a claim about their real color schemes. Official colors can be
- * supplied and configured later without changing any of the media paths.
+ * Dark Quickshell colors extracted from the 10 JSON schemes supplied by the
+ * owner on 2026-11-02. These colors apply to the CD gallery ONLY; the
+ * portfolio's existing five global color schemes stay unchanged.
+ *
+ * Columns: bg, surface, surfaceContainer, surfaceContainerHigh, text,
+ * textVariant, outline, accentPrimary, accentRed, accentYellow,
+ * surfaceDim, fallbackBg. Accent values respect defaults.primary/secondary/
+ * tertiary, including each scheme's custom_* colors.
+ *
+ * IDs "wuthering" and "kyoraku" correspond to the uploaded wuwa.json
+ * and kiyoraku.json; media file names retain their original spelling.
  */
-const neutralPalette: ThemePalette = Object.freeze({
-  ...OFFICIAL_THEMES[0].palette,
-  accentPrimary: "#B9B7BD",
-  accentRed: "#B9B7BD",
-  accentYellow: "#D0CDD2",
-});
+const PALETTE_COLUMNS: readonly (keyof ThemePalette)[] = [
+  "bg", "surface", "surfaceContainer", "surfaceContainerHigh", "text",
+  "textVariant", "outline", "accentPrimary", "accentRed", "accentYellow",
+  "surfaceDim", "fallbackBg",
+];
+const PALETTE_COLORS: Readonly<Record<ShelfThemeId, readonly string[]>> = {
+  changli: ["#110A0B", "#1A0F10", "#302020", "#3A2020", "#F7E7D8", "#D7B7A5", "#BC8D77", "#ca5230", "#e17f72", "#e3b37a", "#110A0B", "#140B0C"],
+  hiyuki: ["#101118", "#181A22", "#2D3142", "#383C50", "#E7EAF4", "#C8CEDD", "#AFC4E8", "#C96A85", "#C18CB4", "#A0B2DF", "#101118", "#111219"],
+  emilia: ["#11091F", "#1A0F30", "#291643", "#341C53", "#D6E8FF", "#B8CBEF", "#A78CCF", "#b787ff", "#576fff", "#91a9ff", "#11091F", "#130A25"],
+  furina: ["#0d1525", "#142137", "#1b2a43", "#243653", "#f1f7ff", "#cfdfef", "#9eb7d2", "#9dc7ff", "#92dbea", "#e9ce9b", "#0d1525", "#10192a"],
+  "hotline-miami": ["#1b102e", "#2d1c4c", "#372454", "#483063", "#f1b696", "#e7aec3", "#d999be", "#f10d6e", "#f1b696", "#e7aec3", "#1b102e", "#201337"],
+  hsin: ["#101015", "#17171c", "#19191e", "#1c1c22", "#f7f5f3", "#cbc8c8", "#888688", "#d94639", "#a93341", "#e7e9ef", "#101015", "#111116"],
+  shorekeeper: ["#101015", "#17171c", "#19191e", "#1c1c22", "#f7f5f3", "#cbc8c8", "#888688", "#738ae8", "#73b4e8", "#738de8", "#101015", "#111116"],
+  wuthering: ["#101015", "#17171c", "#19191e", "#1c1c22", "#f7f5f3", "#cbc8c8", "#888688", "#4a5cb4", "#a875e0", "#d98da0", "#101015", "#111116"],
+  doom: ["#101015", "#17171c", "#19191e", "#1c1c22", "#f7f5f3", "#cbc8c8", "#888688", "#e89073", "#a9e873", "#e8bd73", "#101015", "#111116"],
+  kyoraku: ["#101015", "#17171c", "#19191e", "#1c1c22", "#f7f5f3", "#cbc8c8", "#888688", "#d49900", "#c1e839", "#e89b31", "#101015", "#111116"],
+};
+function makePalette(values: readonly string[]): ThemePalette {
+  if (values.length !== PALETTE_COLUMNS.length) {
+    throw new Error("Incomplete Hyprland color palette");
+  }
+  return Object.freeze(Object.fromEntries(
+    PALETTE_COLUMNS.map((key, index) => [key, values[index]]),
+  ) as unknown as ThemePalette);
+}
+export const GALLERY_PALETTES: Readonly<Record<ShelfThemeId, ThemePalette>> =
+  Object.freeze(Object.fromEntries(
+    (Object.keys(PALETTE_COLORS) as ShelfThemeId[]).map(id =>
+      [id, makePalette(PALETTE_COLORS[id])],
+    ),
+  ) as Record<ShelfThemeId, ThemePalette>);
+
 export const ADDITIONAL_GALLERY_THEMES: readonly GalleryTheme[] = Object.freeze([
-  { id: "hsin", name: "Hsin", palette: neutralPalette },
-  { id: "shorekeeper", name: "Shorekeeper", palette: neutralPalette },
-  { id: "wuthering", name: "Wuthering", palette: neutralPalette },
-  { id: "doom", name: "Doom", palette: neutralPalette },
-  { id: "kyoraku", name: "Kyoraku", palette: neutralPalette },
+  { id: "hsin", name: "Hsin", palette: GALLERY_PALETTES.hsin },
+  { id: "shorekeeper", name: "Shorekeeper", palette: GALLERY_PALETTES.shorekeeper },
+  { id: "wuthering", name: "Wuthering", palette: GALLERY_PALETTES.wuthering },
+  { id: "doom", name: "Doom", palette: GALLERY_PALETTES.doom },
+  { id: "kyoraku", name: "Kyoraku", palette: GALLERY_PALETTES.kyoraku },
 ]);
 export const GALLERY_THEMES: readonly GalleryTheme[] = Object.freeze([
-  ...OFFICIAL_THEMES,
+  ...OFFICIAL_THEMES.map(theme => ({
+    id: theme.id,
+    name: theme.name,
+    palette: GALLERY_PALETTES[theme.id as ShelfThemeId],
+  })),
   ...ADDITIONAL_GALLERY_THEMES,
 ]);
 
