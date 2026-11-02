@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
+import type { CSSProperties } from "react";
 import { useTheme } from "../stores/themeContext";
 import { OFFICIAL_THEMES } from "../stores/themes";
-import { GALLERY_THEMES } from "../config/themeShelfMedia";
+import { GALLERY_THEMES, galleryCssTokens, type ShelfThemeId } from "../config/themeShelfMedia";
 import { HyprlandShowcase } from "./HyprlandShowcase";
 import "../styles/preset-theme-studio.css";
 
@@ -10,9 +11,10 @@ export function ThemeStudio({ onClose }: { onClose: () => void }) {
   const { theme, setTheme } = useTheme();
   const [selectedId, setSelectedId] = useState(theme.id);
   useEffect(() => setSelectedId(theme.id), [theme.id]);
+  const studioStyle = galleryCssTokens(selectedId as ShelfThemeId) as CSSProperties;
 
   return (
-    <section id="theme-studio" className="preset-studio-inline"
+    <section id="theme-studio" className="preset-studio-inline" style={studioStyle}
       aria-label="Exposição dos temas Hyprland">
       <header className="preset-studio-heading">
         <div className="preset-studio-topline">
