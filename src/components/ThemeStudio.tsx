@@ -1,12 +1,15 @@
+import { useEffect, useState } from "react";
 import { useTheme } from "../stores/themeContext";
 import { OFFICIAL_THEMES } from "../stores/themes";
+import { GALLERY_THEMES } from "../config/themeShelfMedia";
 import { HyprlandShowcase } from "./HyprlandShowcase";
 import "../styles/preset-theme-studio.css";
 
-/** A dedicated, read-only exhibition of finished Hyprland themes. */
+/** Original five palettes remain global; additional media themes are local to the exhibition. */
 export function ThemeStudio({ onClose }: { onClose: () => void }) {
   const { theme, setTheme } = useTheme();
-  const activeOfficial = OFFICIAL_THEMES.find(t => t.id === theme.id) ?? OFFICIAL_THEMES[0];
+  const [selectedId, setSelectedId] = useState(theme.id);
+  useEffect(() => setSelectedId(theme.id), [theme.id]);
 
   return (
     <section id="theme-studio" className="preset-studio-inline"
@@ -26,13 +29,17 @@ export function ThemeStudio({ onClose }: { onClose: () => void }) {
             Coleção de desktops
           </span>
           <h1>Seu desktop, <em>outros universos.</em></h1>
-          <p>Uma estante de cinco temas em caixas de vidro iluminadas. Selecione um CD para ver apenas seu vídeo ou imagem, sem widgets sobrepostos.</p>
+          <p>Dez capas de vidro: selecione ou deslize para visualizar cada vídeo ou imagem em tamanho grande, sem widgets sobrepostos.</p>
         </div>
       </header>
 
-      <HyprlandShowcase themes={OFFICIAL_THEMES} selectedId={activeOfficial.id}
-        onChoose={candidate => setTheme(candidate.id)}/>
-
+      <HyprlandShowcase themes={GALLERY_THEMES} selectedId={selectedId}
+        onChoose={candidate => {
+          setSelectedId(candidate.id);
+          if (OFFICIAL_THEMES.some(t => t.id === candidate.id)) {
+            setTheme(candidate.id);
+          }
+        }}/>
     </section>
   );
 }
