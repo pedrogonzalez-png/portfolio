@@ -22,10 +22,11 @@
 .preset-theme-choices.theme-cd-shelf .theme-cd-case{position:absolute;display:block;top:12%;left:50%;
   width:clamp(190px,25vw,342px);height:auto;aspect-ratio:1/1;min-height:0;padding:0;margin:0;
   border:0;border-radius:10px;background:none;color:#f4ece8;overflow:visible;opacity:1;cursor:pointer;
-  transform-style:preserve-3d;transition:transform .68s cubic-bezier(.2,.75,.2,1),opacity .5s,filter .55s;
-  box-shadow:none;will-change:transform}
+  transform-style:flat;transition:transform .68s cubic-bezier(.2,.75,.2,1),opacity .5s,filter .55s;
+  box-shadow:none}
 .preset-theme-choices.theme-cd-shelf .theme-cd-case[data-cd-slot="0"]{z-index:6;
-  transform:translateX(-50%) translateY(-2%) rotateY(0deg) scale(1.04);filter:brightness(1.09)}
+  /* Keep the foreground CD in a plain 2D layer: it must never disappear. */
+  transform:translateX(-50%) translateY(-2%) scale(1.04);filter:brightness(1.09)}
 .preset-theme-choices.theme-cd-shelf .theme-cd-case[data-cd-slot="-1"]{z-index:5;
   transform:translateX(calc(-50% - clamp(148px,23vw,350px))) translateY(13%) rotateY(28deg) scale(.76);
   filter:brightness(.75)}
@@ -46,7 +47,9 @@
   background:linear-gradient(132deg,#ffffff26,#ffffff08 30%,#0b0c144f 70%,#ffffff1b);
   box-shadow:inset 0 1px 1px #fff8,inset 5px 0 11px #ffffff20,inset -8px 0 13px #0008,
     0 6px 15px #0009,0 0 24px color-mix(in srgb,var(--cd-case-color) 16%,transparent);
-  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+  /* The gradient already simulates glass. Backdrop blur inside ten 3D layers
+     can drop the foreground on older/integrated GPUs (school PCs). */
+  backdrop-filter:none;-webkit-backdrop-filter:none}
 .theme-cd-case[data-cd-active="true"] .theme-cd-glass-frame{
   border-color:color-mix(in srgb,var(--cd-case-color) 52%,#ffffffa0);
   box-shadow:inset 0 1px 2px #ffffffad,inset 4px 0 13px #ffffff20,inset -8px 0 13px #0009,
