@@ -1,5 +1,5 @@
 import { useMemo, useRef } from "react";
-import { RoundedBox, useTexture } from "@react-three/drei";
+import { RoundedBox } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import { CatmullRomCurve3, DoubleSide, Shape, Vector3, type Group } from "three";
 
