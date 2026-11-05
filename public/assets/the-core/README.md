@@ -45,3 +45,16 @@ Troque o arquivo GLB correspondente, revisando licença, orientação, escala e 
 - Fonte visual genérica com etiqueta 750W não comprova identidade com o modelo GX 700W do perfil educativo. O motor de montagem continua independente dos GLBs.
 - O water cooler 360 mm de três ventoinhas, ventoinhas adicionais, tubos/cabos e monitor Hyprland continuam procedurais enquanto não existir modelo CC0 adequado: não substituir o radiador por um modelo 240 mm só para dizer que há GLB.
 - `scripts/smoke-core-assets.mjs` valida PSU no perfil inicial e memória no perfil AM5/DDR5 no Chromium de verdade.
+
+## M0.8 — Refrigeração e cable management (05/11/2026)
+
+- `CoreCoolingAssembly.tsx`: nova montagem procedural de **AIO conceitual de 360 mm**, com três ventoinhas orientadas para o topo do gabinete, tanques, canaletas, aletas de radiador via `InstancedMesh`, pump block, encaixes metálicos e tubos com acabamento trançado.
+- `CoreCableHarness.tsx`: chicotes de alimentação com cabos individualizados, organizadores/comb clips, abraçadeiras e conectores ilustrativos. **Não** representam pinagem, potência certificada nem rota elétrica real.
+- Quando o usuário remove a CPU, a bomba/tubos desaparecem; o radiador permanece como componente da cena. Quando remove a PSU, o chicote de alimentação desaparece.
+- A bomba ainda abre a bancada de Overclock ao clicar. GPU, placa-mãe e monitor continuam apontando para seus módulos originais.
+- Cores de efeitos seguem a paleta atual; `prefers-reduced-motion` pausa as ventoinhas, preservando a navegação.
+- O radiador é procedural por escolha: modelos de 240 mm não são substitutos visuais corretos para os três fans do conjunto de 360 mm.
+- O computador segue sendo uma **maquete educativa e estilizada**, não uma réplica CAD do equipamento real.
+- Workflow experimental da branch agora exige typecheck, lint, testes e browser smoke de GLBs antes da aprovação visual do autor.
+
+**Limite desta etapa:** a qualidade visual deve ser conferida em navegador desktop e celular; não há medição de FPS, temperatura ou fluxo de ar real.
