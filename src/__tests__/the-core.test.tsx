@@ -45,10 +45,13 @@ describe("THE CORE — protótipo vertical", () => {
     // Uma montagem livre pode ser feita em qualquer ordem, removendo peças antes.
     fireEvent.click(screen.getByRole("button", { name: "Remover do encaixe" }));
     fireEvent.change(screen.getByLabelText("Categoria de componente"), { target: { value: "motherboard" } });
+    fireEvent.click(screen.getByRole("button", { name: "Remover do encaixe" }));
+    fireEvent.change(screen.getByLabelText("Categoria de componente"), { target: { value: "memory" } });
+    fireEvent.click(screen.getByRole("button", { name: "Remover do encaixe" }));
+    fireEvent.change(screen.getByLabelText("Categoria de componente"), { target: { value: "motherboard" } });
     fireEvent.change(screen.getByLabelText("Peça projetada"), { target: { value: "b650" } });
     fireEvent.click(screen.getByRole("button", { name: /Encaixar peça/ }));
     fireEvent.change(screen.getByLabelText("Categoria de componente"), { target: { value: "memory" } });
-    fireEvent.click(screen.getByRole("button", { name: "Remover do encaixe" }));
     fireEvent.change(screen.getByLabelText("Peça projetada"), { target: { value: "ddr5" } });
     fireEvent.click(screen.getByRole("button", { name: /Encaixar peça/ }));
     fireEvent.change(screen.getByLabelText("Categoria de componente"), { target: { value: "cpu" } });
