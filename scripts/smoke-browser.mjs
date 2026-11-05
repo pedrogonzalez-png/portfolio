@@ -301,6 +301,39 @@ try {
         }
         await verifyForeground("Hotline Miami");
         await page.screenshot({ path: "browser-diagnostics/hyprland-1600.png" });
+
+        // The sixth CD used to change only the exhibition while the home
+        // page remained stuck with Hotline Miami's global colors.
+        await page.getByRole("button", { name: "Próximo tema" }).click();
+        await page.waitForFunction(() =>
+          document.documentElement.dataset.theme === "hsin");
+        await page.getByRole("button", { name: /Voltar aos projetos/ }).click();
+        await page.locator(".site-header .theme-indicator").waitFor({
+          state: "visible", timeout: 10000,
+        });
+        const readTheme = () => page.evaluate(() => ({
+          theme: document.documentElement.dataset.theme,
+          bg: getComputedStyle(document.documentElement)
+            .getPropertyValue("--color-bg").trim(),
+          accent: getComputedStyle(document.documentElement)
+            .getPropertyValue("--color-accent-primary").trim(),
+          label: document.querySelector(".site-header .theme-indicator")
+            ?.textContent?.trim() ?? "",
+        }));
+        for (const state of [await readTheme(), await page.reload({
+          waitUntil: "domcontentloaded",
+        }).then(async () => {
+          await page.locator(".site-header .theme-indicator").waitFor({ state: "visible" });
+          return readTheme();
+        })]) {
+          if (state.theme !== "hsin" || state.bg !== "#101015" ||
+              state.accent.toLowerCase() !== "#d94639" ||
+              !state.label.includes("Hsin")) {
+            throw new Error("CD palette did not persist on home/reload: " +
+              JSON.stringify(state));
+          }
+          console.log(JSON.stringify({ variant: "desktop-1600", selectedCdTheme: state }));
+        }
       }
       // Preserve browser diagnostics for nonfatal errors as well.
       console.log(JSON.stringify({ variant: variant.name, http: response?.status(), mounted: true, errors }));
