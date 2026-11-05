@@ -257,7 +257,7 @@ try {
       // Exercise Hiyuki (video) and Hotline Miami (still image), and check
       // the ACTUAL browser geometry and computed CSS, not just React markup.
       if (variant.name === "desktop-1600") {
-        await page.goto(new URL("/hyprland-themes", ORIGIN), {
+        await page.goto(new URL("/hyprland-themes", ORIGIN).toString(), {
           waitUntil: "domcontentloaded",
         });
         const shelf = page.locator(".theme-cd-stage");
