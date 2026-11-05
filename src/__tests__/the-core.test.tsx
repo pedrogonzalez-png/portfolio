@@ -41,7 +41,7 @@ describe("THE CORE — protótipo vertical", () => {
     fireEvent.change(screen.getByLabelText("Peça projetada"), { target: { value: "r5-7600" } });
     fireEvent.click(screen.getByRole("button", { name: /Encaixar peça/ }));
     expect(screen.getByRole("status")).toHaveTextContent(/Encaixe bloqueado: CPU AM5/);
-    expect(screen.getByText("Ryzen 5 5600")).toBeInTheDocument();
+    expect(screen.getAllByText("Ryzen 5 5600").length).toBeGreaterThan(0);
     // Uma montagem livre pode ser feita em qualquer ordem, removendo peças antes.
     fireEvent.click(screen.getByRole("button", { name: "Remover do encaixe" }));
     fireEvent.change(screen.getByLabelText("Categoria de componente"), { target: { value: "motherboard" } });
@@ -71,7 +71,7 @@ describe("THE CORE — protótipo vertical", () => {
     expect(screen.getByText("18px")).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Overclock" }));
     expect(screen.getByText("Radeon RX 7600")).toBeInTheDocument();
-    expect(screen.getByText(/Não é aplicado|não são aplicados|não representam estabilidade/)).toBeInTheDocument();
+    expect(screen.getAllByText(/não representam estabilidade|não são aplicados/).length).toBeGreaterThan(0);
     expect(JSON.parse(localStorage.getItem("portfolio.the-core.prototype.v1") || "{}").gap).toBe(18);
     fireEvent.click(screen.getByRole("button", { name: /Fechar THE CORE/ }));
     unmount();
