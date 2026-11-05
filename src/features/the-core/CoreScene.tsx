@@ -12,8 +12,6 @@ type Props = {
   build: Build;
   onChoose: (module: Exclude<CoreModule, "hub">) => void;
 };
-type Vec3 = [number, number, number];
-
 function Orbits({ animated, accent, secondary }: { animated: boolean; accent: string; secondary: string }) {
   const rings = useRef<Array<Group | null>>([]);
   const specifications = [
