@@ -110,9 +110,14 @@ try {
           ["Gabinete", "data-case-model"],
           ["Placa-mãe", "data-board-model"],
         ];
+        await page.waitForTimeout(3500);
+        const initialModels = await coreDialog.locator(".core-scene").evaluate(el =>
+          Object.fromEntries(["data-gpu-model", "data-case-model", "data-board-model"]
+            .map(name => [name, el.getAttribute(name)])));
+        console.log(JSON.stringify({ variant: variant.name, theCoreAssetsInitial: initialModels }));
         for (const [name, attribute] of assets) {
           await coreDialog.locator('.core-scene[' + attribute + '="glb"]').waitFor({
-            state: "attached", timeout: 30000,
+            state: "attached", timeout: 45000,
           });
           console.log(JSON.stringify({ variant: variant.name, asset: name, glb: "loaded" }));
         }
