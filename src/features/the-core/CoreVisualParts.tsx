@@ -2,6 +2,7 @@ import { useMemo, useRef } from "react";
 import { RoundedBox } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import { CatmullRomCurve3, DoubleSide, Shape, Vector3, type Group } from "three";
+import { PCBPrint, EngravedLabel } from "./CoreSurfaceDetails";
 
 export type V3 = [number, number, number];
 
@@ -113,6 +114,9 @@ export function Board({ accent }: { accent: string }) {
   return (
     <group>
       <Alloy position={[0, 0, -0.025]} size={[1.19, 1.64, 0.075]} color="#14282d" roughness={0.67} metalness={0.35}/>
+      <PCBPrint position={[0, 0, 0.016]} size={[1.115,1.55]} accent={accent} />
+      <EngravedLabel position={[0.06, -0.76, 0.065]} size={[0.50,0.087]}
+        title="AM PLATFORM" subtitle="SAMPLE" accent={accent}/>
       {Array.from({ length: 17 }, (_, i) => {
         const startX = -0.52 + (i % 7) * 0.15;
         const endY = 0.67 - Math.floor(i / 7) * 0.33 - (i % 3) * 0.11;
@@ -144,6 +148,25 @@ export function Board({ accent }: { accent: string }) {
         <Alloy key={y} position={[-0.05, y, 0.072]} size={[0.65, 0.045, 0.052]} color="#a5adb3" radius={0.005}/>)}
       <Alloy position={[0.43, 0.58, 0.048]} size={[0.072, 0.75, 0.083]} color="#202f3b" />
       <Alloy position={[0.51, 0.58, 0.049]} size={[0.034, 0.75, 0.086]} color="#667783"/>
+      {/* DIMM catches, power headers, VRM chokes and SATA connectors. */}
+      {[-0.73,0.73].map(y => (
+        <Alloy key={"dimm-lock-"+y} position={[0.44,y,0.072]}
+          size={[0.17,0.043,0.10]} color="#c1c3b9" radius={0.012}/>
+      ))}
+      {Array.from({length:7},(_,i)=>
+        <Alloy key={"vrm-"+i} position={[-0.53+i*0.15,0.47,0.064]}
+          size={[0.10,0.12,0.090]} color="#566673" radius={0.015}/>)}
+      {[-0.1,0.04,0.18].map(x=>
+        <Alloy key={"sata-"+x} position={[x,-0.70,0.082]}
+          size={[0.095,0.12,0.08]} color="#1d2935" radius={0.009}/>)}
+      <Alloy position={[-0.47,0.18,0.08]} size={[0.20,0.28,0.11]} color="#697c89" radius={0.018}/>
+      {Array.from({length:5},(_,i)=>
+        <Alloy key={"io-pin-"+i} position={[-0.55+i*0.058,0.18,0.14]}
+          size={[0.022,0.18,0.012]} color="#b4c2c8" radius={0.003}/>)}
+      <Alloy position={[0.43,-0.58,0.11]} size={[0.17,0.18,0.12]} color="#253644"/>
+      {Array.from({length:6},(_,i)=>
+        <Alloy key={"header-"+i} position={[0.35+(i%3)*0.072,-0.58+(Math.floor(i/3)*0.070),0.184]}
+          size={[0.025,0.030,0.014]} color="#bda77b" radius={0.004}/>)}
       {Array.from({ length: 12 }, (_, i) =>
         <Alloy key={"cap-" + i} position={[-0.44 + (i % 6) * 0.16, -0.73 + Math.floor(i / 6) * 0.065, 0.058]}
           size={[0.035, 0.043, 0.042]} color="#4c606a" radius={0.005}/>)}
