@@ -4,6 +4,7 @@ import { DoubleSide, type Group } from "three";
 import { Alloy, Board, Cable, Fan } from "./CoreVisualParts";
 import GpuAsset from "./GpuAsset";
 import CoreHighFidelityAsset from "./CoreHighFidelityAsset";
+import CorePeripheralAsset from "./CorePeripheralAsset";
 import { DesktopScreen, EngravedLabel, PerforatedMesh } from "./CoreSurfaceDetails";
 import { PART_BY_ID } from "./coreModel";
 import type { Build } from "./coreModel";
@@ -204,6 +205,7 @@ export default function DetailedComputer({ build, module, onChoose, accent, seco
         {/* DDR modules with cutouts and metal edge contacts. */}
         {build.memory && (
           <group onClick={event=>{event.stopPropagation();onChoose("assembly");}}>
+            <CorePeripheralAsset kind="ram" enabled={build.memory === "ddr5"} position={[0.24,0.46,-0.23]}>
             {[0.16,0.32].map((x,i)=>
               <group key={"ram-"+i} position={[x,0.46,-0.23]}>
                 <Alloy position={[0,0,0]} size={[0.11,0.81,0.125]} color="#313f4e" radius={0.012}/>
@@ -216,6 +218,7 @@ export default function DetailedComputer({ build, module, onChoose, accent, seco
                     color="#b99d68" radius={0.003}/>)}
               </group>
             )}
+            </CorePeripheralAsset>
           </group>
         )}
 
@@ -266,6 +269,7 @@ export default function DetailedComputer({ build, module, onChoose, accent, seco
         {/* PSU is nested into the shroud rather than floating in front of the glass. */}
         {build.psu && (
           <group onClick={event=>{event.stopPropagation();onChoose("assembly");}}>
+            <CorePeripheralAsset kind="psu" position={[-0.29,-0.95,-0.26]}>
             <Alloy position={[-0.29,-0.95,-0.26]} size={[0.90,0.42,0.50]} color="#222b35"/>
             <Alloy position={[-0.29,-0.95,0.015]} size={[0.78,0.30,0.021]} color="#303d49"/>
             {Array.from({length:9},(_,i)=>
@@ -274,6 +278,7 @@ export default function DetailedComputer({ build, module, onChoose, accent, seco
             <Alloy position={[-0.29,-1.15,0.020]} size={[0.73,0.018,0.016]} color="#a7b2ba" radius={0.003}/>
             <EngravedLabel position={[-0.29,-0.95,0.037]} size={[0.59,0.12]}
               title="GX / 700W" subtitle="PSU  /  DEMO" accent={secondary}/>
+            </CorePeripheralAsset>
           </group>
         )}
         {build.psu && (
