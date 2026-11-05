@@ -3,6 +3,7 @@ import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import type { Group } from "three";
 import DetailedComputer from "./DetailedComputer";
+import { EngravedLabel } from "./CoreSurfaceDetails";
 import { useTheme } from "../../stores/themeContext";
 import type { Build } from "./coreModel";
 
@@ -43,7 +44,20 @@ function Orbits({ animated, accent, secondary }: { animated: boolean; accent: st
             <torusGeometry args={[ring.radius + 0.035, 0.0025, 4, 150]} />
             <meshBasicMaterial color={ring.color} transparent opacity={0.15} depthWrite={false} />
           </mesh>
-          {[0, 1, 2].map((node) => {
+          {/* Fine graduation marks reinforce the engineered-instrument identity. */}
+          {Array.from({ length: 12 }, (_, tick) => {
+            const angle = tick * Math.PI / 6;
+            return (
+              <mesh key={"graduation-" + tick}
+                position={[Math.cos(angle) * ring.radius, Math.sin(angle) * ring.radius, 0]}
+                rotation={[0, 0, angle - Math.PI / 2]} raycast={() => {}}>
+                <boxGeometry args={[0.007, tick % 3 === 0 ? 0.090 : 0.045, 0.006]}/>
+                <meshBasicMaterial color={ring.color} transparent
+                  opacity={tick % 3 === 0 ? 0.36 : 0.18} depthWrite={false}/>
+              </mesh>
+            );
+          })}
+                    {[0, 1, 2].map((node) => {
             const angle = (node * 2 * Math.PI) / 3 + index * 0.52;
             return (
               <group key={node} position={[Math.cos(angle) * ring.radius, Math.sin(angle) * ring.radius, 0]}>
@@ -128,6 +142,24 @@ function ShowcasePlatform({ accent }: { accent: string }) {
         <cylinderGeometry args={[1.11,1.33,0.13,64]}/>
         <meshStandardMaterial color="#141a22" metalness={0.7} roughness={0.38}/>
       </mesh>
+      <mesh rotation={[Math.PI / 2,0,0]} position={[0,0.103,0]}>
+        <torusGeometry args={[0.80,0.005,5,80]}/>
+        <meshBasicMaterial color="#9ba4b2" transparent opacity={0.4}/>
+      </mesh>
+      <EngravedLabel position={[0,-0.075,1.37]} size={[0.74,0.15]}
+        title="THE CORE" subtitle="HARDWARE SIMULATION" accent={accent}/>
+      {[-1,1].map((sign) => (
+        <group key={sign} position={[sign * 0.82,-0.016,1.04]} rotation={[0,sign*0.55,0]}>
+          <mesh>
+            <boxGeometry args={[0.33,0.038,0.035]}/>
+            <meshStandardMaterial color="#8293a0" metalness={0.85} roughness={0.24}/>
+          </mesh>
+          <mesh position={[0,0.028,0]}>
+            <boxGeometry args={[0.24,0.009,0.020]}/>
+            <meshBasicMaterial color={accent} transparent opacity={0.5}/>
+          </mesh>
+        </group>
+      ))}
     </group>
   );
 }
