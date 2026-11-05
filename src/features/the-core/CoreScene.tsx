@@ -59,11 +59,11 @@ function CoolingFan({
   });
   return (
     <group position={position}>
-      <mesh>
+      <mesh rotation={[Math.PI / 2, 0, 0]}>
         <cylinderGeometry args={[radius * 1.05, radius * 1.05, 0.043, 32]} />
         <meshStandardMaterial color="#0c111a" metalness={0.7} roughness={0.34} />
       </mesh>
-      <mesh rotation={[Math.PI / 2, 0, 0]} position={[0, 0, 0.033]}>
+      <mesh position={[0, 0, 0.033]}>
         <torusGeometry args={[radius * 0.85, 0.017, 6, 40]} />
         <meshStandardMaterial color={accent} emissive={accent} emissiveIntensity={0.56} metalness={0.65} />
       </mesh>
@@ -82,7 +82,7 @@ function CoolingFan({
             </mesh>
           );
         })}
-        <mesh position={[0, 0, 0.015]}>
+        <mesh rotation={[Math.PI / 2, 0, 0]} position={[0, 0, 0.015]}>
           <cylinderGeometry args={[radius * 0.17, radius * 0.17, 0.037, 16]} />
           <meshStandardMaterial color="#b8c0c6" metalness={0.9} roughness={0.19} />
         </mesh>
