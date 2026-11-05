@@ -22,7 +22,9 @@ const GPU_FINS = Array.from({length: 12}, (_, i) => -0.57 + i * 0.103);
 /** Premium procedural concept model, not a licensed GLB nor a replica of the user's unverified case. */
 export default function DetailedComputer({ build, module, onChoose, accent, secondary, animated }: Props) {
   const floating = useRef<Group>(null);
-  const gpuName = build.gpu ? PART_BY_ID[build.gpu]?.name || "Graphics card" : "Graphics card";
+  const gpuName = build.gpu ? PART_BY_ID[build.gpu]?.name || "GPU demonstrativa" : "Não instalada";
+  const cpuName = build.cpu ? PART_BY_ID[build.cpu]?.name || "CPU demonstrativa" : "Não instalada";
+  const boardSocket = build.motherboard ? PART_BY_ID[build.motherboard]?.socket || "Sem soquete" : "Sem placa";
   useFrame((state, dt) => {
     if (!floating.current || !animated) return;
     floating.current.position.y +=
@@ -153,7 +155,7 @@ export default function DetailedComputer({ build, module, onChoose, accent, seco
             <Board accent={secondary}/>
             {/* Printed identifiers remain part of the board, not a floating UI overlay. */}
             <EngravedLabel position={[-0.28,-0.07,0.16]} size={[0.36,0.09]}
-              title="AM4 / AM5" subtitle="DEMO PLATFORM" accent={accent}/>
+              title={boardSocket+" BOARD"} subtitle="DEMO PLATFORM" accent={accent}/>
             <Alloy position={[0.18,0.56,0.138]} size={[0.16,0.60,0.12]} color="#4e6271"/>
             <Alloy position={[-0.24,-0.62,0.14]} size={[0.32,0.24,0.12]} color="#5b6975"/>
           </group>
@@ -226,7 +228,7 @@ export default function DetailedComputer({ build, module, onChoose, accent, seco
               <Fan key={"gpu-fan-"+x} position={[x,0,0.252]} radius={0.192}
                 accent={secondary} animated={animated} speed={0.45} variant="gpu"/>)}
             <Alloy position={[0,0.31,0.13]} size={[1.31,0.028,0.02]} color={accent} radius={0.005} emissive={accent}/>
-            <EngravedLabel position={[0,0.325,0.245]} size={[0.91,0.112]}
+            <EngravedLabel position={[0,0.325,0.245]} size={[0.82,0.16]}
               title={gpuName} subtitle="GDDR / PCI EXPRESS" accent={secondary}/>
             <Alloy position={[0,-0.29,-0.16]} size={[1.34,0.018,0.032]} color="#c3c6cb" radius={0.005}/>
             {[-0.54,-0.32,-0.10,0.12,0.34,0.55].map((x) => (
@@ -283,7 +285,8 @@ export default function DetailedComputer({ build, module, onChoose, accent, seco
           <Alloy key={"display-vents-"+i} position={[-0.67+i*.149,0.38,-0.152]}
             size={[0.075,0.014,0.012]} color="#8d9aa5" radius={0.005}/>)}
         <Alloy position={[0,0,0.028]} size={[1.85,1.07,0.024]} color="#080e18" radius={0.019}/>
-        <DesktopScreen position={[0,0,0.052]} size={[1.78,1.006]} accent={accent} secondary={secondary}/>
+        <DesktopScreen position={[0,0,0.052]} size={[1.78,1.006]}
+          accent={accent} secondary={secondary} gpuName={gpuName} cpuName={cpuName}/>
         <EngravedLabel position={[0,-0.545,0.067]} size={[0.42,0.064]}
           title="HYPRLAND" accent={secondary}/>
         <Alloy position={[0,-0.50,0.046]} size={[1.78,0.04,0.011]} color="#333b49" radius={0.005}/>
