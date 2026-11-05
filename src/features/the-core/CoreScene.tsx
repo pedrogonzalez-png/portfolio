@@ -173,7 +173,7 @@ export default function CoreScene({ module, build, onChoose }: Props) {
   return (
     <div className="core-scene" aria-hidden="true">
       <Suspense fallback={<div className="core-scene-fallback">Carregando visualização 3D…</div>}>
-        <Canvas dpr={[1, 1.5]} camera={{ position: [3.35, 1.75, 8.9], fov: 42 }}
+        <Canvas dpr={[1, 1.5]} camera={{ position: [2.55, 1.45, 6.9], fov: 42 }}
           gl={{ alpha: true, antialias: true, powerPreference: "high-performance" }}>
           <ambientLight intensity={1.55} />
           <hemisphereLight args={["#d2ddf1", "#1e2632", 1.15]} />
