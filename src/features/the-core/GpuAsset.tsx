@@ -41,18 +41,27 @@ export default function GpuAsset({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let active = true;
+    const marker = document.querySelector(".core-scene");
+    marker?.setAttribute("data-gpu-model", "loading");
     const loader = new GLTFLoader();
     loader.load(
       GPU_ASSET_PATH,
       gltf => {
         if (!active) return;
-        try { setMesh(fitIntoCurrentSlot(gltf.scene)); }
-        catch { /* Keep the original model on invalid geometry. */ }
+        try {
+          setMesh(fitIntoCurrentSlot(gltf.scene));
+          marker?.setAttribute("data-gpu-model", "glb");
+        } catch {
+          marker?.setAttribute("data-gpu-model", "fallback");
+        }
       },
       undefined,
-      () => { /* Missing file/offline? Keep the procedural GPU. */ },
+      () => { marker?.setAttribute("data-gpu-model", "fallback"); },
     );
-    return () => { active = false; };
+    return () => {
+      active = false;
+      marker?.removeAttribute("data-gpu-model");
+    };
   }, []);
 
   return mesh
