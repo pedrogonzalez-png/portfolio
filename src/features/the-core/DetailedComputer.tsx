@@ -6,6 +6,7 @@ import GpuAsset from "./GpuAsset";
 import CoreHighFidelityAsset from "./CoreHighFidelityAsset";
 import CorePeripheralAsset from "./CorePeripheralAsset";
 import CoreCoolingAssembly from "./CoreCoolingAssembly";
+import CoreCableHarness from "./CoreCableHarness";
 import { DesktopScreen, EngravedLabel, PerforatedMesh } from "./CoreSurfaceDetails";
 import { PART_BY_ID } from "./coreModel";
 import type { Build } from "./coreModel";
@@ -237,6 +238,9 @@ export default function DetailedComputer({ build, module, onChoose, accent, seco
           <Cable points={[[-0.64,-0.86,-0.18],[-0.66,-0.53,-0.28],[-0.80,0.12,-0.25],[-0.61,0.48,-0.20]]}
             radius={0.026} color="#354451" />
         )}
+        {/* Individually sleeved power cables, combs and illustrative plugs. */}
+        <CoreCableHarness installed={Boolean(build.psu)} accent={secondary}/>
+
         {/* Three small shields and indicators make the system recognizable even at overview scale. */}
         <Alloy position={[0.61,-0.88,0.14]} size={[0.23,0.13,0.28]} color="#35414b"/>
         <Alloy position={[0.63,-1.01,0.17]} size={[0.19,0.02,0.11]} color={secondary} radius={0.008}/>
