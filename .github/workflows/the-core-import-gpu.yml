@@ -1,0 +1,54 @@
+name: Import CC0 GPU GLB into THE CORE preview
+
+on:
+  push:
+    branches:
+      - feat/the-core-vertical-slice-m0
+    paths:
+      - .github/workflows/the-core-import-gpu.yml
+
+permissions:
+  contents: write
+
+jobs:
+  import-licensed-asset:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/the-core-vertical-slice-m0
+
+      - name: Download licensed GLB from documented CC0 source
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p public/assets/the-core
+          curl --fail --location --silent --show-error --retry 3 --retry-delay 2 \
+            --max-time 150 \
+            --user-agent "THE-CORE-educational-portfolio-model-import/1.0" \
+            "https://www.innerscene.com/api/library/graphics-card-with-fans-6af50057/download" \
+            --output public/assets/the-core/gpu-generic-cc0.glb
+
+      - name: Validate actual binary glTF data and size
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import struct
+          path = Path("public/assets/the-core/gpu-generic-cc0.glb")
+          data = path.read_bytes()
+          assert 300_000 < len(data) < 25_000_000, f"unexpected size {len(data)}"
+          assert data[:4] == b"glTF", "not a GLB"
+          version, length = struct.unpack_from("<II", data, 4)
+          assert version == 2 and length == len(data), "invalid GLB header"
+          print(f"Verified GLB v{version}: {len(data):,} bytes")
+          PY
+
+      - name: Save model on preview branch only
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/assets/the-core/gpu-generic-cc0.glb
+          git commit -m "assets(the-core): integrar GPU CC0 real em GLB" || exit 0
+          git push origin HEAD:feat/the-core-vertical-slice-m0
