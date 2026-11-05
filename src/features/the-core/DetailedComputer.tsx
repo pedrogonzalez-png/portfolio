@@ -5,6 +5,7 @@ import { Alloy, Board, Cable, Fan } from "./CoreVisualParts";
 import GpuAsset from "./GpuAsset";
 import CoreHighFidelityAsset from "./CoreHighFidelityAsset";
 import CorePeripheralAsset from "./CorePeripheralAsset";
+import CoreCoolingAssembly from "./CoreCoolingAssembly";
 import { DesktopScreen, EngravedLabel, PerforatedMesh } from "./CoreSurfaceDetails";
 import { PART_BY_ID } from "./coreModel";
 import type { Build } from "./coreModel";
@@ -117,7 +118,7 @@ export default function DetailedComputer({ build, module, onChoose, accent, seco
           <Alloy position={[-0.41,0,0.133]} size={[0.026,2.06,0.027]} color="#7f8f9b" radius={0.007}/>
           <PerforatedMesh position={[0,0,0.155]} size={[1.02,2.05]} opacity={0.58}/>
           <EngravedLabel position={[0,-1.12,0.15]} size={[0.52,0.092]}
-            title="ENGINEERING" subtitle="CORE / M0.4" accent={secondary}/>
+            title="ENGINEERING" subtitle="CORE / AIO-360" accent={secondary}/>
         </group>
         {/* Filtered steel top grille: image-backed mesh, not hundreds of extra polygons. */}
         <PerforatedMesh position={[0,1.315,-0.38]} rotation={[-Math.PI/2,0,0]}
@@ -135,26 +136,9 @@ export default function DetailedComputer({ build, module, onChoose, accent, seco
         <EngravedLabel position={[-0.49,1.136,0.63]} size={[0.52,0.10]}
           title="THE CORE" subtitle="ENGINEERING LAB" accent={accent}/>
         </CoreHighFidelityAsset>
-        {/* Real AIO radiator/fans are retained above either chassis visualization. */}
-        {/* Upper ventilation: radiator frame, fins and fan carriage. */}
-        <Alloy position={[-0.07, 1.02, 0.10]} size={[1.47,0.22,0.77]} color="#161d28"/>
-        <Alloy position={[-0.07,1.145,0.08]} size={[1.33,0.016,0.66]} color="#7b8b94" radius={0.006}/>
-        {[-0.61,0.55].map(x=>
-          <Alloy key={"rad-corner-"+x} position={[x,1.13,0.10]}
-            size={[0.067,0.035,0.72]} color="#9eaab0" radius={0.014}/>)}
-
-        {Array.from({length: 13}, (_,i) => (
-          <Alloy key={"radiator-fin-"+i} position={[-0.68+i*.105,1.11,0.10]}
-            size={[0.018,0.037,0.62]} color="#697783" radius={0.005}/>
-        ))}
-        {[-0.49,0,0.49].map(x => (
-          <Fan key={"top-"+x} position={[x,0.98,0.465]} radius={0.197} accent={accent} animated={animated} speed={0.62}/>
-        ))}
-        <Alloy position={[0,1.26,-0.40]} size={[1.36,0.011,0.33]} color="#8a969d" radius={0.004}/>
-        {Array.from({length:9},(_,i)=>
-          <Alloy key={"top-air-"+i} position={[-0.57+i*.14,1.267,-0.40]}
-            size={[0.062,0.014,0.22]} color="#151f2b" radius={0.008}/>)}
-
+        {/* Fully detailed, top-mounted 360 mm AIO, independent of the generic case GLB. */}
+        <CoreCoolingAssembly accent={accent} secondary={secondary} animated={animated}
+          installed={Boolean(build.cpu)} onInspect={() => onChoose("overclock")}/>
 
                 {/* Motherboard mounting points, traces and heatsink assembly. */}
         {build.motherboard && (
@@ -167,38 +151,6 @@ export default function DetailedComputer({ build, module, onChoose, accent, seco
             <Alloy position={[0.18,0.56,0.138]} size={[0.16,0.60,0.12]} color="#4e6271"/>
             <Alloy position={[-0.24,-0.62,0.14]} size={[0.32,0.24,0.12]} color="#5b6975"/>
             </CoreHighFidelityAsset>
-          </group>
-        )}
-
-        {/* CPU block, metal cold plate, pump cap and water pipes to radiator. */}
-        {build.cpu && (
-          <group onClick={event=>{event.stopPropagation();onChoose("overclock");}}>
-            <Alloy position={[-0.43,0.39,-0.21]} size={[0.42,0.43,0.13]} color="#bcb7a5" radius={0.028}/>
-            <Alloy position={[-0.43,0.39,-0.11]} size={[0.50,0.51,0.22]} color="#202833" radius={0.048}/>
-            <mesh position={[-0.43,0.39,0.021]}>
-              <circleGeometry args={[0.195,36]}/>
-              <meshStandardMaterial color="#182432" metalness={0.86} roughness={0.20}/>
-            </mesh>
-            <mesh position={[-0.43,0.39,0.027]}>
-              <ringGeometry args={[0.146,0.187,36]}/>
-              <meshStandardMaterial color={secondary} emissive={secondary} emissiveIntensity={0.45}/>
-            </mesh>
-            <mesh position={[-0.43,0.39,0.029]}>
-              <circleGeometry args={[0.110,24]}/>
-              <meshStandardMaterial color="#556170" metalness={0.82} roughness={0.24}/>
-            </mesh>
-            {FASTENERS.flatMap(x=>FASTENERS.map(y=>
-              <Alloy key={"pump-screw-"+x+"-"+y} position={[-0.43+x*0.225,0.39+y*0.235,-0.006]}
-                size={[0.052,0.052,0.017]} color="#c5d0d5" radius={0.015}/>))}
-          </group>
-        )}
-        {build.cpu && (
-          <group>
-            <Cable points={[[-0.49,0.42,-0.02],[-0.80,0.64,0.10],[-0.69,0.93,0.03],[-0.31,1.03,-0.10]]}
-              radius={0.029} color="#28323f"/>
-            <Cable points={[[-0.39,0.44,-0.01],[-0.72,0.71,0.23],[-0.54,0.99,0.18],[0.12,1.04,-0.06]]}
-              radius={0.029} color="#3a4653"/>
-            <Alloy position={[-0.74,0.77,0.14]} size={[0.075,0.11,0.085]} color="#7c8a91"/>
           </group>
         )}
 
