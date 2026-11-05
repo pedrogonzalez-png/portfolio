@@ -146,8 +146,9 @@ export function PCBPrint({ position, size = [1.12, 1.55], accent = "#96a2a2" }: 
   );
 }
 
-export function DesktopScreen({ position, size, accent, secondary }: {
+export function DesktopScreen({ position, size, accent, secondary, gpuName, cpuName }: {
   position: V3; size: [number, number]; accent: string; secondary: string;
+  gpuName: string; cpuName: string;
 }) {
   const texture = usePaintedTexture(1024, 576, (ctx) => {
     const gradient = ctx.createLinearGradient(0, 0, 1024, 576);
@@ -179,8 +180,9 @@ export function DesktopScreen({ position, size, accent, secondary }: {
     ink(ctx, 67, 204, "neofetch", 24, "#8dc5d0", 500);
     ink(ctx, 67, 252, "OS     Arch Linux", 21, "#a9b9c8", 500);
     ink(ctx, 67, 286, "WM     Hyprland", 21, "#a9b9c8", 500);
-    ink(ctx, 67, 320, "GPU    Radeon RX 7600", 21, "#a9b9c8", 500);
-    ink(ctx, 67, 354, "SHELL  fish", 21, "#a9b9c8", 500);
+    ink(ctx, 67, 320, "GPU    " + gpuName, 21, "#a9b9c8", 500);
+    ink(ctx, 67, 354, "CPU    " + cpuName, 21, "#a9b9c8", 500);
+    ink(ctx, 67, 391, "SHELL  fish", 21, "#a9b9c8", 500);
     ink(ctx, 67, 434, ">", 27, secondary);
     ctx.fillStyle = "#111929e9"; ctx.fillRect(607, 86, 370, 295);
     ctx.strokeStyle = secondary + "bb"; ctx.strokeRect(607, 86, 370, 295);
@@ -192,7 +194,7 @@ export function DesktopScreen({ position, size, accent, secondary }: {
     });
     ctx.fillStyle = "#0b121edf"; ctx.fillRect(280, 525, 464, 35);
     ["▣", "◆", "⌘", "▥", "◈"].forEach((name, i) => ink(ctx, 319 + i * 82, 551, name, 27, secondary));
-  }, [accent, secondary]);
+  }, [accent, secondary, gpuName, cpuName]);
   return (
     <mesh position={position} raycast={() => {}}>
       <planeGeometry args={size}/>
