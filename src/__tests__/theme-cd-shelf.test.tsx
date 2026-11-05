@@ -22,6 +22,27 @@ describe("illuminated jewel-case theme exhibition", () => {
     expect(changed).toHaveBeenCalledWith(GALLERY_THEMES[1]);
   });
 
+  it("keeps Hotline Miami visible in the center between Furina and Hsin", () => {
+    const {container}=render(
+      <ThemeCdShelf themes={GALLERY_THEMES}
+        selectedId="hotline-miami" onChoose={()=>{}} />,
+    );
+    const current=screen.getByRole("button",{name:"Hotline Miami"});
+    expect(current).toHaveAttribute("data-cd-slot","0");
+    expect(current).toHaveAttribute("data-cd-hidden","false");
+    expect(current).toHaveAttribute("data-cd-active","true");
+    expect(current).toHaveAttribute("aria-pressed","true");
+    expect(current.querySelector(".theme-cd-glass-frame")).not.toBeNull();
+    expect(current.querySelector(".theme-cd-cover img"))
+      .toHaveAttribute("src",THEME_SHELF_MEDIA["hotline-miami"].cover);
+    expect(container.querySelector('button[aria-label="Furina"]'))
+      .toHaveAttribute("data-cd-slot","-1");
+    expect(container.querySelector('button[aria-label="Hsin"]'))
+      .toHaveAttribute("data-cd-slot","1");
+    expect(container.querySelectorAll('.theme-cd-case[data-cd-slot="0"]'))
+      .toHaveLength(1);
+  });
+
   it("keeps keyboard and wraparound arrow navigation for all ten themes",()=>{
     const changed=vi.fn();
     const {rerender}=render(

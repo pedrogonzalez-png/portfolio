@@ -40,6 +40,7 @@ try {
   browser = await chromium.launch({ headless: true });
   for (const variant of [
     { name: "desktop", viewport: { width: 1440, height: 900 }, mobile: false, reducedMotion: "no-preference" },
+    { name: "desktop-1600", viewport: { width: 1600, height: 900 }, mobile: false, reducedMotion: "no-preference" },
     { name: "mobile", viewport: { width: 390, height: 844 }, mobile: true, reducedMotion: "no-preference" },
     { name: "mobile-reduced-motion", viewport: { width: 390, height: 844 }, mobile: true, reducedMotion: "reduce" },
     { name: "desktop-reduced-motion", viewport: { width: 1440, height: 900 }, mobile: false, reducedMotion: "reduce" },
@@ -250,6 +251,56 @@ try {
         } finally {
           await cdp.detach();
         }
+      }
+      // Regression for the user's 1600×900 Opera screenshot: neighboring
+      // jewel cases were visible while the selected middle case vanished.
+      // Exercise Hiyuki (video) and Hotline Miami (still image), and check
+      // the ACTUAL browser geometry and computed CSS, not just React markup.
+      if (variant.name === "desktop-1600") {
+        await page.goto(new URL("/hyprland-themes", ORIGIN).toString(), {
+          waitUntil: "domcontentloaded",
+        });
+        const shelf = page.locator(".theme-cd-stage");
+        await shelf.waitFor({ state: "visible", timeout: 15000 });
+        async function verifyForeground(expected) {
+          const central = shelf.locator('.theme-cd-case[data-cd-slot="0"]');
+          await central.waitFor({ state: "visible", timeout: 10000 });
+          const geometry = await central.evaluate((element) => {
+            const frame = element.closest(".theme-cd-stage");
+            const r = element.getBoundingClientRect();
+            const outer = frame.getBoundingClientRect();
+            const computed = getComputedStyle(element);
+            return {
+              name: element.getAttribute("aria-label"),
+              active: element.getAttribute("data-cd-active"),
+              hidden: element.getAttribute("data-cd-hidden"),
+              centerOffset: r.left + r.width / 2 - (outer.left + outer.width / 2),
+              frameTop: outer.top,
+              top: r.top,
+              width: r.width,
+              height: r.height,
+              transform: computed.transform,
+              opacity: Number(computed.opacity),
+              visibility: computed.visibility,
+              zIndex: Number(computed.zIndex),
+            };
+          });
+          if (!geometry || geometry.name !== expected || geometry.active !== "true" ||
+              geometry.hidden !== "false" || Math.abs(geometry.centerOffset) > 4 ||
+              geometry.width < 200 || geometry.height < 200 ||
+              geometry.visibility !== "visible" || geometry.opacity < .99 ||
+              geometry.zIndex < 6 || geometry.transform !== "none") {
+            throw new Error("1600x900 Hyprland central CD missing/misaligned: " + JSON.stringify(geometry));
+          }
+          console.log(JSON.stringify({ viewport: "1600x900", foreground: geometry }));
+        }
+        await page.getByRole("button", { name: "Hiyuki" }).click();
+        await verifyForeground("Hiyuki");
+        for (let n = 0; n < 3; n++) {
+          await page.getByRole("button", { name: "Próximo tema" }).click();
+        }
+        await verifyForeground("Hotline Miami");
+        await page.screenshot({ path: "browser-diagnostics/hyprland-1600.png" });
       }
       // Preserve browser diagnostics for nonfatal errors as well.
       console.log(JSON.stringify({ variant: variant.name, http: response?.status(), mounted: true, errors }));
