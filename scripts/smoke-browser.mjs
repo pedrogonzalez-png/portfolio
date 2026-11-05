@@ -102,12 +102,20 @@ try {
       await coreDialog.waitFor({ state: "visible", timeout: 10000 });
       await coreDialog.locator(".core-scene canvas").waitFor({ state: "visible", timeout: 15000 });
       if (variant.name === "desktop-1600") {
-        // Verify the actual CC0 GLB was downloaded AND parsed in WebGL;
-        // a fallback GPU alone must never count as completing this milestone.
-        await coreDialog.locator('.core-scene[data-gpu-model="glb"]').waitFor({
-          state: "attached", timeout: 30000,
-        });
-        console.log(JSON.stringify({ variant: variant.name, theCoreGpu: "self-hosted CC0 GLB loaded" }));
+        // Explicitly verify actual self-hosted GLBs, not only fallback
+        // procedural meshes. This catches path errors, decoder problems and
+        // empty scenes missed by ordinary smoke tests.
+        const assets = [
+          ["GPU", "data-gpu-model"],
+          ["Gabinete", "data-case-model"],
+          ["Placa-mãe", "data-board-model"],
+        ];
+        for (const [name, attribute] of assets) {
+          await coreDialog.locator('.core-scene[' + attribute + '="glb"]').waitFor({
+            state: "attached", timeout: 30000,
+          });
+          console.log(JSON.stringify({ variant: variant.name, asset: name, glb: "loaded" }));
+        }
       }
       await coreDialog.getByRole("button", { name: "Montagem", exact: true }).click();
       await coreDialog.getByLabel("Peça projetada").selectOption("r5-7600");
