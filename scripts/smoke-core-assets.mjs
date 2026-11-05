@@ -44,7 +44,7 @@ try {
   await stage.waitFor({state:"attached",timeout:15000});
   await mkdir("browser-diagnostics",{recursive:true});
   const started=Date.now();
-  const keys=["data-gpu-model","data-case-model","data-board-model"];
+  const keys=["data-gpu-model","data-case-model","data-board-model","data-psu-model"];
   let result={};
   for(let i=0;i<90;i++){
     result=await stage.evaluate((el,keys)=>Object.fromEntries(keys.map(k=>[k,el.getAttribute(k)])),keys);
@@ -57,6 +57,26 @@ try {
   console.log("FINAL "+JSON.stringify({result,responses,errors}));
   if(!keys.every(k=>result[k]==="glb"))
     throw new Error("Three self-hosted CC0 GLBs did not load: "+JSON.stringify({result,responses,errors}));
+  if(errors.some(e=>e.startsWith("PAGEERROR ")||e.startsWith("ASSETFAILED ")))
+    throw new Error("GLB test had runtime errors: "+errors.join("; "));
+
+  // The initial didactic build uses DDR4, so its geometry intentionally stays
+  // procedural. Verify the detailed DDR5 asset only with an AM5+DDR5 build.
+  await page.evaluate(() => localStorage.setItem("portfolio.the-core.prototype.v1",JSON.stringify({
+    build:{cpu:"r5-7600",motherboard:"b650",memory:"ddr5",gpu:"rx7600",psu:"gx700"},
+    gap:12,
+  })));
+  await page.reload({waitUntil:"domcontentloaded"});
+  await page.getByRole("region",{name:"Saberes — THE CORE"})
+    .getByRole("button",{name:/Explorar THE CORE/}).click();
+  const ramStage=page.getByRole("dialog",{name:"THE CORE — Laboratório interativo"})
+    .locator(".core-scene");
+  await ramStage.locator("canvas").waitFor({state:"attached",timeout:15000});
+  await page.waitForFunction(() => document.querySelector(".core-scene")?.getAttribute("data-ram-model")==="glb",null,{timeout:45000});
+  const ramState=await ramStage.getAttribute("data-ram-model");
+  await page.screenshot({path:"browser-diagnostics/the-core-ddr5-cc0.png"});
+  console.log("DDR5 "+JSON.stringify({ramState}));
+  if(ramState!=="glb") throw new Error("Self-hosted DDR5 GLB did not load");
   if(errors.some(e=>e.startsWith("PAGEERROR ")||e.startsWith("ASSETFAILED ")))
     throw new Error("GLB test had runtime errors: "+errors.join("; "));
 } finally {
