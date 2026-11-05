@@ -1,5 +1,6 @@
 import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import type { FormEvent } from "react";
+import { createPortal } from "react-dom";
 import {
   CATEGORIES, INITIAL_BUILD, PARTS, PART_BY_ID, checkBuild, installPart,
   type Build, type Category,
@@ -122,7 +123,7 @@ export default function CoreExperience() {
         <span className="core-entry-satellite">HARDWARE</span>
         <span className="core-entry-satellite">LINUX</span>
       </div>
-      {expanded && (
+      {expanded && createPortal(
         <div className="core-fullscreen" role="dialog" aria-modal="true" aria-label="THE CORE — Laboratório interativo">
           <header className="core-toolbar">
             <div className="core-brand"><span className="core-brand-dot" aria-hidden="true"/> THE CORE <small>/ PROTÓTIPO</small></div>
@@ -259,7 +260,7 @@ export default function CoreExperience() {
             <span>{report.ready ? "Configuração didática: válida para os testes implementados" : "Montagem requer revisão"}</span>
             <button type="button" onClick={()=>setModule("hub")}>Retornar ao núcleo ↶</button>
           </footer>
-        </div>
+        </div>, document.body
       )}
     </section>
   );
