@@ -101,6 +101,14 @@ try {
       const coreDialog = page.getByRole("dialog", { name: "THE CORE — Laboratório interativo" });
       await coreDialog.waitFor({ state: "visible", timeout: 10000 });
       await coreDialog.locator(".core-scene canvas").waitFor({ state: "visible", timeout: 15000 });
+      if (variant.name === "desktop-1600") {
+        // Verify the actual CC0 GLB was downloaded AND parsed in WebGL;
+        // a fallback GPU alone must never count as completing this milestone.
+        await coreDialog.locator('.core-scene[data-gpu-model="glb"]').waitFor({
+          state: "attached", timeout: 30000,
+        });
+        console.log(JSON.stringify({ variant: variant.name, theCoreGpu: "self-hosted CC0 GLB loaded" }));
+      }
       await coreDialog.getByRole("button", { name: "Montagem", exact: true }).click();
       await coreDialog.getByLabel("Peça projetada").selectOption("r5-7600");
       await coreDialog.getByRole("button", { name: /Encaixar peça/ }).click();
