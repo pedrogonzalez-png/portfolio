@@ -211,7 +211,7 @@ function Computer({ build, onChoose, module, accent, secondary, animated }: Prop
     <group ref={body} position={module === "linux" ? [-0.68, -0.1, 0.12] : [-0.47, -0.1, 0.1]}>
       {/* PC chassis: brushed metal back, open glass-side frame and bevel lines. */}
       <group rotation={[0, -0.17, 0]}>
-        <Metal position={[0, 0, -0.44]} size={[1.62, 2.37, 0.12]} color="#141920" />
+        <Metal position={[0, 0, -0.44]} size={[1.62, 2.37, 0.12]} color="#252e3a" />
         {/* Rear I/O and ventilation remain visible when the visitor rotates the PC. */}
         <group position={[0, 0, -0.515]}>
           <Metal position={[-0.44, 0.80, -0.010]} size={[0.59, 0.52, 0.027]} color="#2d3945" roughness={0.47} />
@@ -405,8 +405,10 @@ export default function CoreScene({ module, build, onChoose }: Props) {
           <ambientLight intensity={1.15} />
           <hemisphereLight args={["#b4bdd7", "#191b29", 1.15]} />
           <directionalLight position={[3, 4, 5]} intensity={2.35} />
+          <directionalLight position={[-3, 2, -5]} color="#b3c4de" intensity={1.7} />
           <pointLight position={[-2.3, 1.4, 2.9]} color={accent} intensity={4.4} distance={8} />
           <pointLight position={[2.3, -0.7, 2.3]} color={secondary} intensity={2.7} distance={7} />
+          <pointLight position={[0, -0.1, -2.8]} color="#a1b8ce" intensity={1.8} distance={5} />
           <EnergyCore accent={accent} secondary={secondary} animated={!reducedMotion} />
           <Orbits accent={accent} secondary={secondary} animated={!reducedMotion} />
           <ShowcasePlatform accent={accent} />
