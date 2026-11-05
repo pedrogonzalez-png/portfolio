@@ -94,9 +94,9 @@ function CoolingFan({
 function Orbits({ animated, accent, secondary }: { animated: boolean; accent: string; secondary: string }) {
   const rings = useRef<Array<Group | null>>([]);
   const specifications = [
-    { radius: 2.45, tilt: 1.14, phase: -0.39, speed: 0.042, color: secondary },
-    { radius: 2.85, tilt: 1.25, phase: 0.15, speed: -0.031, color: accent },
-    { radius: 3.24, tilt: 0.96, phase: 0.38, speed: 0.021, color: "#91a2bb" },
+    { radius: 2.15, tilt: 1.14, phase: -0.39, speed: 0.042, color: secondary },
+    { radius: 2.48, tilt: 1.25, phase: 0.15, speed: -0.031, color: accent },
+    { radius: 2.79, tilt: 0.96, phase: 0.38, speed: 0.021, color: "#91a2bb" },
   ];
   useFrame((state, delta) => {
     if (!animated) return;
@@ -107,7 +107,7 @@ function Orbits({ animated, accent, secondary }: { animated: boolean; accent: st
     });
   });
   return (
-    <group position={[0, 0.05, -0.73]}>
+    <group position={[0, 0.05, -1.1]}>
       {specifications.map((ring, index) => (
         <group
           key={ring.radius}
@@ -116,11 +116,11 @@ function Orbits({ animated, accent, secondary }: { animated: boolean; accent: st
         >
           <mesh>
             <torusGeometry args={[ring.radius, 0.010, 6, 150]} />
-            <meshBasicMaterial color={ring.color} transparent opacity={index === 0 ? 0.68 : 0.42} depthWrite={false} />
+            <meshBasicMaterial color={ring.color} transparent opacity={index === 0 ? 0.54 : 0.31} depthWrite={false} />
           </mesh>
           <mesh rotation={[0, 0, Math.PI / 18]}>
             <torusGeometry args={[ring.radius + 0.035, 0.0025, 4, 150]} />
-            <meshBasicMaterial color={ring.color} transparent opacity={0.26} depthWrite={false} />
+            <meshBasicMaterial color={ring.color} transparent opacity={0.15} depthWrite={false} />
           </mesh>
           {[0, 1, 2].map((node) => {
             const angle = (node * 2 * Math.PI) / 3 + index * 0.52;
@@ -151,18 +151,18 @@ function EnergyCore({ accent, secondary, animated }: { accent: string; secondary
     halo.current.position.y = Math.sin(state.clock.elapsedTime * 0.65) * 0.05;
   });
   return (
-    <group ref={halo} position={[-0.18, 0, -1.42]}>
+    <group ref={halo} position={[-0.18, 0, -2.2]}>
       <mesh>
-        <icosahedronGeometry args={[0.88, 1]} />
-        <meshBasicMaterial color={accent} transparent opacity={0.085} wireframe depthWrite={false} />
+        <icosahedronGeometry args={[0.46, 1]} />
+        <meshBasicMaterial color={accent} transparent opacity={0.038} wireframe depthWrite={false} />
       </mesh>
       <mesh>
-        <sphereGeometry args={[0.48, 24, 18]} />
-        <meshBasicMaterial color={secondary} transparent opacity={0.12} depthWrite={false} />
+        <sphereGeometry args={[0.26, 24, 18]} />
+        <meshBasicMaterial color={secondary} transparent opacity={0.065} depthWrite={false} />
       </mesh>
       <mesh rotation={[0.43, -0.17, 0]}>
-        <torusGeometry args={[1.0, 0.011, 6, 90]} />
-        <meshBasicMaterial color={secondary} transparent opacity={0.53} depthWrite={false} />
+        <torusGeometry args={[0.58, 0.008, 6, 90]} />
+        <meshBasicMaterial color={secondary} transparent opacity={0.26} depthWrite={false} />
       </mesh>
     </group>
   );
@@ -212,6 +212,42 @@ function Computer({ build, onChoose, module, accent, secondary, animated }: Prop
       {/* PC chassis: brushed metal back, open glass-side frame and bevel lines. */}
       <group rotation={[0, -0.17, 0]}>
         <Metal position={[0, 0, -0.44]} size={[1.62, 2.37, 0.12]} color="#141920" />
+        {/* Rear I/O and ventilation remain visible when the visitor rotates the PC. */}
+        <group position={[0, 0, -0.515]}>
+          <Metal position={[-0.44, 0.80, -0.010]} size={[0.59, 0.52, 0.027]} color="#2d3945" roughness={0.47} />
+          {Array.from({ length: 5 }, (_, i) => (
+            <Metal key={"io-" + i} position={[-0.64 + (i % 2) * 0.22, 0.98 - Math.floor(i / 2) * 0.16, -0.032]}
+              size={[0.13, 0.060, 0.018]} color={i === 4 ? "#8ca7af" : "#101b23"} />
+          ))}
+          <mesh position={[0.36, 0.76, -0.015]}>
+            <torusGeometry args={[0.255, 0.022, 7, 42]} />
+            <meshStandardMaterial color="#707f8c" metalness={0.72} roughness={0.3} />
+          </mesh>
+          <mesh position={[0.36, 0.76, -0.023]}>
+            <torusGeometry args={[0.18, 0.012, 6, 38]} />
+            <meshStandardMaterial color="#9eabb3" metalness={0.78} roughness={0.27} />
+          </mesh>
+          {[-0.14, 0, 0.14].map((offset) => (
+            <Metal key={"fan-grill-" + offset} position={[0.36, 0.76 + offset, -0.03]}
+              size={[0.42, 0.018, 0.018]} color="#6e7f89" />
+          ))}
+          <Metal position={[0.30, -0.32, -0.018]} size={[0.77, 0.64, 0.025]} color="#252f3b" roughness={0.46} />
+          {Array.from({ length: 6 }, (_, i) => (
+            <Metal key={"slot-" + i} position={[0.30, -0.05 - i * 0.10, -0.041]}
+              size={[0.62, 0.024, 0.012]} color={i % 2 ? "#62717f" : "#52626f"} />
+          ))}
+          <Metal position={[-0.24, -0.91, -0.016]} size={[0.94, 0.37, 0.029]} color="#303946" />
+          {Array.from({ length: 4 }, (_, i) => (
+            <Metal key={"psu-vent-" + i} position={[-0.60 + i * 0.23, -0.91, -0.041]}
+              size={[0.07, 0.26, 0.014]} color="#151e29" />
+          ))}
+          {[-0.67, 0.67].flatMap((x) => [-1.07, 1.07].map((y) => (
+            <mesh key={"screw-" + x + "-" + y} position={[x, y, -0.03]}>
+              <circleGeometry args={[0.028, 10]} />
+              <meshBasicMaterial color="#8795a4" />
+            </mesh>
+          )))}
+        </group>
         <Metal position={[-0.80, 0, 0.01]} size={[0.09, 2.44, 1.02]} color="#303945" />
         <Metal position={[0.80, 0, 0.01]} size={[0.09, 2.44, 1.02]} color="#303945" />
         <Metal position={[0, 1.19, 0.01]} size={[1.64, 0.10, 1.03]} color="#343e49" />
@@ -329,6 +365,16 @@ function Computer({ build, onChoose, module, accent, secondary, animated }: Prop
         rotation={[0, -0.12, 0]}
         onClick={(event) => { event.stopPropagation(); onChoose("linux"); }}>
         <Metal position={[0, 0, -0.06]} size={[1.56, 1.02, 0.11]} color="#202830" />
+        {/* Subtle brushed rear display with ventilation and a central mount. */}
+        <Metal position={[0, 0, -0.127]} size={[1.40, 0.88, 0.018]} color="#2c3642" roughness={0.48}/>
+        <mesh position={[0, -0.05, -0.140]}>
+          <torusGeometry args={[0.125, 0.012, 6, 36]}/>
+          <meshStandardMaterial color="#718695" metalness={0.77} roughness={0.3}/>
+        </mesh>
+        {[-0.50, -0.30, -0.10, 0.10, 0.30, 0.50].map((x) => (
+          <Metal key={"monitor-slot-" + x} position={[x, 0.31, -0.142]}
+            size={[0.075, 0.014, 0.012]} color="#738493"/>
+        ))}
         <Metal position={[0, 0, 0.008]} size={[1.47, 0.91, 0.011]} color="#080e18" />
         <mesh position={[0, 0, 0.018]}>
           <planeGeometry args={[1.41, 0.85]} />
