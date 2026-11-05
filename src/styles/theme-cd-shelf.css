@@ -24,9 +24,20 @@
   border:0;border-radius:10px;background:none;color:#f4ece8;overflow:visible;opacity:1;cursor:pointer;
   transform-style:flat;transition:transform .68s cubic-bezier(.2,.75,.2,1),opacity .5s,filter .55s;
   box-shadow:none}
-.preset-theme-choices.theme-cd-shelf .theme-cd-case[data-cd-slot="0"]{z-index:6;
-  /* Keep the foreground CD in a plain 2D layer: it must never disappear. */
-  transform:translateX(-50%) translateY(-2%) scale(1.04);filter:brightness(1.09)}
+/* Do not transform or filter the CENTER case: several integrated GPUs lose
+   the entire composited video/glass layer at desktop 1600x900.
+   Center by plain CSS left + width instead of a translated GPU layer. */
+.preset-theme-choices.theme-cd-shelf .theme-cd-case[data-cd-slot="0"]{
+  z-index:20;
+  left:calc(50% - clamp(95px,12.5vw,171px));
+  top:11%;
+  transform:none;
+  filter:none;
+  opacity:1;
+  visibility:visible;
+  isolation:isolate;
+  transition:none;
+}
 .preset-theme-choices.theme-cd-shelf .theme-cd-case[data-cd-slot="-1"]{z-index:5;
   transform:translateX(calc(-50% - clamp(148px,23vw,350px))) translateY(13%) rotateY(28deg) scale(.76);
   filter:brightness(.75)}
@@ -167,5 +178,20 @@
   .preset-theme-choices.theme-cd-shelf .theme-cd-case[data-cd-slot="-2"],
   .preset-theme-choices.theme-cd-shelf .theme-cd-case[data-cd-slot="2"]{
     opacity:.3;
+  }
+}
+
+
+/* The middle case's plain-CSS centering must track its mobile width. */
+@media (max-width:760px){
+  .preset-theme-choices.theme-cd-shelf .theme-cd-case[data-cd-slot="0"]{
+    left:calc(50% - clamp(88px,20vw,125px));
+    top:15%;
+  }
+}
+@media (max-width:480px){
+  .preset-theme-choices.theme-cd-shelf .theme-cd-case[data-cd-slot="0"]{
+    left:calc(50% - 95px);
+    top:16%;
   }
 }
