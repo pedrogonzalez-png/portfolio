@@ -117,8 +117,8 @@ function PumpBlock({ accent, secondary, onInspect }: {
         color="#afa999" radius={0.030} roughness={0.3}/>
       <Alloy position={[-0.43, 0.39, -0.11]} size={[0.50, 0.51, 0.22]}
         color="#202a35" radius={0.060}/>
-      <mesh position={[-0.43, 0.39, 0.015]}>
-        <cylinderGeometry args={[0.204, 0.204, 0.065, 48]} rotation={[Math.PI / 2, 0, 0]}/>
+      <mesh position={[-0.43, 0.39, 0.015]} rotation={[Math.PI / 2, 0, 0]}>
+        <cylinderGeometry args={[0.204, 0.204, 0.065, 48]}/>
         <meshStandardMaterial color="#131c27" metalness={0.78} roughness={0.26}/>
       </mesh>
       <mesh position={[-0.43, 0.39, 0.052]}>
@@ -138,9 +138,8 @@ function PumpBlock({ accent, secondary, onInspect }: {
         title="CORE" subtitle="AIO / PUMP" accent={secondary}/>
       {[-1, 1].flatMap(x => [-1, 1].map(y => (
         <group key={"pump-mount-" + x + "-" + y} position={[-0.43 + x * 0.221, 0.39 + y * 0.231, 0.010]}>
-          <mesh>
-            <cylinderGeometry args={[0.022, 0.022, 0.016, 12]}
-              rotation={[Math.PI / 2, 0, 0]}/>
+          <mesh rotation={[Math.PI / 2, 0, 0]}>
+            <cylinderGeometry args={[0.022, 0.022, 0.016, 12]}/>
             <meshStandardMaterial color="#bbc6cf" metalness={0.9} roughness={0.24}/>
           </mesh>
           <Alloy position={[0, 0, 0.011]} size={[0.028, 0.006, 0.005]} color="#283543"/>
