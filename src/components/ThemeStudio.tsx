@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import type { CSSProperties } from "react";
 import { useTheme } from "../stores/themeContext";
-import { OFFICIAL_THEMES } from "../stores/themes";
 import { GALLERY_THEMES, galleryCssTokens, type ShelfThemeId } from "../config/themeShelfMedia";
 import { HyprlandShowcase } from "./HyprlandShowcase";
 import "../styles/preset-theme-studio.css";
@@ -44,9 +43,9 @@ export function ThemeStudio({
         onChoose={candidate => {
           setSelectedId(candidate.id);
           onSelectedThemeChange?.(candidate.id as ShelfThemeId);
-          if (OFFICIAL_THEMES.some(t => t.id === candidate.id)) {
-            setTheme(candidate.id);
-          }
+          // All ten CDs are now approved global themes. Persist precisely
+          // the chosen CD's bundled JSON palette when leaving this page.
+          setTheme(candidate.id);
         }}/>
     </section>
   );

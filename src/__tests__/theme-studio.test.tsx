@@ -3,6 +3,7 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import { ThemeProvider } from "../stores/ThemeProvider";
 import { useTheme } from "../stores/themeContext";
 import { OFFICIAL_THEMES, THEME_STORAGE_KEY } from "../stores/themes";
+import { GALLERY_THEMES } from "../config/themeShelfMedia";
 import { ThemeStudio } from "../components/ThemeStudio";
 
 beforeEach(()=>localStorage.clear());
@@ -30,6 +31,52 @@ describe("preset-only theme experience",()=>{
     expect(screen.getByRole("region",{name:"Exposição dos temas Hyprland"})).toBeInTheDocument();
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
+  it("applies and persists the original palette of ALL ten CDs globally", () => {
+    const {container}=render(
+      <ThemeProvider><Probe/><ThemeStudio onClose={()=>{}}/></ThemeProvider>,
+    );
+    const root=document.documentElement;
+    expect(root.dataset.theme).toBe("changli");
+    expect(root.style.getPropertyValue("--color-accent-primary"))
+      .toBe(GALLERY_THEMES[0].palette.accentPrimary);
+
+    for (let index=1; index<GALLERY_THEMES.length; index++) {
+      fireEvent.click(screen.getByRole("button",{name:"Próximo tema"}));
+      const chosen=GALLERY_THEMES[index];
+      expect(screen.getByTestId("theme-probe")).toHaveTextContent(chosen.name+"|default");
+      expect(root.dataset.theme).toBe(chosen.id);
+      expect(localStorage.getItem(THEME_STORAGE_KEY)).toBe(chosen.id);
+      expect(root.style.getPropertyValue("--color-bg")).toBe(chosen.palette.bg);
+      expect(root.style.getPropertyValue("--color-accent-primary"))
+        .toBe(chosen.palette.accentPrimary);
+      expect(container.querySelector("#theme-studio"))
+        .toHaveStyle({"--color-bg":chosen.palette.bg,
+          "--color-accent-primary":chosen.palette.accentPrimary});
+    }
+  });
+
+  it("discards a stale accent override when a CD is selected", () => {
+    localStorage.setItem("portfolio.theme.accent.v1","#123456");
+    const {unmount}=render(
+      <ThemeProvider><Probe/><ThemeStudio onClose={()=>{}}/></ThemeProvider>,
+    );
+    expect(document.documentElement.style.getPropertyValue("--color-accent-primary"))
+      .toBe("#123456");
+    for(let index=0;index<5;index++) {
+      fireEvent.click(screen.getByRole("button",{name:"Próximo tema"}));
+    }
+    expect(document.documentElement.dataset.theme).toBe("hsin");
+    expect(document.documentElement.style.getPropertyValue("--color-accent-primary"))
+      .toBe("#d94639");
+    expect(localStorage.getItem("portfolio.theme.accent.v1")).toBeNull();
+    unmount();
+    render(<ThemeProvider><Probe/></ThemeProvider>);
+    expect(screen.getByTestId("theme-probe")).toHaveTextContent("Hsin|default");
+    expect(document.documentElement.dataset.theme).toBe("hsin");
+    expect(document.documentElement.style.getPropertyValue("--color-accent-primary"))
+      .toBe("#d94639");
+  });
+
   it("removes the entire color customization strip from the Hyprland page",()=>{
     const {container}=render(<ThemeProvider><ThemeStudio onClose={()=>{}}/></ThemeProvider>);
     expect(container.querySelector(".preset-color-only")).toBeNull();

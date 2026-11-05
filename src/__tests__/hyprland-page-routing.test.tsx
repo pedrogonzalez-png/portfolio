@@ -87,6 +87,33 @@ describe("Hyprland-Themes on its own page",()=>{
     expect(page).toHaveStyle({"--color-bg":"#110A0B"});
   });
 
+  it("keeps the last CD's exact global palette after returning to the home page", async () => {
+    const {container}=render(
+      <MemoryRouter initialEntries={["/hyprland-themes"]}>
+        <ThemeProvider><Pages/></ThemeProvider>
+      </MemoryRouter>,
+    );
+    await screen.findByRole("region",{name:"Exposição dos temas Hyprland"});
+    // Hsin is the sixth CD; it previously changed only the exhibition
+    // and left the home page stuck on the previous global (Hotline Miami).
+    for(let index=0;index<5;index++) {
+      fireEvent.click(screen.getByRole("button",{name:"Próximo tema"}));
+    }
+    expect(container.querySelector("main.hyprland-dedicated-page"))
+      .toHaveAttribute("data-gallery-theme","hsin");
+    expect(document.documentElement.dataset.theme).toBe("hsin");
+    fireEvent.click(screen.getByRole("button",{name:/Voltar aos projetos/}));
+    expect(await screen.findByRole("heading",{name:/Um universo de/}))
+      .toBeInTheDocument();
+    expect(container.querySelector("main.hyprland-dedicated-page")).toBeNull();
+    expect(container.querySelector(".site-header .theme-indicator"))
+      .toHaveTextContent("Hsin");
+    expect(document.documentElement.style.getPropertyValue("--color-bg")).toBe("#101015");
+    expect(document.documentElement.style.getPropertyValue("--color-accent-primary"))
+      .toBe("#d94639");
+    expect(localStorage.getItem("portfolio.theme.active.v1")).toBe("hsin");
+  });
+
   it("disintegrates the CURRENT portfolio viewport on Hyprland project entry, then returns",async()=>{
     const {container}=render(
       <MemoryRouter initialEntries={["/"]}>
