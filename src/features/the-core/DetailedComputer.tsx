@@ -2,6 +2,8 @@ import { useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import { DoubleSide, type Group } from "three";
 import { Alloy, Board, Cable, Fan } from "./CoreVisualParts";
+import { DesktopScreen, EngravedLabel, PerforatedMesh } from "./CoreSurfaceDetails";
+import { PART_BY_ID } from "./coreModel";
 import type { Build } from "./coreModel";
 import type { CoreModule } from "./CoreScene";
 
@@ -20,6 +22,7 @@ const GPU_FINS = Array.from({length: 12}, (_, i) => -0.57 + i * 0.103);
 /** Premium procedural concept model, not a licensed GLB nor a replica of the user's unverified case. */
 export default function DetailedComputer({ build, module, onChoose, accent, secondary, animated }: Props) {
   const floating = useRef<Group>(null);
+  const gpuName = build.gpu ? PART_BY_ID[build.gpu]?.name || "Graphics card" : "Graphics card";
   useFrame((state, dt) => {
     if (!floating.current || !animated) return;
     floating.current.position.y +=
@@ -74,6 +77,11 @@ export default function DetailedComputer({ build, module, onChoose, accent, seco
 
         {/* Upper ventilation: radiator frame, fins and fan carriage. */}
         <Alloy position={[-0.07, 1.02, 0.10]} size={[1.47,0.22,0.77]} color="#161d28"/>
+        <Alloy position={[-0.07,1.145,0.08]} size={[1.33,0.016,0.66]} color="#7b8b94" radius={0.006}/>
+        {[-0.61,0.55].map(x=>
+          <Alloy key={"rad-corner-"+x} position={[x,1.13,0.10]}
+            size={[0.067,0.035,0.72]} color="#9eaab0" radius={0.014}/>)}
+
         {Array.from({length: 13}, (_,i) => (
           <Alloy key={"radiator-fin-"+i} position={[-0.68+i*.105,1.11,0.10]}
             size={[0.018,0.037,0.62]} color="#697783" radius={0.005}/>
@@ -120,8 +128,14 @@ export default function DetailedComputer({ build, module, onChoose, accent, seco
               color="#8e9da4" radius={0.006}/>)}
           <Alloy position={[0.41,0,0.133]} size={[0.026,2.06,0.027]} color="#7f8f9b" radius={0.007}/>
           <Alloy position={[-0.41,0,0.133]} size={[0.026,2.06,0.027]} color="#7f8f9b" radius={0.007}/>
+          <PerforatedMesh position={[0,0,0.155]} size={[1.02,2.05]} opacity={0.58}/>
+          <EngravedLabel position={[0,-1.12,0.15]} size={[0.52,0.092]}
+            title="ENGINEERING" subtitle="CORE / M0.4" accent={secondary}/>
         </group>
-        {/* Power button and case top I/O details. */}
+        {/* Filtered steel top grille: image-backed mesh, not hundreds of extra polygons. */}
+        <PerforatedMesh position={[0,1.315,-0.38]} rotation={[-Math.PI/2,0,0]}
+          size={[1.31,0.40]} opacity={0.72}/>
+                {/* Power button and case top I/O details. */}
         <mesh position={[0.55,1.306,0.29]} rotation={[-Math.PI/2,0,0]}>
           <torusGeometry args={[0.046,0.010,6,25]}/>
           <meshBasicMaterial color={secondary}/>
@@ -130,10 +144,16 @@ export default function DetailedComputer({ build, module, onChoose, accent, seco
           <Alloy key={"top-port-"+x} position={[x,1.305,0.39]}
             size={[0.12,0.012,0.055]} color="#0c1825" radius={0.01}/>)}
 
-        {/* Motherboard mounting points, traces and heatsink assembly. */}
+        {/* Extra real-world construction cues without creating dynamic simulations. */}
+        <EngravedLabel position={[-0.49,1.136,0.63]} size={[0.52,0.10]}
+          title="THE CORE" subtitle="ENGINEERING LAB" accent={accent}/>
+                {/* Motherboard mounting points, traces and heatsink assembly. */}
         {build.motherboard && (
           <group position={[-0.22,0.13,-0.44]} onClick={event=>{event.stopPropagation();onChoose("assembly");}}>
             <Board accent={secondary}/>
+            {/* Printed identifiers remain part of the board, not a floating UI overlay. */}
+            <EngravedLabel position={[-0.28,-0.07,0.16]} size={[0.36,0.09]}
+              title="AM4 / AM5" subtitle="DEMO PLATFORM" accent={accent}/>
             <Alloy position={[0.18,0.56,0.138]} size={[0.16,0.60,0.12]} color="#4e6271"/>
             <Alloy position={[-0.24,-0.62,0.14]} size={[0.32,0.24,0.12]} color="#5b6975"/>
           </group>
@@ -206,6 +226,17 @@ export default function DetailedComputer({ build, module, onChoose, accent, seco
               <Fan key={"gpu-fan-"+x} position={[x,0,0.252]} radius={0.192}
                 accent={secondary} animated={animated} speed={0.45} variant="gpu"/>)}
             <Alloy position={[0,0.31,0.13]} size={[1.31,0.028,0.02]} color={accent} radius={0.005} emissive={accent}/>
+            <EngravedLabel position={[0,0.325,0.245]} size={[0.91,0.112]}
+              title={gpuName} subtitle="GDDR / PCI EXPRESS" accent={secondary}/>
+            <Alloy position={[0,-0.29,-0.16]} size={[1.34,0.018,0.032]} color="#c3c6cb" radius={0.005}/>
+            {[-0.54,-0.32,-0.10,0.12,0.34,0.55].map((x) => (
+              <Alloy key={"gpu-backplate-slot-"+x} position={[x,-0.13,-0.242]}
+                size={[0.035,0.15,0.010]} color="#53616a" radius={0.006}/>
+            ))}
+            {[-0.63,0.63].flatMap(x=>[-0.17,0.17].map(y=>(
+              <Alloy key={"gpu-fastener-"+x+"-"+y} position={[x,y,0.242]}
+                size={[0.037,0.037,0.015]} color="#b6bfc6" radius={0.013}/>
+            )))}
             <Alloy position={[0.62,0.3,-0.14]} size={[0.18,0.15,0.17]} color="#151d29"/>
             {Array.from({length:6},(_,i)=>
               <Alloy key={"gpu-pin-"+i} position={[0.55+i*0.025,0.38,-0.12]}
@@ -229,6 +260,8 @@ export default function DetailedComputer({ build, module, onChoose, accent, seco
               <Alloy key={"psu-grille-"+i} position={[-0.59+(i%3)*0.29,-0.83-Math.floor(i/3)*0.11,0.029]}
                 size={[0.14,0.022,0.012]} color="#8897a0" radius={0.004}/>)}
             <Alloy position={[-0.29,-1.15,0.020]} size={[0.73,0.018,0.016]} color="#a7b2ba" radius={0.003}/>
+            <EngravedLabel position={[-0.29,-0.95,0.037]} size={[0.59,0.12]}
+              title="GX / 700W" subtitle="PSU  /  DEMO" accent={secondary}/>
           </group>
         )}
         {build.psu && (
@@ -250,35 +283,16 @@ export default function DetailedComputer({ build, module, onChoose, accent, seco
           <Alloy key={"display-vents-"+i} position={[-0.67+i*.149,0.38,-0.152]}
             size={[0.075,0.014,0.012]} color="#8d9aa5" radius={0.005}/>)}
         <Alloy position={[0,0,0.028]} size={[1.85,1.07,0.024]} color="#080e18" radius={0.019}/>
-        <mesh position={[0,0,0.046]}>
-          <planeGeometry args={[1.78,1.006]}/>
-          <meshBasicMaterial color="#111629"/>
-        </mesh>
-        {/* Wallpaper-inspired light shapes, without downloading copyrighted assets. */}
-        <mesh position={[0.32,0.14,0.047]} rotation={[0,0,-0.29]}>
-          <circleGeometry args={[0.39,48]}/>
-          <meshBasicMaterial color={accent} transparent opacity={0.35}/>
-        </mesh>
-        <mesh position={[0.53,-0.20,0.050]} rotation={[0,0,0.24]}>
-          <ringGeometry args={[0.26,0.37,40]}/>
-          <meshBasicMaterial color={secondary} transparent opacity={0.48}/>
-        </mesh>
-        <Alloy position={[0,0.464,0.055]} size={[1.70,0.044,0.007]} color="#1b2938" radius={0.003}/>
-        {[0.65,0.73,0.81].map(x=>
-          <mesh key={"menu-light-"+x} position={[x,0.464,0.066]}>
-            <circleGeometry args={[0.013,9]}/>
-            <meshBasicMaterial color={secondary}/>
-          </mesh>)}
-        <Alloy position={[-0.41,-0.03,0.061]} size={[0.81,0.68,0.009]} color="#182333"/>
-        <Alloy position={[-0.41,0.285,0.069]} size={[0.77,0.045,0.008]} color="#3c5360" radius={0.003}/>
-        {Array.from({length:5},(_,i)=>
-          <Alloy key={"term-row-"+i} position={[-0.60+i%2*.04,0.15-i*.083,0.071]}
-            size={[0.39+i%3*.056,0.012,0.006]} color={i===0?secondary:"#5a8490"} radius={0.003}/>)}
-        <Alloy position={[0.47,0.06,0.06]} size={[0.65,0.45,0.012]} color="#25314b"/>
-        <Alloy position={[0.47,-0.235,0.06]} size={[0.65,0.12,0.012]} color="#161e2f"/>
+        <DesktopScreen position={[0,0,0.052]} size={[1.78,1.006]} accent={accent} secondary={secondary}/>
+        <EngravedLabel position={[0,-0.545,0.067]} size={[0.42,0.064]}
+          title="HYPRLAND" accent={secondary}/>
         <Alloy position={[0,-0.50,0.046]} size={[1.78,0.04,0.011]} color="#333b49" radius={0.005}/>
         <Alloy position={[0,-0.76,-0.055]} size={[0.11,0.43,0.12]} color="#818c99"/>
         <Alloy position={[0,-0.98,0.00]} size={[0.72,0.045,0.40]} color="#8c97a3"/>
+        <Alloy position={[0,-0.995,0.17]} size={[0.61,0.017,0.015]} color="#657887" radius={0.005}/>
+        <EngravedLabel position={[0,-0.02,-0.158]} size={[0.48,0.095]}
+          title="DISPLAY UNIT" subtitle="REV / DEMO" accent={accent}/>
+
       </group>
     </group>
   );
