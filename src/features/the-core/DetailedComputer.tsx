@@ -2,6 +2,7 @@ import { useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import { DoubleSide, type Group } from "three";
 import { Alloy, Board, Cable, Fan } from "./CoreVisualParts";
+import GpuAsset from "./GpuAsset";
 import { DesktopScreen, EngravedLabel, PerforatedMesh } from "./CoreSurfaceDetails";
 import { PART_BY_ID } from "./coreModel";
 import type { Build } from "./coreModel";
@@ -215,6 +216,7 @@ export default function DetailedComputer({ build, module, onChoose, accent, seco
         {build.gpu && (
           <group position={[0.02,-0.39,0.05]}
             onClick={event=>{event.stopPropagation();onChoose("overclock");}}>
+            <GpuAsset>
             <Alloy position={[0,0,-0.21]} size={[1.43,0.51,0.045]} color="#1b3638" radius={0.025}/>
             <Alloy position={[0,0,-0.16]} size={[1.48,0.56,0.038]} color="#83909a" radius={0.03}/>
             <Alloy position={[0,0,-0.09]} size={[1.48,0.47,0.18]} color="#667681" radius={0.026}/>
@@ -245,6 +247,7 @@ export default function DetailedComputer({ build, module, onChoose, accent, seco
                 size={[0.013,0.025,0.03]} color="#b99d68" radius={0.003}/>)}
             <Alloy position={[-0.72,0,-0.11]} size={[0.045,0.59,0.24]} color="#8e969b"/>
             <Alloy position={[0.70,0,-0.11]} size={[0.04,0.59,0.24]} color="#8e969b"/>
+            </GpuAsset>
           </group>
         )}
         {build.gpu && [
