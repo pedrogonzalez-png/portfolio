@@ -18,7 +18,7 @@ URLs de importação originais:
 - https://www.innerscene.com/api/library/closed-mid-tower-pc-case-1374583e/download
 - https://www.innerscene.com/api/library/atx-motherboard-7794769f/download
 
-As texturas dos dois últimos GLBs são redimensionadas e comprimidas em WebP durante a importação, sem alterar os dados geométricos com Draco/Meshopt. O formato é GLB, armazenado localmente no repositório e servido pelo próprio site.
+As texturas dos três GLBs são redimensionadas para até 1024 px e comprimidas em WebP, sem alterar os dados geométricos com Draco/Meshopt. Tamanhos após otimização: GPU 1.726.448 bytes, gabinete 2.625.552 bytes e placa-mãe 1.740.864 bytes (~6,1 MB no total). O formato é GLB, armazenado localmente no repositório e servido pelo próprio site.
 
 ## Regras de integração
 
