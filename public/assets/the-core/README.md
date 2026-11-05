@@ -11,14 +11,18 @@ Todos os modelos listados abaixo foram obtidos da [Innerscene Free Parts Library
 | gpu-generic-cc0.glb | Graphics card with fans | https://www.innerscene.com/tools/library/3d-parts/graphics-card-with-fans-6af50057 | Placa genérica com **três ventoinhas**, ~306 x 130 x 59 mm; não é a RX 7600 Gigabyte de duas ventoinhas |
 | case-mid-tower-cc0.glb | Closed mid-tower PC case | https://www.innerscene.com/tools/library/3d-parts/closed-mid-tower-pc-case-1374583e | Gabinete ATX genérico ~232 x 476 x 492 mm, painel de vidro do lado -X, frente -Y e topo +Z na origem |
 | motherboard-atx-cc0.glb | ATX motherboard | https://www.innerscene.com/tools/library/3d-parts/atx-motherboard-7794769f | ATX genérica ~305 x 252 x 44 mm, **soquete LGA e DDR5**; não corresponde às placas B550/AM4 ou B650/AM5 do catálogo educativo |
+| psu-atx-cc0.glb | ATX power supply | https://www.innerscene.com/tools/library/3d-parts/atx-power-supply-675d6448 | PSU genérica 150 x 143 x 88 mm, com etiqueta visual **750W**; não é a Cooler Master GX 700W Gold |
+| ram-ddr5-cc0.glb | DDR5 RAM stick | https://www.innerscene.com/tools/library/3d-parts/ddr5-ram-stick-376e4682 | DIMM DDR5 com detalhes de contatos e dissipador; usada **somente** quando a memória DDR5 é selecionada no catálogo. DDR4 permanece procedural |
 
 URLs de importação originais:
 
 - https://www.innerscene.com/api/library/graphics-card-with-fans-6af50057/download
 - https://www.innerscene.com/api/library/closed-mid-tower-pc-case-1374583e/download
 - https://www.innerscene.com/api/library/atx-motherboard-7794769f/download
+- https://www.innerscene.com/api/library/atx-power-supply-675d6448/download
+- https://www.innerscene.com/api/library/ddr5-ram-stick-376e4682/download
 
-As texturas dos três GLBs são redimensionadas para até 1024 px e comprimidas em WebP, sem alterar os dados geométricos com Draco/Meshopt. Tamanhos após otimização: GPU 1.726.448 bytes, gabinete 2.625.552 bytes e placa-mãe 1.740.864 bytes (~6,1 MB no total). O formato é GLB, armazenado localmente no repositório e servido pelo próprio site.
+Os três primeiros modelos foram otimizados com texturas WebP de até 1024 px, sem Draco/Meshopt: GPU 1.726.448 bytes, gabinete 2.625.552 bytes e placa-mãe 1.740.864 bytes (~6,1 MB combinados). Na iteração M0.7, PSU e DDR5 passam pela otimização do glTF Transform com quantização portável (sem decodificador Draco/Meshopt) e texturas WebP de até 1024 px. Todos os GLBs são armazenados e servidos pelo próprio site.
 
 ## Regras de integração
 
@@ -32,3 +36,12 @@ As texturas dos três GLBs são redimensionadas para até 1024 px e comprimidas 
 ## Como substituir depois
 
 Troque o arquivo GLB correspondente, revisando licença, orientação, escala e teste de carregamento em CoreHighFidelityAsset.tsx (gabinete/placa-mãe) ou GpuAsset.tsx (GPU). Sempre execute build, testes e smoke desktop/mobile antes de fazer merge na main.
+
+## M0.7 — PSU e DDR5 (05/11/2026)
+
+- Os novos arquivos são CC0, importados da mesma biblioteca e otimizados para WebGL; a procedência e os links originais estão acima.
+- `CorePeripheralAsset.tsx` controla carregamento, orientação, escala, fallback procedural e marcadores de diagnóstico `data-psu-model` / `data-ram-model`.
+- O modelo DDR5 só aparece quando o usuário escolhe DDR5; no perfil inicial DDR4 mantém-se a representação procedural para não sugerir falsamente que DDR5 cabe no soquete DDR4.
+- Fonte visual genérica com etiqueta 750W não comprova identidade com o modelo GX 700W do perfil educativo. O motor de montagem continua independente dos GLBs.
+- O water cooler 360 mm de três ventoinhas, ventoinhas adicionais, tubos/cabos e monitor Hyprland continuam procedurais enquanto não existir modelo CC0 adequado: não substituir o radiador por um modelo 240 mm só para dizer que há GLB.
+- `scripts/smoke-core-assets.mjs` valida PSU no perfil inicial e memória no perfil AM5/DDR5 no Chromium de verdade.
