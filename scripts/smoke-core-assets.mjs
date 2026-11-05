@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+/* global process, setTimeout, fetch, URL, console */
 /** Focused Chromium regression: the three CC0 GLBs really load at runtime. */
 import { chromium } from "@playwright/test";
 import { spawn } from "node:child_process";
