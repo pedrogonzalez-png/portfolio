@@ -96,7 +96,7 @@ export default function CorePeripheralAsset({ kind, position, children, enabled 
       );
     }
     return <primitive object={model} position={position} dispose={null} />;
-  }, [enabled, kind, model, position[0], position[1], position[2]]);
+  }, [enabled, kind, model, position]);
 
   return visual ?? <>{children}</>;
 }
