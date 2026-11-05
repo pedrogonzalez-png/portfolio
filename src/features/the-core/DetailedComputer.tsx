@@ -3,6 +3,7 @@ import { useFrame } from "@react-three/fiber";
 import { DoubleSide, type Group } from "three";
 import { Alloy, Board, Cable, Fan } from "./CoreVisualParts";
 import GpuAsset from "./GpuAsset";
+import CoreHighFidelityAsset from "./CoreHighFidelityAsset";
 import { DesktopScreen, EngravedLabel, PerforatedMesh } from "./CoreSurfaceDetails";
 import { PART_BY_ID } from "./coreModel";
 import type { Build } from "./coreModel";
@@ -39,6 +40,7 @@ export default function DetailedComputer({ build, module, onChoose, accent, seco
   return (
     <group ref={floating} position={[-0.53,-0.12,0.03]} rotation={[0,-0.20,0]}>
       <group>
+        <CoreHighFidelityAsset kind="case">
         {/* Chassis: rounded corners, lower chamber, open glass side and front mesh strips. */}
         <Alloy position={[0, 0, -0.61]} size={[1.72, 2.48, 0.13]} color="#28323d" radius={0.045} />
         <Alloy position={[-0.84, 0, -0.02]} size={[0.11, 2.48, 1.30]} color="#27313e" radius={0.035} />
@@ -77,25 +79,6 @@ export default function DetailedComputer({ build, module, onChoose, accent, seco
             <meshStandardMaterial color="#c6d0d5" metalness={0.9} roughness={0.25}/>
           </mesh>
         )))}
-
-        {/* Upper ventilation: radiator frame, fins and fan carriage. */}
-        <Alloy position={[-0.07, 1.02, 0.10]} size={[1.47,0.22,0.77]} color="#161d28"/>
-        <Alloy position={[-0.07,1.145,0.08]} size={[1.33,0.016,0.66]} color="#7b8b94" radius={0.006}/>
-        {[-0.61,0.55].map(x=>
-          <Alloy key={"rad-corner-"+x} position={[x,1.13,0.10]}
-            size={[0.067,0.035,0.72]} color="#9eaab0" radius={0.014}/>)}
-
-        {Array.from({length: 13}, (_,i) => (
-          <Alloy key={"radiator-fin-"+i} position={[-0.68+i*.105,1.11,0.10]}
-            size={[0.018,0.037,0.62]} color="#697783" radius={0.005}/>
-        ))}
-        {[-0.49,0,0.49].map(x => (
-          <Fan key={"top-"+x} position={[x,0.98,0.465]} radius={0.197} accent={accent} animated={animated} speed={0.62}/>
-        ))}
-        <Alloy position={[0,1.26,-0.40]} size={[1.36,0.011,0.33]} color="#8a969d" radius={0.004}/>
-        {Array.from({length:9},(_,i)=>
-          <Alloy key={"top-air-"+i} position={[-0.57+i*.14,1.267,-0.40]}
-            size={[0.062,0.014,0.22]} color="#151f2b" radius={0.008}/>)}
 
         {/* Rear plate remains comprehensible when rotating behind the computer. */}
         <group position={[0,0,-0.692]}>
@@ -150,15 +133,39 @@ export default function DetailedComputer({ build, module, onChoose, accent, seco
         {/* Extra real-world construction cues without creating dynamic simulations. */}
         <EngravedLabel position={[-0.49,1.136,0.63]} size={[0.52,0.10]}
           title="THE CORE" subtitle="ENGINEERING LAB" accent={accent}/>
+        </CoreHighFidelityAsset>
+        {/* Real AIO radiator/fans are retained above either chassis visualization. */}
+        {/* Upper ventilation: radiator frame, fins and fan carriage. */}
+        <Alloy position={[-0.07, 1.02, 0.10]} size={[1.47,0.22,0.77]} color="#161d28"/>
+        <Alloy position={[-0.07,1.145,0.08]} size={[1.33,0.016,0.66]} color="#7b8b94" radius={0.006}/>
+        {[-0.61,0.55].map(x=>
+          <Alloy key={"rad-corner-"+x} position={[x,1.13,0.10]}
+            size={[0.067,0.035,0.72]} color="#9eaab0" radius={0.014}/>)}
+
+        {Array.from({length: 13}, (_,i) => (
+          <Alloy key={"radiator-fin-"+i} position={[-0.68+i*.105,1.11,0.10]}
+            size={[0.018,0.037,0.62]} color="#697783" radius={0.005}/>
+        ))}
+        {[-0.49,0,0.49].map(x => (
+          <Fan key={"top-"+x} position={[x,0.98,0.465]} radius={0.197} accent={accent} animated={animated} speed={0.62}/>
+        ))}
+        <Alloy position={[0,1.26,-0.40]} size={[1.36,0.011,0.33]} color="#8a969d" radius={0.004}/>
+        {Array.from({length:9},(_,i)=>
+          <Alloy key={"top-air-"+i} position={[-0.57+i*.14,1.267,-0.40]}
+            size={[0.062,0.014,0.22]} color="#151f2b" radius={0.008}/>)}
+
+
                 {/* Motherboard mounting points, traces and heatsink assembly. */}
         {build.motherboard && (
           <group position={[-0.22,0.13,-0.44]} onClick={event=>{event.stopPropagation();onChoose("assembly");}}>
+            <CoreHighFidelityAsset kind="board">
             <Board accent={secondary}/>
             {/* Printed identifiers remain part of the board, not a floating UI overlay. */}
             <EngravedLabel position={[-0.28,-0.07,0.16]} size={[0.36,0.09]}
               title={boardSocket+" BOARD"} subtitle="DEMO PLATFORM" accent={accent}/>
             <Alloy position={[0.18,0.56,0.138]} size={[0.16,0.60,0.12]} color="#4e6271"/>
             <Alloy position={[-0.24,-0.62,0.14]} size={[0.32,0.24,0.12]} color="#5b6975"/>
+            </CoreHighFidelityAsset>
           </group>
         )}
 
