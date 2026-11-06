@@ -58,3 +58,17 @@ Troque o arquivo GLB correspondente, revisando licença, orientação, escala e 
 - Workflow experimental da branch agora exige typecheck, lint, testes e browser smoke de GLBs antes da aprovação visual do autor.
 
 **Limite desta etapa:** a qualidade visual deve ser conferida em navegador desktop e celular; não há medição de FPS, temperatura ou fluxo de ar real.
+
+## M0.9 — Correção da cena após avaliação visual (05/11/2026)
+
+**Motivo:** a avaliação real do usuário mostrou linhas orbitais cruzando a máquina e o monitor, chicotes grossos na frente da placa, monitor suspenso e painéis opacos do gabinete/placa-mãe GLB ocultando peças.
+
+- A **versão exibida por padrão** agora usa o gabinete procedural **aberto (cutaway)** e a placa-mãe educativa procedural, porque o gabinete CC0 importado é **fechado** e a placa genérica LGA/DDR5 não é visualmente consistente com o perfil AM4/DDR4. Os dois GLBs permanecem no repositório como recursos licenciados para usos futuros e comparação, mas **não são renderizados por padrão**.
+- O teto sólido foi substituído por trilhos, deixando o AIO de 360 mm visível.
+- Os chicotes foram reduzidos de espessura, receberam trajetos para **trás** da placa e os cabos diagonais duplicados da GPU/PSU foram removidos.
+- O monitor foi baixado e passou a ter uma extensão de apoio ao lado do pedestal.
+- Os anéis orbitais e o núcleo energético foram movidos para trás dos objetos, impedindo interseção na frente do gabinete e do monitor.
+- O módulo de montagem continua educativo; GPU, PSU e memória DDR5 continuam usando GLB quando aplicável.
+- Os scripts de smoke no Chromium passaram a verificar explicitamente `data-case-model="cutaway"` e `data-board-model="educational"`, sem exigir os antigos GLBs opacos.
+
+**Limitação:** aparência e colisões visuais ainda dependem da avaliação em navegador. O build e os testes automatizados não substituem revisão de imagem em desktop e celular. Sem merge automático.
