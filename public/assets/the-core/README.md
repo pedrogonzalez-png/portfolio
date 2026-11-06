@@ -72,3 +72,17 @@ Troque o arquivo GLB correspondente, revisando licença, orientação, escala e 
 - Os scripts de smoke no Chromium passaram a verificar explicitamente `data-case-model="cutaway"` e `data-board-model="educational"`, sem exigir os antigos GLBs opacos.
 
 **Limitação:** aparência e colisões visuais ainda dependem da avaliação em navegador. O build e os testes automatizados não substituem revisão de imagem em desktop e celular. Sem merge automático.
+
+## M1.0 — Polimento fino baseado no protótipo aprovado (06/11/2026)
+
+**Objetivo:** aumentar a legibilidade e o acabamento das peças já presentes, sem alterar módulos, lógica de montagem, paletas, persistência ou comportamento da câmera.
+
+- `CoreVisualParts.tsx`: a placa-mãe educacional ganhou moldura da PCB, socket/retentor, radiadores VRM segmentados, encaixes DIMM, slots PCIe com travas e capacitores, com detalhes visíveis por várias perspectivas. Ventoinhas ganharam difusor e cubo metálico com capas. Novo componente `MemoryStick` cria RAM DDR4 procedural com dissipador usinado, detalhes de contato e luz de acento.
+- `CoreSurfaceDetails.tsx`: textura silk-screen da PCB mais organizada e monitor Hyprland renderizado em canvas 1,5× para aumentar nitidez quando ampliado. Terminal, barra superior e dock ganharam microdetalhes preservando cores globais e dados didáticos instalados.
+- `CoreCoolingAssembly.tsx`: isolamento e parafusos do radiador, flange/braçadeiras da bomba, aro e marcações, conexões e mangueiras mais controladas. Radiador continua sendo AIO **procedural de 360 mm**.
+- `DetailedComputer.tsx`: RAM DDR4 substituída pelos novos dissipadores; GPU CC0 permanece self-hosted com trilhos/marcação externa que não dependem do fallback; monitor reposicionado à frente do gabinete, bezel fino, suporte e ventilação traseira; perfis de vedação da carcaça e frontal com ventoinhas recolocado **dentro** do chassi.
+- `CoreCableHarness.tsx`: mantém fios embutidos atrás da placa e os organizadores existentes, para não recriar as colisões visuais de M0.8.
+- `CoreHighFidelityAsset.tsx`: mantido como repositório de carregamento dos GLBs de gabinete fechado e motherboard genérica, mas **não ativado** no layout cutaway, para preservar acesso visual às peças e não apresentar uma malha LGA como AM4.
+- `scripts/smoke-core-assets.mjs`: registra a vista inicial e uma segunda imagem de órbita 3/4 para facilitar a inspeção de colisões, além do perfil DDR5 e carregamento dos GLBs de GPU/PSU.
+
+**Limitações preservadas:** modelos demonstrativos (não CAD); water cooler não tem identidade comercial validada; GPU GLB genérica de 3 ventoinhas não é réplica fiel da RX 7600; PCB e slot DDR4 procedural são ilustrativos; não representam compatibilidade mecânica ou elétrica. Sem números de benchmark. **Nenhuma mudança na main sem aprovação explícita do usuário.**
