@@ -66,7 +66,7 @@ try {
   if(bounds) {
     await page.mouse.move(bounds.x+bounds.width*0.46,bounds.y+bounds.height*0.49);
     await page.mouse.down();
-    await page.mouse.move(bounds.x+bounds.width*0.31,bounds.y+bounds.height*0.47,{steps:14});
+    await page.mouse.move(bounds.x+bounds.width*0.39,bounds.y+bounds.height*0.49,{steps:14});
     await page.mouse.up();
     await page.waitForTimeout(400);
     await page.screenshot({path:"browser-diagnostics/the-core-orbit-angle.png"});
