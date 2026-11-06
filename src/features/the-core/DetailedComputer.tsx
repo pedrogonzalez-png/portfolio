@@ -187,9 +187,11 @@ export default function DetailedComputer({ build, module, onChoose, accent, seco
           <EngravedLabel position={[0,-1.12,0.15]} size={[0.52,0.092]}
             title="ENGINEERING" subtitle="CORE / AIO-360" accent={secondary}/>
         </group>
-        {/* Filtered steel top grille: image-backed mesh, not hundreds of extra polygons. */}
-        <PerforatedMesh position={[0,1.315,-0.38]} rotation={[-Math.PI/2,0,0]}
-          size={[1.31,0.40]} opacity={0.72}/>
+        {/* Rear ventilation strip stays OUTSIDE the three AIO fan openings.
+            The previous 1.315/-0.38 perforated plane crossed the spinning
+            impellers, making the metal mesh look fused to the fan blades. */}
+        <PerforatedMesh position={[0,1.293,0.345]} rotation={[-Math.PI/2,0,0]}
+          size={[1.30,0.17]} opacity={0.52}/>
                 {/* Power button and case top I/O details. */}
         <mesh position={[0.55,1.306,0.29]} rotation={[-Math.PI/2,0,0]}>
           <torusGeometry args={[0.046,0.010,6,25]}/>
