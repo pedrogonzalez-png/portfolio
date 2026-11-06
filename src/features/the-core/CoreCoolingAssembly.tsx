@@ -68,6 +68,19 @@ function Radiator({ accent, secondary, animated }: {
         <Alloy key={"rail-" + z} position={[0, 1.136, z]}
           size={[1.49, 0.038, 0.022]} color="#84919d" radius={0.009}/>
       ))}
+      {/* Silicone isolation strips and radiator bolt heads. */}
+      {FAN_CENTERS.map(x => [-0.32,0.32].map(z => (
+        <group key={"radiator-mount-"+x+"-"+z}>
+          <Alloy position={[x,1.151,-0.12+z]} size={[0.35,0.016,0.022]}
+            color="#344552" radius={0.005} roughness={0.72}/>
+          {[-0.14,0.14].map(dx => (
+            <mesh key={"rad-fastener-"+dx} position={[x+dx,1.166,-0.12+z]} rotation={[-Math.PI/2,0,0]}>
+              <circleGeometry args={[0.010,12]}/>
+              <meshStandardMaterial color="#b4bec6" metalness={0.85} roughness={0.23}/>
+            </mesh>
+          ))}
+        </group>
+      )))}
       {/* Three fans orient their faces upward, instead of floating on the glass. */}
       {FAN_CENTERS.map((x, i) => (
         <group key={"360-fan-" + i} position={[x, 1.180, -0.12]} rotation={[-Math.PI / 2, 0, 0]}>
@@ -117,6 +130,19 @@ function PumpBlock({ accent, secondary, onInspect }: {
         color="#afa999" radius={0.030} roughness={0.3}/>
       <Alloy position={[-0.43, 0.39, -0.11]} size={[0.50, 0.51, 0.22]}
         color="#202a35" radius={0.060}/>
+      {/* Raised mounting brackets and brushed chamfered pump trim. */}
+      {[-1,1].map(side => (
+        <group key={"pump-arm-"+side}>
+          <Alloy position={[-0.43+side*0.275,0.39,-0.135]} size={[0.090,0.40,0.105]}
+            color="#677987" radius={0.020} metalness={0.87} roughness={0.30}/>
+          <Alloy position={[-0.43+side*0.275,0.39,-0.070]} size={[0.056,0.305,0.028]}
+            color="#9aaab4" radius={0.009} metalness={0.9}/>
+        </group>
+      ))}
+      <mesh position={[-0.43,0.39,0.052]}>
+        <ringGeometry args={[0.198,0.213,48]}/>
+        <meshStandardMaterial color="#a0b0bd" metalness={0.91} roughness={0.22}/>
+      </mesh>
       <mesh position={[-0.43, 0.39, 0.015]} rotation={[Math.PI / 2, 0, 0]}>
         <cylinderGeometry args={[0.204, 0.204, 0.065, 48]}/>
         <meshStandardMaterial color="#131c27" metalness={0.78} roughness={0.26}/>
@@ -132,8 +158,19 @@ function PumpBlock({ accent, secondary, onInspect }: {
       </mesh>
       <mesh position={[-0.43, 0.39, 0.056]}>
         <ringGeometry args={[0.072, 0.079, 48]}/>
-        <meshBasicMaterial color={secondary} transparent opacity={0.95}/>
+        <meshBasicMaterial color={secondary} transparent opacity={0.82}/>
       </mesh>
+      {Array.from({length:8},(_,i)=>{
+        const theta=i*Math.PI/4;
+        return (
+          <mesh key={"pump-dial-"+i}
+            position={[-0.43+Math.cos(theta)*0.122,0.39+Math.sin(theta)*0.122,0.060]}
+            rotation={[0,0,theta]}>
+            <boxGeometry args={[0.024,0.004,0.004]}/>
+            <meshBasicMaterial color="#9baebb"/>
+          </mesh>
+        );
+      })}
       <EngravedLabel position={[-0.43, 0.33, 0.059]} size={[0.25, 0.071]}
         title="CORE" subtitle="AIO / PUMP" accent={secondary}/>
       {[-1, 1].flatMap(x => [-1, 1].map(y => (
@@ -145,6 +182,9 @@ function PumpBlock({ accent, secondary, onInspect }: {
           <Alloy position={[0, 0, 0.011]} size={[0.028, 0.006, 0.005]} color="#283543"/>
         </group>
       )))}
+      {/* Pump manifold and coolant fittings; these are visual, not physical plumbing specs. */}
+      <Alloy position={[-0.455,0.541,0.071]} size={[0.18,0.043,0.087]}
+        color="#374857" radius={0.015}/>
       {/* Two metal elbow couplings are visibly separate from the braiding. */}
       {[-0.53, -0.38].map((x, i) => (
         <group key={"elbow-" + i}>
@@ -163,7 +203,7 @@ function BraidedHoses() {
     <group>
       {COOLANT_TUBES.map((points, i) => (
         <group key={"hose-" + i}>
-          <Cable points={points} radius={0.035} color="#1c2632" segments={46}/>
+          <Cable points={points} radius={0.032} color="#1c2632" segments={46}/>
           {BRAID_OFFSETS.map(([dx, dy, dz], n) => (
             <Cable key={"sleeve-" + n}
               points={points.map(([x, y, z]) => [x + dx, y + dy, z + dz] as V3)}
@@ -175,6 +215,10 @@ function BraidedHoses() {
         color="#697988" radius={0.014}/>
       <Alloy position={[-0.67, 0.90, 0.298]} size={[0.095, 0.06, 0.066]}
         color="#586978" radius={0.012}/>
+      {[-0.67,-0.54].map((x,i) => (
+        <Alloy key={"hose-clamp-"+i} position={[x,0.59+i*0.035,0.239]}
+          size={[0.090,0.035,0.057]} color="#8a9ca8" radius={0.010}/>
+      ))}
     </group>
   );
 }
