@@ -3,7 +3,6 @@ import { useFrame } from "@react-three/fiber";
 import { DoubleSide, type Group } from "three";
 import { Alloy, Board, Cable, Fan } from "./CoreVisualParts";
 import GpuAsset from "./GpuAsset";
-import CoreHighFidelityAsset from "./CoreHighFidelityAsset";
 import CorePeripheralAsset from "./CorePeripheralAsset";
 import CoreCoolingAssembly from "./CoreCoolingAssembly";
 import CoreCableHarness from "./CoreCableHarness";
@@ -43,14 +42,24 @@ export default function DetailedComputer({ build, module, onChoose, accent, seco
   return (
     <group ref={floating} position={[-0.53,-0.12,0.03]} rotation={[0,-0.20,0]}>
       <group>
-        <CoreHighFidelityAsset kind="case">
+        {/* Open cutaway chassis: the closed GLB hid educational internals. */}
         {/* Chassis: rounded corners, lower chamber, open glass side and front mesh strips. */}
         <Alloy position={[0, 0, -0.61]} size={[1.72, 2.48, 0.13]} color="#28323d" radius={0.045} />
         <Alloy position={[-0.84, 0, -0.02]} size={[0.11, 2.48, 1.30]} color="#27313e" radius={0.035} />
         <Alloy position={[0.84, 0, -0.02]} size={[0.11, 2.48, 1.30]} color="#252e39" radius={0.035} />
-        <Alloy position={[0, 1.24, -0.02]} size={[1.78, 0.12, 1.30]} color="#353f4b" radius={0.035}/>
+        {/* Open top cage: the previous solid roof covered the 360mm radiator. */}
+        {[-0.78, 0.78].map(x => (
+          <Alloy key={"top-x-rail-" + x} position={[x,1.245,-0.02]}
+            size={[0.08,0.115,1.29]} color="#414d59" radius={0.024}/>
+        ))}
+        {[-0.59, 0.59].map(z => (
+          <Alloy key={"top-z-rail-" + z} position={[0,1.245,z]}
+            size={[1.55,0.115,0.08]} color="#414d59" radius={0.024}/>
+        ))}
         <Alloy position={[0, -1.24, -0.02]} size={[1.78, 0.12, 1.30]} color="#202933" radius={0.035}/>
-        <Alloy position={[0, -0.99, -0.02]} size={[1.60, 0.34, 1.13]} color="#151b24"/>
+        {/* PSU chamber shields the bright generic PSU material from the main showcase. */}
+        <Alloy position={[0, -0.99, 0.03]} size={[1.60, 0.39, 1.06]} color="#151b24"/>
+        <Alloy position={[0,-0.77,0.54]} size={[1.55,0.018,0.08]} color="#566778" radius={0.007}/>
         <Alloy position={[0, -1.14, 0.41]} size={[1.60, 0.026, 0.20]} color="#73818d" radius={0.004}/>
         {[-0.61, 0.61].map(x => <Alloy key={"foot-"+x} position={[x, -1.34, -0.31]}
           size={[0.24,0.11,0.42]} color="#161d28" />)}
@@ -136,7 +145,6 @@ export default function DetailedComputer({ build, module, onChoose, accent, seco
         {/* Extra real-world construction cues without creating dynamic simulations. */}
         <EngravedLabel position={[-0.49,1.136,0.63]} size={[0.52,0.10]}
           title="THE CORE" subtitle="ENGINEERING LAB" accent={accent}/>
-        </CoreHighFidelityAsset>
         {/* Fully detailed, top-mounted 360 mm AIO, independent of the generic case GLB. */}
         <CoreCoolingAssembly accent={accent} secondary={secondary} animated={animated}
           installed={Boolean(build.cpu)} onInspect={() => onChoose("overclock")}/>
@@ -144,14 +152,13 @@ export default function DetailedComputer({ build, module, onChoose, accent, seco
                 {/* Motherboard mounting points, traces and heatsink assembly. */}
         {build.motherboard && (
           <group position={[-0.22,0.13,-0.44]} onClick={event=>{event.stopPropagation();onChoose("assembly");}}>
-            <CoreHighFidelityAsset kind="board">
+            {/* Visible educational AM board instead of generic LGA/DDR5 GLB. */}
             <Board accent={secondary}/>
             {/* Printed identifiers remain part of the board, not a floating UI overlay. */}
             <EngravedLabel position={[-0.28,-0.07,0.16]} size={[0.36,0.09]}
               title={boardSocket+" BOARD"} subtitle="DEMO PLATFORM" accent={accent}/>
             <Alloy position={[0.18,0.56,0.138]} size={[0.16,0.60,0.12]} color="#4e6271"/>
             <Alloy position={[-0.24,-0.62,0.14]} size={[0.32,0.24,0.12]} color="#5b6975"/>
-            </CoreHighFidelityAsset>
           </group>
         )}
 
@@ -213,12 +220,7 @@ export default function DetailedComputer({ build, module, onChoose, accent, seco
             </GpuAsset>
           </group>
         )}
-        {build.gpu && [
-          [[0.65,-0.07,-0.14],[0.71,0.11,0.09],[0.54,0.40,-0.04],[0.36,0.61,-0.23]],
-          [[0.72,-0.07,-0.18],[0.81,0.10,-0.08],[0.62,0.38,-0.18],[0.36,0.61,-0.23]],
-        ].map((points,i)=>
-          <Cable key={"gpu-cable-"+i} points={points as [number,number,number][]}
-            radius={0.021} color={i ? "#25323e" : "#40505f"}/>)}
+        {/* The GPU power cable is now routed behind the motherboard. */}
         {/* PSU is nested into the shroud rather than floating in front of the glass. */}
         {build.psu && (
           <group onClick={event=>{event.stopPropagation();onChoose("assembly");}}>
@@ -234,10 +236,6 @@ export default function DetailedComputer({ build, module, onChoose, accent, seco
             </CorePeripheralAsset>
           </group>
         )}
-        {build.psu && (
-          <Cable points={[[-0.64,-0.86,-0.18],[-0.66,-0.53,-0.28],[-0.80,0.12,-0.25],[-0.61,0.48,-0.20]]}
-            radius={0.026} color="#354451" />
-        )}
         {/* Individually sleeved power cables, combs and illustrative plugs. */}
         <CoreCableHarness installed={Boolean(build.psu)} accent={secondary}/>
 
@@ -246,8 +244,13 @@ export default function DetailedComputer({ build, module, onChoose, accent, seco
         <Alloy position={[0.63,-1.01,0.17]} size={[0.19,0.02,0.11]} color={secondary} radius={0.008}/>
       </group>
 
+      {/* The monitor base now meets an actual support rather than floating above the stage. */}
+      <Alloy position={[1.56,-1.39,-0.25]} size={[1.27,0.12,0.68]}
+        color="#202b37" radius={0.037}/>
+      <Alloy position={[1.65,-1.322,-0.25]} size={[1.00,0.018,0.59]}
+        color="#647381" radius={0.006}/>
       {/* Main interactive monitor: detailed rear + layered front screen and Hyprland mini-desktop. */}
-      <group position={module === "linux" ? [2.24,0.45,-0.10] : [2.05,0.39,-0.28]}
+      <group position={module === "linux" ? [1.88,-0.32,-0.16] : [1.83,-0.34,-0.22]}
         rotation={[0,-0.11,0]} onClick={event=>{event.stopPropagation();onChoose("linux");}}>
         <Alloy position={[0,0,-0.055]} size={[1.94,1.16,0.12]} color="#283442" radius={0.055}/>
         <Alloy position={[0,0,-0.132]} size={[1.81,1.02,0.03]} color="#3d4956" radius={0.025}/>
