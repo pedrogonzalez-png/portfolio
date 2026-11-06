@@ -45,7 +45,29 @@ export default function DetailedComputer({ build, module, onChoose, accent, seco
         {/* Open cutaway chassis: the closed GLB hid educational internals. */}
         {/* Chassis: rounded corners, lower chamber, open glass side and front mesh strips. */}
         <Alloy position={[0, 0, -0.61]} size={[1.72, 2.48, 0.13]} color="#28323d" radius={0.045} />
-        <Alloy position={[-0.84, 0, -0.02]} size={[0.11, 2.48, 1.30]} color="#27313e" radius={0.035} />
+        <Alloy position={[-0.84, 0, -0.02]} size={[0.11, 2.48, 1.30]}
+          color="#27313e" radius={0.035} />
+        {/* Closed service side: industrial ventilation, inset panel and captive bolts. */}
+        {[-0.50,0.50].map(z =>
+          <Alloy key={"service-rail-"+z} position={[-0.901,0,z]}
+            size={[0.013,2.16,0.018]} color="#607482" radius={0.004}/>)}
+        {[1.05,-1.05].map(y =>
+          <Alloy key={"service-edge-"+y} position={[-0.900,y,-0.02]}
+            size={[0.015,0.019,1.04]} color="#596c78" radius={0.004}/>)}
+        {Array.from({length:11},(_,i) =>
+          <Alloy key={"service-vent-"+i} position={[-0.904,0.78-i*0.046,-0.07]}
+            size={[0.018,0.018,0.63]} color="#141e29" radius={0.004}/>)}
+        {[-0.45,0.45].flatMap(z => [-0.94,0.94].map(y => (
+          <mesh key={"service-fastener-"+z+"-"+y}
+            position={[-0.904,y,z]} rotation={[0,-Math.PI/2,0]}>
+            <circleGeometry args={[0.023,14]}/>
+            <meshStandardMaterial color="#8b9ca8" metalness={0.85} roughness={0.25}/>
+          </mesh>
+        )))}
+        <group position={[-0.916,-0.40,-0.03]} rotation={[0,-Math.PI/2,0]}>
+          <EngravedLabel position={[0,0,0]} size={[0.68,0.16]}
+            title="THE CORE" subtitle="SERVICE PANEL" accent={secondary}/>
+        </group>
         {/* Front intake side: open frame instead of an opaque wall hiding all fans. */}
         {[-0.57,0.57].map(z => (
           <Alloy key={"intake-vertical-"+z} position={[0.84,0,z]}
