@@ -90,6 +90,24 @@ export default function DetailedComputer({ build, module, onChoose, accent, seco
         {/* PSU chamber shields the bright generic PSU material from the main showcase. */}
         <Alloy position={[0, -0.99, 0.03]} size={[1.60, 0.39, 1.06]} color="#151b24"/>
         <Alloy position={[0,-0.77,0.54]} size={[1.55,0.018,0.08]} color="#566778" radius={0.007}/>
+        {/* PSU compartment face: a distinct powder-coated panel, not empty black space. */}
+        <Alloy position={[0,-0.973,0.570]} size={[1.48,0.310,0.025]}
+          color="#26323d" radius={0.016} metalness={0.45} roughness={0.61}/>
+        <Alloy position={[0,-0.815,0.590]} size={[1.40,0.009,0.011]}
+          color={secondary} radius={0.003} emissive={secondary}/>
+        <EngravedLabel position={[-0.34,-0.960,0.591]} size={[0.59,0.125]}
+          title="POWER BAY" subtitle="MODULAR PSU" accent={secondary}/>
+        {Array.from({length:7},(_,i)=>(
+          <Alloy key={"psu-shroud-slot-"+i} position={[0.25+i*0.066,-0.981,0.588]}
+            size={[0.028,0.134,0.009]} color="#131d28" radius={0.005}
+            roughness={0.78} metalness={0.15}/>
+        ))}
+        {[-0.675,0.675].map(x=>(
+          <mesh key={"shroud-fastener-"+x} position={[x,-1.081,0.591]} raycast={()=>{}}>
+            <circleGeometry args={[0.013,14]}/>
+            <meshStandardMaterial color="#91a0ac" metalness={0.89} roughness={0.31}/>
+          </mesh>
+        ))}
         <Alloy position={[0, -1.14, 0.41]} size={[1.60, 0.026, 0.20]} color="#73818d" radius={0.004}/>
         {[-0.61, 0.61].map(x => <Alloy key={"foot-"+x} position={[x, -1.34, -0.31]}
           size={[0.24,0.11,0.42]} color="#161d28" />)}
@@ -118,9 +136,10 @@ export default function DetailedComputer({ build, module, onChoose, accent, seco
           <meshPhysicalMaterial color="#90a9b9" transparent opacity={0.09}
             roughness={0.08} metalness={0.15} depthWrite={false} side={DoubleSide}/>
         </mesh>
-        <mesh position={[-0.47, 0.06, 0.635]} rotation={[0,0,-0.13]} raycast={()=>{}}>
-          <planeGeometry args={[0.018, 2.0]}/>
-          <meshBasicMaterial color="#cedce4" transparent opacity={0.27} depthWrite={false}/>
+        {/* Short edge glints instead of a long bright line crossing the components. */}
+        <mesh position={[-0.70,0.84,0.639]} rotation={[0,0,-0.08]} raycast={()=>{}}>
+          <planeGeometry args={[0.006,0.30]}/>
+          <meshBasicMaterial color="#cedce4" transparent opacity={0.09} depthWrite={false}/>
         </mesh>
         {FASTENERS.flatMap(x => FASTENERS.map(y => (
           <mesh key={"glass-screw-"+x+"-"+y} position={[x*0.735,y*1.10,0.636]}>
