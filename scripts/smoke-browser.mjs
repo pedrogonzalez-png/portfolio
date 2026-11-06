@@ -102,24 +102,24 @@ try {
       await coreDialog.waitFor({ state: "visible", timeout: 10000 });
       await coreDialog.locator(".core-scene canvas").waitFor({ state: "visible", timeout: 15000 });
       if (variant.name === "desktop-1600") {
-        // Explicitly verify actual self-hosted GLBs, not only fallback
-        // procedural meshes. This catches path errors, decoder problems and
-        // empty scenes missed by ordinary smoke tests.
+        // Check the deliberate cutaway instead of demanding an opaque
+        // case/motherboard GLB that physically obstructs the assembly.
         const assets = [
-          ["GPU", "data-gpu-model"],
-          ["Gabinete", "data-case-model"],
-          ["Placa-mãe", "data-board-model"],
+          ["GPU", "data-gpu-model", "glb"],
+          ["Gabinete", "data-case-model", "cutaway"],
+          ["Placa-mãe", "data-board-model", "educational"],
+          ["Fonte", "data-psu-model", "glb"],
         ];
-        await page.waitForTimeout(3500);
+        await page.waitForTimeout(2000);
         const initialModels = await coreDialog.locator(".core-scene").evaluate(el =>
-          Object.fromEntries(["data-gpu-model", "data-case-model", "data-board-model"]
+          Object.fromEntries(["data-gpu-model", "data-case-model", "data-board-model", "data-psu-model"]
             .map(name => [name, el.getAttribute(name)])));
         console.log(JSON.stringify({ variant: variant.name, theCoreAssetsInitial: initialModels }));
-        for (const [name, attribute] of assets) {
-          await coreDialog.locator('.core-scene[' + attribute + '="glb"]').waitFor({
+        for (const [name, attribute, expected] of assets) {
+          await coreDialog.locator('.core-scene[' + attribute + '="' + expected + '"]').waitFor({
             state: "attached", timeout: 45000,
           });
-          console.log(JSON.stringify({ variant: variant.name, asset: name, glb: "loaded" }));
+          console.log(JSON.stringify({ variant: variant.name, asset: name, model: expected }));
         }
       }
       await coreDialog.getByRole("button", { name: "Montagem", exact: true }).click();
