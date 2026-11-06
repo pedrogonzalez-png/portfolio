@@ -29,7 +29,7 @@ function Orbits({ animated, accent, secondary }: { animated: boolean; accent: st
     });
   });
   return (
-    <group position={[0, 0.05, -4.1]}>
+    <group position={[0, 0.05, 0]}>
       {specifications.map((ring, index) => (
         <group
           key={ring.radius}
@@ -86,7 +86,7 @@ function EnergyCore({ accent, secondary, animated }: { accent: string; secondary
     halo.current.position.y = Math.sin(state.clock.elapsedTime * 0.65) * 0.05;
   });
   return (
-    <group ref={halo} position={[-0.18, 0, -4.4]}>
+    <group ref={halo} position={[-0.18, 0, -0.28]}>
       <mesh>
         <icosahedronGeometry args={[0.46, 1]} />
         <meshBasicMaterial color={accent} transparent opacity={0.038} wireframe depthWrite={false} />
@@ -99,6 +99,33 @@ function EnergyCore({ accent, secondary, animated }: { accent: string; secondary
         <torusGeometry args={[0.58, 0.008, 6, 90]} />
         <meshBasicMaterial color={secondary} transparent opacity={0.26} depthWrite={false} />
       </mesh>
+    </group>
+  );
+}
+
+/**
+ * The orbit rings are decorative BACKGROUND, not physical parts of the PC.
+ * A fixed world Z put them in front when the user orbited to the service
+ * panel. Anchor them behind the camera's focus at every viewing direction.
+ * 19.5 world units with 1.45 scale keeps even the tilted outermost ring
+ * behind the entire workstation, including at max OrbitControls distance.
+ * Updating this even with reduced motion is essential for interaction.
+ */
+function CameraBackplate({ animated, accent, secondary }: {
+  animated: boolean; accent: string; secondary: string;
+}) {
+  const backplate = useRef<Group>(null);
+  useFrame(({ camera }) => {
+    if (!backplate.current) return;
+    // Transform a camera-local offset into world space without per-frame
+    // object allocation. OrbitControls updates the camera before this frame.
+    backplate.current.position.set(0, 0, -19.5).applyMatrix4(camera.matrixWorld);
+    backplate.current.quaternion.copy(camera.quaternion);
+  });
+  return (
+    <group ref={backplate} scale={1.45} name="the-core-camera-backplate">
+      <Orbits accent={accent} secondary={secondary} animated={animated}/>
+      <EnergyCore accent={accent} secondary={secondary} animated={animated}/>
     </group>
   );
 }
@@ -182,8 +209,7 @@ export default function CoreScene({ module, build, onChoose }: Props) {
           <pointLight position={[-2.3, 1.4, 2.9]} color={accent} intensity={4.4} distance={8} />
           <pointLight position={[2.3, -0.7, 2.3]} color={secondary} intensity={2.7} distance={7} />
           <pointLight position={[0, -0.1, -2.8]} color="#a1b8ce" intensity={1.8} distance={5} />
-          <EnergyCore accent={accent} secondary={secondary} animated={!reducedMotion} />
-          <Orbits accent={accent} secondary={secondary} animated={!reducedMotion} />
+          <CameraBackplate accent={accent} secondary={secondary} animated={!reducedMotion} />
           <ShowcasePlatform accent={accent} />
           <DetailedComputer module={module} build={build} onChoose={onChoose}
             accent={accent} secondary={secondary} animated={!reducedMotion} />
