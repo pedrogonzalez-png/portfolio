@@ -29,7 +29,7 @@ function Orbits({ animated, accent, secondary }: { animated: boolean; accent: st
     });
   });
   return (
-    <group position={[0, 0.05, -1.1]}>
+    <group position={[0, 0.05, -4.1]}>
       {specifications.map((ring, index) => (
         <group
           key={ring.radius}
@@ -38,11 +38,11 @@ function Orbits({ animated, accent, secondary }: { animated: boolean; accent: st
         >
           <mesh>
             <torusGeometry args={[ring.radius, 0.010, 6, 150]} />
-            <meshBasicMaterial color={ring.color} transparent opacity={index === 0 ? 0.54 : 0.31} depthWrite={false} />
+            <meshBasicMaterial color={ring.color} transparent opacity={index === 0 ? 0.29 : 0.18} depthWrite={false} />
           </mesh>
           <mesh rotation={[0, 0, Math.PI / 18]}>
             <torusGeometry args={[ring.radius + 0.035, 0.0025, 4, 150]} />
-            <meshBasicMaterial color={ring.color} transparent opacity={0.15} depthWrite={false} />
+            <meshBasicMaterial color={ring.color} transparent opacity={0.075} depthWrite={false} />
           </mesh>
           {/* Fine graduation marks reinforce the engineered-instrument identity. */}
           {Array.from({ length: 12 }, (_, tick) => {
@@ -86,7 +86,7 @@ function EnergyCore({ accent, secondary, animated }: { accent: string; secondary
     halo.current.position.y = Math.sin(state.clock.elapsedTime * 0.65) * 0.05;
   });
   return (
-    <group ref={halo} position={[-0.18, 0, -2.2]}>
+    <group ref={halo} position={[-0.18, 0, -4.4]}>
       <mesh>
         <icosahedronGeometry args={[0.46, 1]} />
         <meshBasicMaterial color={accent} transparent opacity={0.038} wireframe depthWrite={false} />
@@ -171,9 +171,9 @@ export default function CoreScene({ module, build, onChoose }: Props) {
   const reducedMotion = typeof window !== "undefined"
     && window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
   return (
-    <div className="core-scene" aria-hidden="true">
+    <div className="core-scene" aria-hidden="true" data-case-model="cutaway" data-board-model="educational">
       <Suspense fallback={<div className="core-scene-fallback">Carregando visualização 3D…</div>}>
-        <Canvas dpr={[1, 1.5]} camera={{ position: [2.55, 1.45, 6.9], fov: 42 }}
+        <Canvas dpr={[1, 1.5]} camera={{ position: [1.6, 1.35, 7.45], fov: 42 }}
           gl={{ alpha: true, antialias: true, powerPreference: "high-performance" }}>
           <ambientLight intensity={1.55} />
           <hemisphereLight args={["#d2ddf1", "#1e2632", 1.15]} />
