@@ -1,7 +1,7 @@
 import { useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import { DoubleSide, type Group } from "three";
-import { Alloy, Board, Fan } from "./CoreVisualParts";
+import { Alloy, Board, Fan, MemoryStick } from "./CoreVisualParts";
 import GpuAsset from "./GpuAsset";
 import CorePeripheralAsset from "./CorePeripheralAsset";
 import CoreCoolingAssembly from "./CoreCoolingAssembly";
@@ -64,6 +64,13 @@ export default function DetailedComputer({ build, module, onChoose, accent, seco
         {[-0.61, 0.61].map(x => <Alloy key={"foot-"+x} position={[x, -1.34, -0.31]}
           size={[0.24,0.11,0.42]} color="#161d28" />)}
 
+        {/* Structural gaskets and polished rails, without hiding hardware. */}
+        {[-0.73,0.73].map(x=>
+          <Alloy key={"case-gasket-"+x} position={[x,0,0.545]} size={[0.025,2.18,0.022]}
+            color="#171e29" radius={0.005} roughness={0.8}/>)}
+        {[-1.15,1.15].map(y=>
+          <Alloy key={"case-gasket-end-"+y} position={[0,y,0.548]}
+            size={[1.49,0.023,0.025]} color="#1b2732" radius={0.004}/>)}
         {/* Curved vertical rails and tinted glass; no hit-test on glass to preserve direct selection. */}
         {[-0.77, 0.77].map(x => (
           <group key={"side-"+x}>
@@ -166,18 +173,9 @@ export default function DetailedComputer({ build, module, onChoose, accent, seco
         {build.memory && (
           <group onClick={event=>{event.stopPropagation();onChoose("assembly");}}>
             <CorePeripheralAsset kind="ram" enabled={build.memory === "ddr5"} position={[0.24,0.46,-0.23]}>
-            {[0.16,0.32].map((x,i)=>
-              <group key={"ram-"+i} position={[x,0.46,-0.23]}>
-                <Alloy position={[0,0,0]} size={[0.11,0.81,0.125]} color="#313f4e" radius={0.012}/>
-                <Alloy position={[0,0.34,0.072]} size={[0.105,0.078,0.018]} color={accent} radius={0.006} emissive={accent}/>
-                {Array.from({length:6},(_,n)=>
-                  <Alloy key={"ram-grip-"+n} position={[0,-0.24+n*0.087,0.071]}
-                    size={[0.081,0.019,0.009]} color={n%2?"#8797a4":"#677888"} radius={0.003}/>)}
-                {[-0.32,-0.20,-0.08,0.04,0.16,0.28].map(y=>
-                  <Alloy key={"ram-pin-"+y} position={[0,y,-0.070]} size={[0.07,0.018,0.015]}
-                    color="#b99d68" radius={0.003}/>)}
-              </group>
-            )}
+            {[0.16,0.32].map((x,i) =>
+              <MemoryStick key={"ram-"+i} position={[x,0.46,-0.23]}
+                accent={accent} secondary={secondary}/>)}
             </CorePeripheralAsset>
           </group>
         )}
@@ -218,6 +216,16 @@ export default function DetailedComputer({ build, module, onChoose, accent, seco
             <Alloy position={[-0.72,0,-0.11]} size={[0.045,0.59,0.24]} color="#8e969b"/>
             <Alloy position={[0.70,0,-0.11]} size={[0.04,0.59,0.24]} color="#8e969b"/>
             </GpuAsset>
+            {/* External anodized trim stays visible around the self-hosted GLB. */}
+            <Alloy position={[0,0.266,0.072]} size={[1.36,0.021,0.048]}
+              color="#8696a1" radius={0.005} metalness={0.84}/>
+            <Alloy position={[0,0.277,0.088]} size={[0.79,0.009,0.041]}
+              color={accent} radius={0.003} emissive={accent}/>
+            {[-0.65,0.65].map(x=>
+              <Alloy key={"gpu-corner-trim-"+x} position={[x,-0.012,0.165]}
+                size={[0.035,0.48,0.020]} color="#637381" radius={0.009}/>)}
+            <EngravedLabel position={[0,-0.258,0.227]} size={[0.72,0.075]}
+              title={gpuName} subtitle="GRAPHICS / CONCEPT" accent={secondary}/>
           </group>
         )}
         {/* The GPU power cable is now routed behind the motherboard. */}
