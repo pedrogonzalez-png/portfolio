@@ -60,6 +60,17 @@ try {
     await sleep(500);
   }
   await page.screenshot({path:"browser-diagnostics/the-core-cc0-glbs.png"});
+  // Also capture a rotated three-quarter view. Front-panel and cable clashes
+  // may be invisible from the default angle; keep this as review evidence.
+  const bounds=await stage.locator("canvas").boundingBox();
+  if(bounds) {
+    await page.mouse.move(bounds.x+bounds.width*0.46,bounds.y+bounds.height*0.49);
+    await page.mouse.down();
+    await page.mouse.move(bounds.x+bounds.width*0.31,bounds.y+bounds.height*0.47,{steps:14});
+    await page.mouse.up();
+    await page.waitForTimeout(400);
+    await page.screenshot({path:"browser-diagnostics/the-core-orbit-angle.png"});
+  }
   console.log("FINAL "+JSON.stringify({result,responses,errors}));
   if(!keys.every(k=>result[k]===expected[k]))
     throw new Error("The Core visual model states were inconsistent: "+JSON.stringify({expected,result,responses,errors}));
