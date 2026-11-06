@@ -46,7 +46,15 @@ export default function DetailedComputer({ build, module, onChoose, accent, seco
         {/* Chassis: rounded corners, lower chamber, open glass side and front mesh strips. */}
         <Alloy position={[0, 0, -0.61]} size={[1.72, 2.48, 0.13]} color="#28323d" radius={0.045} />
         <Alloy position={[-0.84, 0, -0.02]} size={[0.11, 2.48, 1.30]} color="#27313e" radius={0.035} />
-        <Alloy position={[0.84, 0, -0.02]} size={[0.11, 2.48, 1.30]} color="#252e39" radius={0.035} />
+        {/* Front intake side: open frame instead of an opaque wall hiding all fans. */}
+        {[-0.57,0.57].map(z => (
+          <Alloy key={"intake-vertical-"+z} position={[0.84,0,z]}
+            size={[0.10,2.48,0.11]} color="#2e3b48" radius={0.023}/>
+        ))}
+        {[-1.18,1.18].map(y => (
+          <Alloy key={"intake-crossbar-"+y} position={[0.84,y,-0.02]}
+            size={[0.10,0.10,1.14]} color="#334352" radius={0.020}/>
+        ))}
         {/* Open top cage: the previous solid roof covered the 360mm radiator. */}
         {[-0.78, 0.78].map(x => (
           <Alloy key={"top-x-rail-" + x} position={[x,1.245,-0.02]}
