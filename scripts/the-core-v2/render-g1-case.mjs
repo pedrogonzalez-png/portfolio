@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-/* global console, process, setTimeout, fetch */
+/* global console, process, setTimeout, fetch, window */
 /**
  * One-off G1 candidate audit. No changes to the interactive THE CORE.
  * The actual public CC0 GLB is downloaded in the workflow (not fake meshes).
@@ -25,7 +25,9 @@ try {
   for(let i=0;i<120;i++){
     if(preview.exitCode!==null)throw Error("Vite exited early");
     try {const r=await fetch(host+"/the-core-v2-g1-viewer.html");
-      if(r.ok){up=true;break;}} catch {}
+      if(r.ok){up=true;break;}} catch (error) {
+        if(i===119)console.error("Vite connection failed:",error);
+      }
     await sleep(250);
   }
   if(!up) throw Error("Vite did not start");
