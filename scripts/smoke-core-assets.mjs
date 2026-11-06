@@ -70,6 +70,17 @@ try {
     await page.mouse.up();
     await page.waitForTimeout(400);
     await page.screenshot({path:"browser-diagnostics/the-core-orbit-angle.png"});
+
+    // Rotate to the service-panel/rear view shown in the user's report.
+    // Camera-facing orbit lines should stay behind the PC from here too.
+    const rearDrag = Math.min(bounds.height * 0.43, bounds.width * 0.42);
+    await page.mouse.move(bounds.x + bounds.width*0.59,bounds.y+bounds.height*0.48);
+    await page.mouse.down();
+    await page.mouse.move(bounds.x+bounds.width*0.59-rearDrag,
+      bounds.y+bounds.height*0.48,{steps:26});
+    await page.mouse.up();
+    await page.waitForTimeout(500);
+    await page.screenshot({path:"browser-diagnostics/the-core-rear-view.png"});
   }
   console.log("FINAL "+JSON.stringify({result,responses,errors}));
   if(!keys.every(k=>result[k]===expected[k]))
