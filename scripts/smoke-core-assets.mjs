@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-/* global process, setTimeout, fetch, URL, console */
+/* global process, setTimeout, fetch, URL, console, localStorage, document */
 /** Focused browser regression: open chassis, educational board and available CC0 GLBs. */
 import { chromium } from "@playwright/test";
 import { spawn } from "node:child_process";
