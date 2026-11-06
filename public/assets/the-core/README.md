@@ -86,3 +86,12 @@ Troque o arquivo GLB correspondente, revisando licença, orientação, escala e 
 - `scripts/smoke-core-assets.mjs`: registra a vista inicial e uma segunda imagem de órbita 3/4 para facilitar a inspeção de colisões, além do perfil DDR5 e carregamento dos GLBs de GPU/PSU.
 
 **Limitações preservadas:** modelos demonstrativos (não CAD); water cooler não tem identidade comercial validada; GPU GLB genérica de 3 ventoinhas não é réplica fiel da RX 7600; PCB e slot DDR4 procedural são ilustrativos; não representam compatibilidade mecânica ou elétrica. Sem números de benchmark. **Nenhuma mudança na main sem aprovação explícita do usuário.**
+
+## M1.1 — Vista superior e órbitas (06/11/2026)
+
+- Evidência: captura traseira em ângulo alto com três ventoinhas do radiador visualmente atravessadas por uma tela metálica e arcos holográficos cruzando a face fechada do chassi.
+- Causa da grade: `PerforatedMesh` do topo estava em `y=1.315,z=-0.38`, à frente de parte dos rotores; reposicionada como tira estreita de ventilação na zona do topo sem impellers (`y=1.293,z=0.345`).
+- Causa das órbitas: coordenadas absolutas no mundo `z=-4.1`/`-4.4` eram "fundos" somente da perspectiva inicial. Com `OrbitControls`, a câmera podia girar para trás delas, tornando-as primeiro plano.
+- `CameraBackplate` move e orienta os elementos decorativos a cada frame com a matriz da câmera: distância camera-local de 19,5 unidades e escala visual 1,45, ficando fora do volume do PC em qualquer azimute. O posicionamento continua sendo atualizado com redução de movimento ativada, mesmo que a animação dos anéis pause.
+- `scripts/smoke-core-assets.mjs` agora também captura `the-core-rear-view.png` após movimento de órbita, além da vista inicial e de três quartos. Fotografias não são métricas CAD nem substituem avaliação humana.
+- A `main` permanece intacta; merge somente com aprovação visual explícita.
