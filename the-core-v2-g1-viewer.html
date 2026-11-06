@@ -74,9 +74,9 @@ loader.load("/assets/the-core-v2/candidate-open-case.glb", gltf=>{
  rotate.updateMatrixWorld(true);
  const initialBox=new THREE.Box3().setFromObject(rotate);
  const center=initialBox.getCenter(new THREE.Vector3());
+ // Parent rotates source Z-up to Three.js Y-up: source +Y -> world -Z.
  root.position.x-=center.x;
- root.position.z-=center.z;
- root.position.y-=(-center.z*0); // orientation is controlled by the parent X rotation
+ root.position.y+=center.z;
  rotate.updateMatrixWorld(true);
  let floor=new THREE.Box3().setFromObject(rotate).min.y;
  rotate.position.y-=floor;
