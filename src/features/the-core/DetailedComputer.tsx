@@ -1,7 +1,7 @@
 import { useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import { DoubleSide, type Group } from "three";
-import { Alloy, Board, Cable, Fan } from "./CoreVisualParts";
+import { Alloy, Board, Fan } from "./CoreVisualParts";
 import GpuAsset from "./GpuAsset";
 import CorePeripheralAsset from "./CorePeripheralAsset";
 import CoreCoolingAssembly from "./CoreCoolingAssembly";
