@@ -17,7 +17,7 @@ function makeTexture(width: number, height: number, paint: (ctx: CanvasRendering
   if (ctx) paint(ctx);
   const texture = new CanvasTexture(canvas);
   texture.colorSpace = SRGBColorSpace;
-  texture.anisotropy = 4;
+  texture.anisotropy = 8;
   return texture;
 }
 
@@ -109,7 +109,7 @@ export function PCBPrint({ position, size = [1.12, 1.55], accent = "#96a2a2" }: 
   const texture = usePaintedTexture(512, 768, (ctx) => {
     ctx.clearRect(0, 0, 512, 768);
     // A subtle substrate, copper traces, component identifiers and solder pads.
-    ctx.fillStyle = "#13282a";
+    ctx.fillStyle = "#14252a";
     ctx.fillRect(0, 0, 512, 768);
     ctx.strokeStyle = "#416562";
     ctx.lineWidth = 2;
@@ -131,6 +131,23 @@ export function PCBPrint({ position, size = [1.12, 1.55], accent = "#96a2a2" }: 
         ctx.strokeRect(x, y, 9, 6);
       }
     }
+    // PCB functional zones are silk-screened rather than random blocks.
+    ctx.strokeStyle = accent + "8b";
+    ctx.lineWidth = 3;
+    ctx.strokeRect(36, 54, 232, 282);
+    ctx.strokeRect(328, 64, 150, 303);
+    ctx.strokeRect(37, 504, 421, 174);
+    ctx.strokeStyle = "#748f91";
+    ctx.lineWidth = 2;
+    [38, 48, 58].forEach(offset => {
+      ctx.strokeRect(offset, 367 + (offset - 38) * .3, 395, 7);
+    });
+    for (let row = 0; row < 20; row++) {
+      const x = 24 + (row % 10) * 48;
+      const y = 404 + Math.floor(row / 10) * 22;
+      ctx.fillStyle = row % 4 === 0 ? accent + "8a" : "#668486";
+      ctx.fillRect(x, y, 7, 5);
+    }
     ink(ctx, 28, 35, "THE CORE / ENGINEERING SAMPLE", 17, "#bac7c2", 600);
     ink(ctx, 28, 743, "PCB  /  REV DEMO  /  LAB 01", 15, "#b5b9a8", 500);
     ink(ctx, 340, 405, "PCIe", 18, "#9fbaac");
@@ -150,7 +167,9 @@ export function DesktopScreen({ position, size, accent, secondary, gpuName, cpuN
   position: V3; size: [number, number]; accent: string; secondary: string;
   gpuName: string; cpuName: string;
 }) {
-  const texture = usePaintedTexture(1024, 576, (ctx) => {
+  // Render at 1.5x native resolution to preserve UI legibility in close-up.
+  const texture = usePaintedTexture(1536, 864, (ctx) => {
+    ctx.scale(1.5, 1.5);
     const gradient = ctx.createLinearGradient(0, 0, 1024, 576);
     gradient.addColorStop(0, "#101724");
     gradient.addColorStop(0.55, "#1b2432");
@@ -163,11 +182,23 @@ export function DesktopScreen({ position, size, accent, secondary, gpuName, cpuN
     ctx.fillStyle = bloom; ctx.fillRect(360, 0, 664, 576);
     ctx.strokeStyle = secondary + "7e"; ctx.lineWidth = 6;
     ctx.beginPath(); ctx.ellipse(738, 267, 184, 90, -0.52, 0, Math.PI * 2); ctx.stroke();
+    // Ambient screen details and a restrained top-bar chrome.
+    for (let y = 50; y < 576; y += 5) {
+      ctx.fillStyle = "rgba(154,177,195,.025)";
+      ctx.fillRect(0, y, 1024, 1);
+    }
     ctx.fillStyle = "#0d1521df"; ctx.fillRect(0, 0, 1024, 47);
     ctx.fillStyle = accent; ctx.fillRect(0, 0, 6, 47);
     ink(ctx, 26, 32, "ARCH  /  HYPRLAND", 25, "#dae3eb");
-    ink(ctx, 781, 31, "THE CORE  LAB", 20, "#b8c7d2", 500);
+    ink(ctx, 764, 31, "THE CORE / LAB", 20, "#b8c7d2", 500);
+    ctx.fillStyle = secondary;
+    ctx.fillRect(954, 19, 9, 9);
+    ctx.fillStyle = "#7a8f9e";
+    ctx.fillRect(974, 19, 9, 9);
+    ctx.fillRect(994, 19, 9, 9);
     // Terminal (left), file manager (right) and window header controls.
+    ctx.fillStyle = "#152b3c";
+    ctx.fillRect(28, 82, 538, 404);
     ctx.fillStyle = "#0b121ee6"; ctx.fillRect(35, 76, 525, 404);
     ctx.strokeStyle = accent + "aa"; ctx.lineWidth = 3; ctx.strokeRect(35, 76, 525, 404);
     ctx.fillStyle = "#202d3d"; ctx.fillRect(37, 77, 522, 48);
@@ -178,6 +209,13 @@ export function DesktopScreen({ position, size, accent, secondary, gpuName, cpuN
     }
     ink(ctx, 67, 164, "pedro@arch ~  >", 25, secondary);
     ink(ctx, 67, 204, "neofetch", 24, "#8dc5d0", 500);
+    ctx.strokeStyle = accent + "ad";
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(420, 173); ctx.lineTo(438, 146); ctx.lineTo(456, 173);
+    ctx.lineTo(438, 193); ctx.closePath(); ctx.stroke();
+    ctx.fillStyle = secondary + "77";
+    ctx.fillRect(430, 165, 16, 13);
     ink(ctx, 67, 252, "OS     Arch Linux", 21, "#a9b9c8", 500);
     ink(ctx, 67, 286, "WM     Hyprland", 21, "#a9b9c8", 500);
     ink(ctx, 67, 320, "GPU    " + gpuName, 21, "#a9b9c8", 500);
@@ -185,6 +223,8 @@ export function DesktopScreen({ position, size, accent, secondary, gpuName, cpuN
     ink(ctx, 67, 391, "SHELL  fish", 21, "#a9b9c8", 500);
     ink(ctx, 67, 434, ">", 27, secondary);
     ctx.fillStyle = "#111929e9"; ctx.fillRect(607, 86, 370, 295);
+    ctx.strokeStyle = "rgba(154,182,198,.2)";
+    ctx.strokeRect(606, 84, 371, 299);
     ctx.strokeStyle = secondary + "bb"; ctx.strokeRect(607, 86, 370, 295);
     ctx.fillStyle = "#27374a"; ctx.fillRect(608, 87, 369, 46);
     ink(ctx, 628, 120, "arquivos   /home/pedro", 20, "#dee5ee", 600);
@@ -193,6 +233,10 @@ export function DesktopScreen({ position, size, accent, secondary, gpuName, cpuN
       ink(ctx, 672, 174 + i * 48, name, 21, "#bbcbd7", 500);
     });
     ctx.fillStyle = "#0b121edf"; ctx.fillRect(280, 525, 464, 35);
+    ctx.strokeStyle = secondary + "91";
+    ctx.strokeRect(279, 524, 466, 37);
+    ctx.fillStyle = accent;
+    ctx.fillRect(282, 525, 3, 35);
     ["▣", "◆", "⌘", "▥", "◈"].forEach((name, i) => ink(ctx, 319 + i * 82, 551, name, 27, secondary));
   }, [accent, secondary, gpuName, cpuName]);
   return (
