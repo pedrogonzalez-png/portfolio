@@ -122,7 +122,8 @@ export default function DetailedComputer({ build, module, onChoose, accent, seco
         </group>
 
         {/* Front-face intake: 3 real impellers, filtered mesh and status line. */}
-        <group position={[0.91,0,-0.09]} rotation={[0,Math.PI/2,0]}>
+        {/* Front intake sits INSIDE the front frame, not like a detached door. */}
+        <group position={[0.64,0,-0.18]} rotation={[0,Math.PI/2,0]}>
           <Alloy position={[0,0,-0.035]} size={[1.12,2.19,0.07]} color="#101923" radius={0.06}/>
           {[0.72,0,-0.72].map((y,i) => (
             <Fan key={"front-fan-"+i} position={[0,y,0.057]} radius={0.286}
@@ -133,7 +134,7 @@ export default function DetailedComputer({ build, module, onChoose, accent, seco
               color="#8e9da4" radius={0.006}/>)}
           <Alloy position={[0.41,0,0.133]} size={[0.026,2.06,0.027]} color="#7f8f9b" radius={0.007}/>
           <Alloy position={[-0.41,0,0.133]} size={[0.026,2.06,0.027]} color="#7f8f9b" radius={0.007}/>
-          <PerforatedMesh position={[0,0,0.155]} size={[1.02,2.05]} opacity={0.58}/>
+          <PerforatedMesh position={[0,0,0.155]} size={[1.02,2.05]} opacity={0.28}/>
           <EngravedLabel position={[0,-1.12,0.15]} size={[0.52,0.092]}
             title="ENGINEERING" subtitle="CORE / AIO-360" accent={secondary}/>
         </group>
