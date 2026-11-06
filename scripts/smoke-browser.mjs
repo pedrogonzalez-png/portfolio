@@ -93,6 +93,56 @@ try {
         throw new Error("Résumé-backed full author name missing from About");
       }
       console.log(JSON.stringify({ variant: variant.name, author: nameLayout, about: "verified" }));
+      // THE CORE vertical slice: exercise the NEW laboratory in a real browser,
+      // including WebGL initialization and touch-sized layout.
+      const coreEntry = page.getByRole("region", { name: "Saberes — THE CORE" });
+      await coreEntry.waitFor({ state: "visible", timeout: 12000 });
+      await coreEntry.getByRole("button", { name: /Explorar THE CORE/ }).click();
+      const coreDialog = page.getByRole("dialog", { name: "THE CORE — Laboratório interativo" });
+      await coreDialog.waitFor({ state: "visible", timeout: 10000 });
+      await coreDialog.locator(".core-scene canvas").waitFor({ state: "visible", timeout: 15000 });
+      if (variant.name === "desktop-1600") {
+        // Check the deliberate cutaway instead of demanding an opaque
+        // case/motherboard GLB that physically obstructs the assembly.
+        const assets = [
+          ["GPU", "data-gpu-model", "glb"],
+          ["Gabinete", "data-case-model", "cutaway"],
+          ["Placa-mãe", "data-board-model", "educational"],
+          ["Fonte", "data-psu-model", "glb"],
+        ];
+        await page.waitForTimeout(2000);
+        const initialModels = await coreDialog.locator(".core-scene").evaluate(el =>
+          Object.fromEntries(["data-gpu-model", "data-case-model", "data-board-model", "data-psu-model"]
+            .map(name => [name, el.getAttribute(name)])));
+        console.log(JSON.stringify({ variant: variant.name, theCoreAssetsInitial: initialModels }));
+        for (const [name, attribute, expected] of assets) {
+          await coreDialog.locator('.core-scene[' + attribute + '="' + expected + '"]').waitFor({
+            state: "attached", timeout: 45000,
+          });
+          console.log(JSON.stringify({ variant: variant.name, asset: name, model: expected }));
+        }
+      }
+      await coreDialog.getByRole("button", { name: "Montagem", exact: true }).click();
+      await coreDialog.getByLabel("Peça projetada").selectOption("r5-7600");
+      await coreDialog.getByRole("button", { name: /Encaixar peça/ }).click();
+      await coreDialog.getByText(/Encaixe bloqueado: CPU AM5/).waitFor({ state: "visible" });
+      await coreDialog.getByRole("button", { name: "Overclock", exact: true }).click();
+      await coreDialog.getByText("Bancada transformável.").waitFor({ state: "visible" });
+      await coreDialog.getByRole("button", { name: "Linux", exact: true }).click();
+      await coreDialog.locator("#core-command").fill("hyprctl keyword general:gaps_in 18");
+      await coreDialog.getByRole("button", { name: "Executar" }).click();
+      await coreDialog.getByText("Espaçamento simulado aplicado: 18 px").waitFor({ state: "visible" });
+      await page.screenshot({ path: "browser-diagnostics/the-core-" + variant.name + ".png" });
+      await coreDialog.getByRole("button", { name: /Fechar THE CORE/ }).click();
+      await coreDialog.waitFor({ state: "detached" });
+      const coreCleanup = await page.evaluate(() => ({
+        locked: document.body.style.overflow === "hidden",
+        selectedTheme: document.documentElement.dataset.theme,
+      }));
+      if (coreCleanup.locked || !coreCleanup.selectedTheme) {
+        throw new Error("THE CORE did not restore portfolio scroll/theme: " + JSON.stringify(coreCleanup));
+      }
+      console.log(JSON.stringify({ variant: variant.name, theCore: "opened, WebGL mounted, compatibility blocked, OC/Linux operated, closed" }));
       // Visual regression for the desktop screenshot: the animated WebGL
       // backdrop must not end with a hard rectangular border, and three
       // translucent screens must not compete for the same foreground.

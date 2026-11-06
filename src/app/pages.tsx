@@ -15,6 +15,7 @@ import "../styles/author-profile.css";
 
 const Terminal = lazy(() => import("../components/Terminal").then((module) => ({ default: module.Terminal })));
 const ThemeStudio = lazy(() => import("../components/ThemeStudio").then((module) => ({ default: module.ThemeStudio })));
+const CoreExperience = lazy(() => import("../features/the-core/CoreExperience"));
 
 function HomePage({onOpenHyprland}:{onOpenHyprland:()=>void}) {
   const [terminalOpen, setTerminalOpen] = useState(false);
@@ -73,9 +74,13 @@ function HomePage({onOpenHyprland}:{onOpenHyprland:()=>void}) {
           <ProjectPanel onOpenThemeStudio={onOpenHyprland} />
         </section>
 
+        <Suspense fallback={<section id="saberes" className="core-loading" aria-label="Saberes"><p>Carregando THE CORE...</p></section>}>
+          <CoreExperience />
+        </Suspense>
+
         <section id="sobre" className="about-area" aria-label="Sobre e contato">
           <div className="about-copy">
-            <p className="eyebrow">03 / SOBRE & CONTATO</p>
+            <p className="eyebrow">04 / SOBRE & CONTATO</p>
             <h2>O código conta <em>uma história.</em></h2>
             <p className="author-identity">Pedro Henrique Mariano Gonzalez</p>
             <p>Sou estudante de ensino médio técnico em desenvolvimento de sistemas (2025–2027), com interesse em tecnologia e experiência em montagem, diagnóstico e manutenção de computadores, incluindo identificação de componentes e plataformas AMD AM3, AM4 e AM5.</p>

@@ -1,0 +1,45 @@
+name: THE CORE - 3D asset browser check
+
+on:
+  push:
+    branches: [feat/the-core-vertical-slice-m0]
+    paths:
+      - "src/features/the-core/**"
+      - "public/assets/the-core/**"
+      - "scripts/smoke-core-assets.mjs"
+      - ".github/workflows/the-core-assets-check.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  glb-chromium:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Static checks and unit tests
+        run: |
+          npm run typecheck
+          npm run lint
+          npm test
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Build production application
+        run: npm run build
+      - name: Confirm all GLBs in a real browser
+        run: node scripts/smoke-core-assets.mjs
+      - name: Upload visual evidence
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: the-core-glb-diagnostics
+          path: browser-diagnostics/
+          if-no-files-found: ignore
+          retention-days: 14
