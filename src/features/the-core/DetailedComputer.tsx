@@ -253,12 +253,15 @@ export default function DetailedComputer({ build, module, onChoose, accent, seco
       </group>
 
       {/* The monitor base now meets an actual support rather than floating above the stage. */}
-      <Alloy position={[1.56,-1.39,-0.25]} size={[1.27,0.12,0.68]}
+      <Alloy position={[2.08,-1.39,0.13]} size={[1.00,0.095,0.63]}
         color="#202b37" radius={0.037}/>
-      <Alloy position={[1.65,-1.322,-0.25]} size={[1.00,0.018,0.59]}
-        color="#647381" radius={0.006}/>
+      <Alloy position={[2.08,-1.335,0.13]} size={[0.88,0.012,0.53]}
+        color="#657584" radius={0.006}/>
+      {[-0.38,0.38].map(x =>
+        <Alloy key={"monitor-foot-"+x} position={[2.08+x,-1.445,0.13]}
+          size={[0.16,0.025,0.32]} color="#111b25" radius={0.015}/>)} 
       {/* Main interactive monitor: detailed rear + layered front screen and Hyprland mini-desktop. */}
-      <group position={module === "linux" ? [1.88,-0.32,-0.16] : [1.83,-0.34,-0.22]}
+      <group position={module === "linux" ? [2.08,-0.32,0.19] : [2.08,-0.34,0.14]}
         rotation={[0,-0.11,0]} onClick={event=>{event.stopPropagation();onChoose("linux");}}>
         <Alloy position={[0,0,-0.055]} size={[1.94,1.16,0.12]} color="#283442" radius={0.055}/>
         <Alloy position={[0,0,-0.132]} size={[1.81,1.02,0.03]} color="#3d4956" radius={0.025}/>
@@ -267,13 +270,33 @@ export default function DetailedComputer({ build, module, onChoose, accent, seco
           <Alloy key={"display-vents-"+i} position={[-0.67+i*.149,0.38,-0.152]}
             size={[0.075,0.014,0.012]} color="#8d9aa5" radius={0.005}/>)}
         <Alloy position={[0,0,0.028]} size={[1.85,1.07,0.024]} color="#080e18" radius={0.019}/>
+        {/* Narrow satin-metal bezel framing a sharper Hyprland display. */}
+        {[-0.940,0.940].map(x =>
+          <Alloy key={"bezel-side-"+x} position={[x,0,0.052]}
+            size={[0.021,1.070,0.018]} color="#758995" radius={0.005}/>)}
+        {[0.535,-0.535].map(y =>
+          <Alloy key={"bezel-end-"+y} position={[0,y,0.052]}
+            size={[1.87,0.016,0.018]} color="#657987" radius={0.005}/>)} 
         <DesktopScreen position={[0,0,0.052]} size={[1.78,1.006]}
           accent={accent} secondary={secondary} gpuName={gpuName} cpuName={cpuName}/>
         <EngravedLabel position={[0,-0.545,0.067]} size={[0.42,0.064]}
           title="HYPRLAND" accent={secondary}/>
         <Alloy position={[0,-0.50,0.046]} size={[1.78,0.04,0.011]} color="#333b49" radius={0.005}/>
-        <Alloy position={[0,-0.76,-0.055]} size={[0.11,0.43,0.12]} color="#818c99"/>
-        <Alloy position={[0,-0.98,0.00]} size={[0.72,0.045,0.40]} color="#8c97a3"/>
+        <mesh position={[0.83,-0.537,0.074]}>
+          <circleGeometry args={[0.012,16]}/>
+          <meshBasicMaterial color={secondary}/>
+        </mesh>
+        <Alloy position={[0,-0.604,-0.121]} size={[0.43,0.044,0.14]}
+          color="#263441" radius={0.013} metalness={0.67}/>
+        {Array.from({length:5},(_,i)=>
+          <Alloy key={"monitor-grill-"+i} position={[-0.13+i*0.065,-0.605,-0.039]}
+            size={[0.038,0.009,0.008]} color="#778b99" radius={0.003}/>)} 
+        <Alloy position={[0,-0.76,-0.055]} size={[0.115,0.43,0.12]}
+          color="#818c99" radius={0.022}/>
+        <Alloy position={[0,-0.74,0.019]} size={[0.067,0.38,0.020]}
+          color="#bac6cd" radius={0.007} metalness={0.83}/> 
+        <Alloy position={[0,-0.98,0.00]} size={[0.72,0.045,0.40]}
+          color="#8c97a3" radius={0.018} metalness={0.87} roughness={0.23}/> 
         <Alloy position={[0,-0.995,0.17]} size={[0.61,0.017,0.015]} color="#657887" radius={0.005}/>
         <EngravedLabel position={[0,-0.02,-0.158]} size={[0.48,0.095]}
           title="DISPLAY UNIT" subtitle="REV / DEMO" accent={accent}/>
