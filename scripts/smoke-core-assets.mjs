@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /* global process, setTimeout, fetch, URL, console */
-/** Focused Chromium regression: the three CC0 GLBs really load at runtime. */
+/** Focused browser regression: open chassis, educational board and available CC0 GLBs. */
 import { chromium } from "@playwright/test";
 import { spawn } from "node:child_process";
 import { mkdir } from "node:fs/promises";
@@ -44,19 +44,25 @@ try {
   await stage.waitFor({state:"attached",timeout:15000});
   await mkdir("browser-diagnostics",{recursive:true});
   const started=Date.now();
-  const keys=["data-gpu-model","data-case-model","data-board-model","data-psu-model"];
+  const expected={
+    "data-gpu-model":"glb",
+    "data-case-model":"cutaway",
+    "data-board-model":"educational",
+    "data-psu-model":"glb",
+  };
+  const keys=Object.keys(expected);
   let result={};
   for(let i=0;i<90;i++){
     result=await stage.evaluate((el,keys)=>Object.fromEntries(keys.map(k=>[k,el.getAttribute(k)])),keys);
     if(i%8===0) console.log("MODEL_STATES "+JSON.stringify({ms:Date.now()-started,...result}));
-    if(keys.every(k=>result[k]==="glb"))break;
+    if(keys.every(k=>result[k]===expected[k]))break;
     if(keys.some(k=>result[k]==="fallback"))break;
     await sleep(500);
   }
   await page.screenshot({path:"browser-diagnostics/the-core-cc0-glbs.png"});
   console.log("FINAL "+JSON.stringify({result,responses,errors}));
-  if(!keys.every(k=>result[k]==="glb"))
-    throw new Error("Three self-hosted CC0 GLBs did not load: "+JSON.stringify({result,responses,errors}));
+  if(!keys.every(k=>result[k]===expected[k]))
+    throw new Error("The Core visual model states were inconsistent: "+JSON.stringify({expected,result,responses,errors}));
   if(errors.some(e=>e.startsWith("PAGEERROR ")||e.startsWith("ASSETFAILED ")))
     throw new Error("GLB test had runtime errors: "+errors.join("; "));
 
