@@ -1,0 +1,59 @@
+name: THE CORE v2 - G1 neutral case asset audit
+
+on:
+  push:
+    branches:
+      - feat/the-core-rebuild-realista-v2
+    paths:
+      - .github/workflows/the-core-v2-g1-render.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit-cc0-g1-case:
+    runs-on: ubuntu-latest
+    timeout-minutes: 24
+    steps:
+      - name: Checkout isolated v2 branch
+        uses: actions/checkout@v4
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install project dependencies
+        run: npm ci
+      - name: Download candidate GLB from the publisher's public CC0 library
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p public/assets/the-core-v2
+          curl -fL --retry 3 --retry-delay 3 --connect-timeout 20 --max-time 240 \
+            -A "THE-CORE-v2-asset-audit/1.0" \
+            "https://www.innerscene.com/api/library/open-mid-tower-pc-case-089c34c8/download" \
+            -o public/assets/the-core-v2/candidate-open-case.glb
+          python3 - <<'PY'
+          from pathlib import Path
+          import struct, hashlib
+          p=Path("public/assets/the-core-v2/candidate-open-case.glb")
+          raw=p.read_bytes()
+          assert len(raw)>1_000_000, f"GLB suspiciously small: {len(raw)}"
+          assert raw[:4]==b"glTF", "Invalid GLB magic"
+          assert struct.unpack_from("<I",raw,4)[0]==2, "Not GLB 2"
+          assert struct.unpack_from("<I",raw,8)[0]==len(raw), "GLB header/size mismatch"
+          print("ASSET GLB2 bytes",len(raw),"sha256",hashlib.sha256(raw).hexdigest())
+          PY
+      - name: Install Chromium + software renderer
+        run: npx playwright install --with-deps chromium
+      - name: Render actual model in neutral light, four angles and audit
+        run: node scripts/the-core-v2/render-g1-case.mjs
+      - name: Upload screenshots and geometry audit (not the GLB)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: the-core-v2-g1-case-candidate-audit
+          path: browser-diagnostics/the-core-v2-g1/
+          if-no-files-found: warn
+          retention-days: 21
