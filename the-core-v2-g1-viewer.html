@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>THE CORE v2 — G1, inspeção isolada do gabinete</title>
+  <style>
+    html,body {margin:0; height:100%; background:#e5e7eb; overflow:hidden; font-family:Arial,sans-serif;}
+    #viewport{height:100%;width:100%;}
+    #caption{position:absolute;top:16px;left:18px;padding:11px 15px;
+      background:rgba(255,255,255,.94);color:#1f2937;border-radius:7px;font:13px Arial,sans-serif;
+      letter-spacing:.02em; pointer-events:none}
+    #caption span{display:block;margin-top:3px;font-size:11px;color:#64748b;}
+    #failure{position:absolute;bottom:12px;left:12px;color:#9f1239;font-size:13px;}
+  </style>
+</head>
+<body>
+  <div id="viewport"></div>
+  <div id="caption">THE CORE / G1 — INSPEÇÃO NEUTRA
+    <span id="view-title">Candidato CC0 aberto, SEM aprovação de realismo</span>
+  </div>
+  <div id="failure"></div>
+<script type="module">
+import * as THREE from "three";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0xe5e7eb);
+const renderer = new THREE.WebGLRenderer({antialias:true,alpha:false,preserveDrawingBuffer:true});
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(1);
+renderer.outputColorSpace=THREE.SRGBColorSpace;
+renderer.toneMapping=THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure=1.12;
+renderer.shadowMap.enabled=true;
+renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+document.getElementById("viewport").appendChild(renderer.domElement);
+
+const camera=new THREE.PerspectiveCamera(38,window.innerWidth/window.innerHeight,0.01,50);
+const hemi=new THREE.HemisphereLight(0xffffff,0x81909c,2.15);scene.add(hemi);
+const key=new THREE.DirectionalLight(0xffffff,3.1);
+key.position.set(2,4,3);key.castShadow=true;
+key.shadow.mapSize.set(2048,2048);
+key.shadow.camera.left=-1.5;key.shadow.camera.right=1.5;
+key.shadow.camera.top=1.5;key.shadow.camera.bottom=-1.5;
+key.shadow.bias=-0.00005;
+scene.add(key);
+const fill=new THREE.DirectionalLight(0xffffff,1.45);fill.position.set(-3,2,-2);scene.add(fill);
+const ground=new THREE.Mesh(new THREE.PlaneGeometry(12,12),
+  new THREE.MeshStandardMaterial({color:0xcbd1d8,roughness:0.88,metalness:0}));
+ground.rotation.x=-Math.PI/2;ground.position.y=-0.012;ground.receiveShadow=true;scene.add(ground);
+const axes={front:[0.88,0.63,1.28],side:[1.25,0.55,0.05],
+  top:[0.30,1.65,0.50],rear:[-0.9,0.61,-1.25]};
+const titles={front:"Frente 3/4 — CC0",side:"Lateral aberta — CC0",
+  top:"Topo — CC0",rear:"Traseira 3/4 — CC0"};
+let model=null, bounds=null, baseDistance=1.4;
+const rotate=new THREE.Group();
+rotate.rotation.x=-Math.PI/2;scene.add(rotate);
+function setView(name){
+ const dir=new THREE.Vector3(...(axes[name]||axes.front)).normalize();
+ const target=new THREE.Vector3(0,Math.max(0.05,bounds?.max.y||0.25)*0.54,0);
+ camera.position.copy(dir.multiplyScalar(baseDistance).add(target));
+ camera.lookAt(target);
+ camera.updateProjectionMatrix();
+ document.getElementById("view-title").textContent=titles[name]||titles.front;
+ renderer.render(scene,camera);
+}
+window.__setView=setView;
+window.__g1Ready=false;
+const loader=new GLTFLoader();
+loader.load("/assets/the-core-v2/candidate-open-case.glb", gltf=>{
+ const root=gltf.scene;
+ rotate.add(root);
+ rotate.updateMatrixWorld(true);
+ const initialBox=new THREE.Box3().setFromObject(rotate);
+ const center=initialBox.getCenter(new THREE.Vector3());
+ root.position.x-=center.x;
+ root.position.z-=center.z;
+ root.position.y-=(-center.z*0); // orientation is controlled by the parent X rotation
+ rotate.updateMatrixWorld(true);
+ let floor=new THREE.Box3().setFromObject(rotate).min.y;
+ rotate.position.y-=floor;
+ rotate.updateMatrixWorld(true);
+ bounds=new THREE.Box3().setFromObject(rotate);
+ const size=bounds.getSize(new THREE.Vector3());
+ baseDistance=Math.max(size.length()*1.43,1.05);
+ let meshes=0,primitives=0,triangles=0;
+ const mats=new Set(), nodes=[];
+ root.traverse(x=>{
+   nodes.push(x.name||"(unnamed)");
+   if(x.isMesh){
+     meshes++;
+     const g=x.geometry;
+     if(g){primitives++;triangles+=(g.index?g.index.count:g.attributes.position?.count||0)/3;}
+     (Array.isArray(x.material)?x.material:[x.material]).filter(Boolean).forEach(m=>{
+       mats.add(m.uuid); x.castShadow=true;
+     });
+   }
+ });
+ window.__g1Info={source:"Innerscene open-mid-tower-pc-case-089c34c8",meshes,primitives,
+  triangles:Math.round(triangles),materialCount:mats.size,nodes:nodes.slice(0,250),
+  boundsMeters:{x:size.x,y:size.y,z:size.z},hasSeparateNodeNames:nodes.some(s=>/glass|door|panel|chassis|frame|mount/i.test(s))};
+ model=root;
+ setView(new URLSearchParams(location.search).get("view")||"front");
+ window.__g1Ready=true;
+},undefined,e=>{
+ console.error(e);
+ document.getElementById("failure").textContent=String(e);
+ window.__g1Error=String(e);
+});
+function draw(){renderer.render(scene,camera);requestAnimationFrame(draw);}
+draw();
+window.addEventListener("resize",()=>{
+ camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();
+ renderer.setSize(innerWidth,innerHeight);setView(new URLSearchParams(location.search).get("view")||"front");
+});
+</script>
+</body></html>
